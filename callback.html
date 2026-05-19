@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>GSCDash — Signing in</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f5f6fa;padding:20px;}
+.box{background:#fff;border-radius:16px;padding:36px 40px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.08);max-width:500px;width:100%;}
+.icon{font-size:44px;margin-bottom:14px;}
+h2{font-size:19px;font-weight:700;color:#111827;margin:0 0 8px;}
+p{font-size:13px;color:#6b7280;line-height:1.6;margin-bottom:4px;}
+.debug{margin-top:16px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:left;font-size:11px;font-family:monospace;color:#374151;word-break:break-all;line-height:1.9;}
+.spinner{width:28px;height:28px;border:3px solid #e5e7eb;border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite;margin:16px auto 0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="icon" id="icon">⏳</div>
+  <h2 id="title">Signing you in...</h2>
+  <p id="msg">Reading your credentials from Google</p>
+  <div class="spinner" id="spinner"></div>
+  <div class="debug" id="debug" style="display:none;"></div>
+</div>
+<script>
+(function(){
+  var hash   = window.location.hash   || '';
+  var search = window.location.search || '';
+  var href   = window.location.href   || '';
+
+  var hashParams   = new URLSearchParams(hash.replace(/^#/,''));
+  var searchParams = new URLSearchParams(search.replace(/^\?/,''));
+
+  var token = hashParams.get('access_token') || searchParams.get('access_token') || '';
+  var state = (hashParams.get('state') || searchParams.get('state') || '').replace('bi_','');
+  var error = hashParams.get('error') || searchParams.get('error') || '';
+
+  function show(icon, title, msg, hideSpinner){
+    document.getElementById('icon').textContent  = icon;
+    document.getElementById('title').textContent = title;
+    document.getElementById('msg').textContent   = msg;
+    if(hideSpinner) document.getElementById('spinner').style.display='none';
+  }
+
+  function showDebug(){
+    var d = document.getElementById('debug');
+    d.style.display = 'block';
+    d.innerHTML =
+      '<b>Full URL:</b><br>'+ href +'<br><br>'+
+      '<b>Hash:</b><br>'+ (hash||'(empty)') +'<br><br>'+
+      '<b>Search params:</b><br>'+ (search||'(empty)') +'<br><br>'+
+      '<b>error:</b> '+(error||'none')+'<br>'+
+      '<b>token:</b> '+(token ? 'YES ('+token.substring(0,20)+'...)' : 'NO')+'<br>'+
+      '<b>state:</b> '+(state||'none');
+  }
+
+  if(error){
+    show('❌','Google returned an error', error, true);
+    showDebug();
+    return;
+  }
+
+  if(!token){
+    show('❌','No token received',
+      'Google redirected here but sent no token. Screenshot the debug info below and share it.', true);
+    showDebug();
+    return;
+  }
+
+  if(state !== 'gsc' && state !== 'ga4'){
+    show('⚠️','Unexpected state', 'State: "'+state+'" — expected gsc or ga4.', true);
+    showDebug();
+    return;
+  }
+
+  try{
+    localStorage.setItem('bi_oauth_token', token);
+    localStorage.setItem('bi_oauth_which', state);
+    localStorage.setItem('bi_oauth_ts',    Date.now().toString());
+    show('✅','Signed in!','Closing this window and returning to your dashboard…', false);
+    setTimeout(function(){
+      window.close();
+      setTimeout(function(){
+        show('✅','Signed in!','Close this tab manually and return to your dashboard.', true);
+      }, 1200);
+    }, 900);
+  }catch(e){
+    show('❌','Storage error', e.message, true);
+    showDebug();
+  }
+})();
+</script>
+</body>
+</html>
