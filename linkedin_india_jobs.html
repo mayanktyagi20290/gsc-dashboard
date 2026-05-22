@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkedIn India Job Finder</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#111;min-height:100vh;padding:2rem 1rem}
+.container{max-width:1100px;margin:0 auto}
+h1{font-size:24px;font-weight:600;margin-bottom:6px}
+.sub{font-size:14px;color:#666;margin-bottom:1.5rem}
+.card{background:#fff;border-radius:12px;border:1px solid #e5e5e5;padding:1.25rem;margin-bottom:1rem}
+.sbar{display:flex;gap:8px;margin-bottom:1rem}
+.sbar input{flex:1;font-size:15px;padding:10px 14px;border:1px solid #ddd;border-radius:8px;outline:none}
+.sbar input:focus{border-color:#0a66c2}
+.sbar button{padding:10px 22px;background:#0a66c2;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer}
+.sbar button:hover{background:#004182}
+.row2{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.row2 select{flex:1;min-width:140px;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff;outline:none}
+.row2 select:focus{border-color:#0a66c2}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem}
+.chip{font-size:12px;padding:6px 14px;border-radius:20px;border:1px solid #ddd;background:#fff;color:#555;cursor:pointer;transition:all .12s}
+.chip.on{border-color:#0a66c2;background:#e8f0fe;color:#0a66c2;font-weight:500}
+.chip:hover{border-color:#aaa}
+.stats{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
+.stat{background:#f9f9f9;border:1px solid #eee;border-radius:8px;padding:10px 16px;flex:1;min-width:100px;text-align:center}
+.stat .n{font-size:18px;font-weight:600;color:#111}
+.stat .l{font-size:11px;color:#888;margin-top:2px}
+.sec-lbl{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;font-weight:600;color:#888;text-align:left;padding:8px 12px;border-bottom:1px solid #eee;background:#fafafa;text-transform:uppercase;letter-spacing:.04em}
+td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+.co-cell{display:flex;align-items:center;gap:9px}
+.av{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.co-name{font-size:13px;font-weight:600;color:#111}
+.co-sec{font-size:11px;color:#888;margin-top:1px}
+.lbtn{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:5px 11px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#0a66c2;text-decoration:none;transition:all .12s;font-weight:500}
+.lbtn:hover{background:#e8f0fe;border-color:#0a66c2}
+.lbtn+.lbtn{margin-left:4px}
+.badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500}
+.bs{background:#e8f0fe;color:#0a66c2}
+.idle{text-align:center;padding:3rem;color:#999;font-size:14px}
+.idle svg{display:block;margin:0 auto 12px;opacity:.4}
+@media(max-width:600px){
+  .row2{flex-direction:column}
+  table{display:block;overflow-x:auto}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔍 LinkedIn India Job Finder</h1>
+  <p class="sub">Search any role across India's top companies — direct LinkedIn links filtered for freshers & interns.</p>
+
+  <div class="card">
+    <div class="sbar">
+      <input type="text" id="kw" placeholder="e.g. HR, Data Analyst, Software Engineer, Marketing, Finance…" onkeydown="if(event.key==='Enter')go()">
+      <button onclick="go()">Search</button>
+    </div>
+
+    <div class="row2">
+      <select id="secSel" onchange="renderTable()">
+        <option value="">All sectors</option>
+        <option value="IT">IT / Software</option>
+        <option value="Consulting">Consulting</option>
+        <option value="Finance">Finance</option>
+        <option value="E-commerce">E-commerce</option>
+        <option value="FMCG">FMCG / Retail</option>
+        <option value="Pharma">Pharma</option>
+        <option value="Telecom">Telecom</option>
+        <option value="Auto">Auto</option>
+        <option value="Energy">Energy</option>
+        <option value="Startup">Startup</option>
+        <option value="Global MNC">Global MNC</option>
+        <option value="Manufacturing">Manufacturing</option>
+      </select>
+      <select id="citySel" onchange="renderTable()">
+        <option value="">All India</option>
+        <option value="Bangalore">Bangalore</option>
+        <option value="Mumbai">Mumbai</option>
+        <option value="Delhi">Delhi</option>
+        <option value="Hyderabad">Hyderabad</option>
+        <option value="Chennai">Chennai</option>
+        <option value="Pune">Pune</option>
+        <option value="Gurgaon">Gurgaon</option>
+        <option value="Noida">Noida</option>
+        <option value="Kolkata">Kolkata</option>
+        <option value="Ahmedabad">Ahmedabad</option>
+        <option value="Work from home">Work from home</option>
+      </select>
+    </div>
+
+    <div class="chips">
+      <button class="chip on" data-t="all" onclick="setType(this)">All types</button>
+      <button class="chip" data-t="intern" onclick="setType(this)">Internship</button>
+      <button class="chip" data-t="fresher" onclick="setType(this)">Fresher (0–1 yr)</button>
+      <button class="chip" data-t="entry" onclick="setType(this)">Entry level</button>
+    </div>
+  </div>
+
+  <div id="out">
+    <div class="idle">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Enter a keyword above and click Search
+    </div>
+  </div>
+</div>
+
+<script>
+const COS=[
+  {n:"TCS",s:"IT",bg:"#dbeafe",tx:"#1e40af",li:"Tata Consultancy Services"},
+  {n:"Infosys",s:"IT",bg:"#d1fae5",tx:"#065f46",li:"Infosys"},
+  {n:"Wipro",s:"IT",bg:"#fef3c7",tx:"#92400e",li:"Wipro"},
+  {n:"HCLTech",s:"IT",bg:"#ede9fe",tx:"#4c1d95",li:"HCL Technologies"},
+  {n:"Tech Mahindra",s:"IT",bg:"#fee2e2",tx:"#7f1d1d",li:"Tech Mahindra"},
+  {n:"Cognizant",s:"IT",bg:"#dbeafe",tx:"#1e3a8a",li:"Cognizant"},
+  {n:"LTIMindtree",s:"IT",bg:"#ede9fe",tx:"#3b0764",li:"LTIMindtree"},
+  {n:"Mphasis",s:"IT",bg:"#dbeafe",tx:"#1e40af",li:"Mphasis"},
+  {n:"Persistent",s:"IT",bg:"#d1fae5",tx:"#064e3b",li:"Persistent Systems"},
+  {n:"Coforge",s:"IT",bg:"#d1fae5",tx:"#065f46",li:"Coforge"},
+  {n:"Hexaware",s:"IT",bg:"#ede9fe",tx:"#4c1d95",li:"Hexaware Technologies"},
+  {n:"Accenture",s:"Consulting",bg:"#ede9fe",tx:"#4c1d95",li:"Accenture"},
+  {n:"Deloitte",s:"Consulting",bg:"#dbeafe",tx:"#1e40af",li:"Deloitte"},
+  {n:"EY",s:"Consulting",bg:"#fef3c7",tx:"#78350f",li:"EY"},
+  {n:"KPMG",s:"Consulting",bg:"#fee2e2",tx:"#7f1d1d",li:"KPMG India"},
+  {n:"PwC",s:"Consulting",bg:"#dbeafe",tx:"#1e3a8a",li:"PwC"},
+  {n:"Capgemini",s:"Consulting",bg:"#dbeafe",tx:"#1e40af",li:"Capgemini"},
+  {n:"McKinsey",s:"Consulting",bg:"#f3f4f6",tx:"#374151",li:"McKinsey & Company"},
+  {n:"BCG",s:"Consulting",bg:"#d1fae5",tx:"#065f46",li:"Boston Consulting Group"},
+  {n:"HDFC Bank",s:"Finance",bg:"#d1fae5",tx:"#064e3b",li:"HDFC Bank"},
+  {n:"ICICI Bank",s:"Finance",bg:"#fef3c7",tx:"#92400e",li:"ICICI Bank"},
+  {n:"SBI",s:"Finance",bg:"#dbeafe",tx:"#1e40af",li:"State Bank of India"},
+  {n:"Axis Bank",s:"Finance",bg:"#fee2e2",tx:"#7f1d1d",li:"Axis Bank"},
+  {n:"Kotak Bank",s:"Finance",bg:"#fee2e2",tx:"#991b1b",li:"Kotak Mahindra Bank"},
+  {n:"Bajaj Finance",s:"Finance",bg:"#d1fae5",tx:"#064e3b",li:"Bajaj Finance"},
+  {n:"Reliance",s:"Manufacturing",bg:"#dbeafe",tx:"#1e40af",li:"Reliance Industries"},
+  {n:"L&T",s:"Manufacturing",bg:"#ede9fe",tx:"#4c1d95",li:"Larsen & Toubro"},
+  {n:"Tata Steel",s:"Manufacturing",bg:"#dbeafe",tx:"#1e3a8a",li:"Tata Steel"},
+  {n:"Asian Paints",s:"Manufacturing",bg:"#fef3c7",tx:"#78350f",li:"Asian Paints"},
+  {n:"Titan",s:"Manufacturing",bg:"#fef3c7",tx:"#92400e",li:"Titan Company"},
+  {n:"Tata Motors",s:"Auto",bg:"#dbeafe",tx:"#1e3a8a",li:"Tata Motors"},
+  {n:"Mahindra",s:"Auto",bg:"#fee2e2",tx:"#7f1d1d",li:"Mahindra & Mahindra"},
+  {n:"Maruti Suzuki",s:"Auto",bg:"#d1fae5",tx:"#065f46",li:"Maruti Suzuki"},
+  {n:"Ola Electric",s:"Auto",bg:"#fee2e2",tx:"#991b1b",li:"Ola Electric"},
+  {n:"HUL",s:"FMCG",bg:"#fce7f3",tx:"#831843",li:"Hindustan Unilever"},
+  {n:"ITC",s:"FMCG",bg:"#d1fae5",tx:"#064e3b",li:"ITC Limited"},
+  {n:"Nestle",s:"FMCG",bg:"#fee2e2",tx:"#7f1d1d",li:"Nestle India"},
+  {n:"Dabur",s:"FMCG",bg:"#fef3c7",tx:"#78350f",li:"Dabur India"},
+  {n:"Adidas",s:"FMCG",bg:"#f3f4f6",tx:"#374151",li:"Adidas"},
+  {n:"Nike",s:"FMCG",bg:"#f3f4f6",tx:"#1f2937",li:"Nike"},
+  {n:"Puma",s:"FMCG",bg:"#fee2e2",tx:"#7f1d1d",li:"Puma"},
+  {n:"Sun Pharma",s:"Pharma",bg:"#fef3c7",tx:"#92400e",li:"Sun Pharmaceutical"},
+  {n:"Dr. Reddy's",s:"Pharma",bg:"#ede9fe",tx:"#4c1d95",li:"Dr. Reddy's Laboratories"},
+  {n:"Cipla",s:"Pharma",bg:"#dbeafe",tx:"#1e40af",li:"Cipla"},
+  {n:"Apollo Hospitals",s:"Pharma",bg:"#fee2e2",tx:"#991b1b",li:"Apollo Hospitals"},
+  {n:"Biocon",s:"Pharma",bg:"#fce7f3",tx:"#831843",li:"Biocon"},
+  {n:"Bharti Airtel",s:"Telecom",bg:"#fee2e2",tx:"#991b1b",li:"Bharti Airtel"},
+  {n:"Jio",s:"Telecom",bg:"#dbeafe",tx:"#1e40af",li:"Reliance Jio"},
+  {n:"BSNL",s:"Telecom",bg:"#d1fae5",tx:"#064e3b",li:"BSNL"},
+  {n:"Flipkart",s:"E-commerce",bg:"#fef3c7",tx:"#78350f",li:"Flipkart"},
+  {n:"Amazon India",s:"E-commerce",bg:"#fef3c7",tx:"#92400e",li:"Amazon"},
+  {n:"Nykaa",s:"E-commerce",bg:"#fce7f3",tx:"#831843",li:"Nykaa"},
+  {n:"Myntra",s:"E-commerce",bg:"#fee2e2",tx:"#7f1d1d",li:"Myntra"},
+  {n:"Meesho",s:"E-commerce",bg:"#fce7f3",tx:"#831843",li:"Meesho"},
+  {n:"Zomato",s:"Startup",bg:"#fee2e2",tx:"#991b1b",li:"Zomato"},
+  {n:"Swiggy",s:"Startup",bg:"#fef3c7",tx:"#78350f",li:"Swiggy"},
+  {n:"Paytm",s:"Startup",bg:"#dbeafe",tx:"#1e3a8a",li:"Paytm"},
+  {n:"PhonePe",s:"Startup",bg:"#ede9fe",tx:"#4c1d95",li:"PhonePe"},
+  {n:"Razorpay",s:"Startup",bg:"#dbeafe",tx:"#1e40af",li:"Razorpay"},
+  {n:"CRED",s:"Startup",bg:"#ede9fe",tx:"#3b0764",li:"CRED"},
+  {n:"Groww",s:"Startup",bg:"#d1fae5",tx:"#065f46",li:"Groww"},
+  {n:"Zerodha",s:"Startup",bg:"#d1fae5",tx:"#064e3b",li:"Zerodha"},
+  {n:"Ola",s:"Startup",bg:"#f3f4f6",tx:"#374151",li:"Ola"},
+  {n:"Urban Company",s:"Startup",bg:"#fce7f3",tx:"#831843",li:"Urban Company"},
+  {n:"Google",s:"Global MNC",bg:"#d1fae5",tx:"#065f46",li:"Google"},
+  {n:"Microsoft",s:"Global MNC",bg:"#dbeafe",tx:"#1e40af",li:"Microsoft"},
+  {n:"IBM",s:"Global MNC",bg:"#dbeafe",tx:"#1e3a8a",li:"IBM"},
+  {n:"Samsung",s:"Global MNC",bg:"#dbeafe",tx:"#1e40af",li:"Samsung"},
+  {n:"Intel",s:"Global MNC",bg:"#dbeafe",tx:"#1e3a8a",li:"Intel"},
+  {n:"Oracle",s:"Global MNC",bg:"#fee2e2",tx:"#991b1b",li:"Oracle"},
+  {n:"SAP",s:"Global MNC",bg:"#dbeafe",tx:"#1e40af",li:"SAP"},
+  {n:"Salesforce",s:"Global MNC",bg:"#dbeafe",tx:"#1e3a8a",li:"Salesforce"},
+  {n:"Adobe",s:"Global MNC",bg:"#fee2e2",tx:"#7f1d1d",li:"Adobe"},
+  {n:"Cisco",s:"Global MNC",bg:"#dbeafe",tx:"#1e40af",li:"Cisco"},
+  {n:"ONGC",s:"Energy",bg:"#fef3c7",tx:"#78350f",li:"ONGC"},
+  {n:"NTPC",s:"Energy",bg:"#fee2e2",tx:"#7f1d1d",li:"NTPC Limited"},
+  {n:"Power Grid",s:"Energy",bg:"#fef3c7",tx:"#92400e",li:"Power Grid Corporation"},
+  {n:"Adani Ports",s:"Energy",bg:"#dbeafe",tx:"#1e40af",li:"Adani Ports"},
+];
+
+let kw='', jobType='all';
+
+function initials(n){return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();}
+
+function setType(btn){
+  jobType=btn.dataset.t;
+  document.querySelectorAll('.chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(kw) renderTable();
+}
+
+function liURL(liName,keyword,type,city){
+  const k=encodeURIComponent(keyword+' '+liName);
+  const loc=(!city||city==='')?'India':(city==='Work from home'?'India':city+', India');
+  const locEnc=encodeURIComponent(loc);
+  let f='';
+  if(type==='intern') f='&f_JT=I&f_E=1';
+  else if(type==='fresher') f='&f_E=1%2C2&f_JT=F%2CO';
+  else if(type==='entry') f='&f_E=2';
+  else f='&f_E=1%2C2';
+  if(city==='Work from home') f+='&f_WT=2';
+  return `https://www.linkedin.com/jobs/search/?keywords=${k}&location=${locEnc}${f}&sortBy=DD`;
+}
+
+function go(){
+  kw=document.getElementById('kw').value.trim();
+  if(!kw) return;
+  renderTable();
+}
+
+function renderTable(){
+  if(!kw) return;
+  const sec=document.getElementById('secSel').value;
+  const city=document.getElementById('citySel').value;
+  let list=COS.filter(c=>!sec||c.s===sec);
+  const out=document.getElementById('out');
+
+  let html=`<div class="stats">
+    <div class="stat"><div class="n">${list.length}</div><div class="l">Companies</div></div>
+    <div class="stat"><div class="n">${city||'All India'}</div><div class="l">Location</div></div>
+    <div class="stat"><div class="n">${kw}</div><div class="l">Keyword</div></div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+  <div style="padding:12px 16px;border-bottom:1px solid #eee;background:#fafafa">
+    <span class="sec-lbl" style="margin:0">Click Open → goes directly to filtered LinkedIn listings</span>
+  </div>
+  <table><thead><tr>
+    <th>Company</th>
+    <th>Sector</th>
+    <th>Internship</th>
+    <th>Fresher 0–1yr</th>
+    <th>Entry level</th>
+  </tr></thead><tbody>`;
+
+  list.forEach(c=>{
+    const iUrl=liURL(c.li,kw,'intern',city);
+    const fUrl=liURL(c.li,kw,'fresher',city);
+    const eUrl=liURL(c.li,kw,'entry',city);
+    const si=jobType==='all'||jobType==='intern';
+    const sf=jobType==='all'||jobType==='fresher';
+    const se=jobType==='all'||jobType==='entry';
+    html+=`<tr>
+      <td><div class="co-cell">
+        <div class="av" style="background:${c.bg};color:${c.tx}">${initials(c.n)}</div>
+        <div><div class="co-name">${c.n}</div><div class="co-sec">${c.s}</div></div>
+      </div></td>
+      <td><span class="badge bs">${c.s}</span></td>
+      <td>${si?`<a class="lbtn" href="${iUrl}" target="_blank" rel="noopener">↗ Open</a>`:'-'}</td>
+      <td>${sf?`<a class="lbtn" href="${fUrl}" target="_blank" rel="noopener">↗ Open</a>`:'-'}</td>
+      <td>${se?`<a class="lbtn" href="${eUrl}" target="_blank" rel="noopener">↗ Open</a>`:'-'}</td>
+    </tr>`;
+  });
+
+  html+=`</tbody></table></div>`;
+  out.innerHTML=html;
+}
+</script>
+</body>
+</html>
