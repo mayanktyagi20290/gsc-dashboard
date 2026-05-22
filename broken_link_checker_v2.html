@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Broken Link Auditor — Unstop Blog</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0c10;
+  --surface:#111318;
+  --surface2:#181b22;
+  --border:#1f2330;
+  --border2:#262c3a;
+  --accent:#e11d48;
+  --accent2:#f43f5e;
+  --accent-glow:rgba(225,29,72,0.18);
+  --green:#10b981;
+  --green-bg:rgba(16,185,129,0.1);
+  --yellow:#f59e0b;
+  --yellow-bg:rgba(245,158,11,0.1);
+  --blue:#3b82f6;
+  --blue-bg:rgba(59,130,246,0.1);
+  --purple:#8b5cf6;
+  --text:#f1f5f9;
+  --text2:#94a3b8;
+  --text3:#475569;
+  --mono:'DM Mono',monospace;
+  --sans:'Sora',sans-serif;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
+
+/* ── Layout ── */
+.shell{max-width:1200px;margin:0 auto;padding:32px 24px 80px;}
+
+/* ── Header ── */
+.header{position:relative;margin-bottom:32px;padding:32px;background:var(--surface);border:1px solid var(--border2);border-radius:16px;overflow:hidden;}
+.header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 80% 50%,rgba(225,29,72,0.12),transparent);pointer-events:none;}
+.header-eyebrow{font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.header-eyebrow::before{content:'';display:inline-block;width:18px;height:2px;background:var(--accent);}
+.header-title{font-size:28px;font-weight:800;color:var(--text);line-height:1.2;margin-bottom:8px;}
+.header-title span{color:var(--accent);}
+.header-sub{font-size:13px;color:var(--text2);line-height:1.7;max-width:560px;}
+.header-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+.badge-red{background:rgba(225,29,72,.15);color:var(--accent2);border:1px solid rgba(225,29,72,.3);}
+.badge-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(16,185,129,.3);}
+.badge-blue{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(59,130,246,.3);}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;}
+.card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text2);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card-title svg{opacity:.6;}
+
+/* ── How it works ── */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:0;}
+.step{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.step-num{font-size:10px;font-weight:700;color:var(--accent);font-family:var(--mono);margin-bottom:8px;letter-spacing:.05em;}
+.step-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.step-desc{font-size:11px;color:var(--text3);line-height:1.6;}
+
+/* ── Notice ── */
+.notice{border-radius:8px;padding:11px 14px;font-size:11.5px;line-height:1.6;margin-bottom:12px;display:flex;gap:10px;align-items:flex-start;}
+.notice-warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);color:#fbbf24;}
+.notice-info{background:var(--blue-bg);border:1px solid rgba(59,130,246,.25);color:#93c5fd;}
+.notice-icon{flex-shrink:0;margin-top:1px;}
+
+/* ── Input area ── */
+.input-row{display:flex;gap:10px;align-items:stretch;margin-bottom:14px;}
+.url-input{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;font-family:var(--mono);font-size:12px;color:var(--text);outline:none;transition:border-color .2s;}
+.url-input:focus{border-color:var(--accent);}
+.url-input::placeholder{color:var(--text3);}
+.options-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+.opt-label{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;}
+.opt-label input{accent-color:var(--accent);}
+.depth-select{background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--text);font-family:var(--sans);outline:none;}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border:none;border-radius:8px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.02em;transition:all .15s;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 18px rgba(225,29,72,.35);}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
+.btn-ghost:hover{background:var(--border2);color:var(--text);}
+.btn-green{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3);}
+.btn-green:hover{background:var(--green-bg);}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+
+/* ── Progress ── */
+.progress-wrap{display:none;margin-bottom:16px;}
+.progress-header{display:flex;justify-content:space-between;margin-bottom:8px;}
+.progress-label{font-size:12px;font-weight:600;color:var(--text);}
+.progress-pct{font-size:12px;font-family:var(--mono);color:var(--accent);}
+.progress-track{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-bottom:14px;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;width:0%;transition:width .4s cubic-bezier(.4,0,.2,1);}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.stat-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;}
+.stat-val{font-size:22px;font-weight:800;font-family:var(--mono);}
+.stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-top:3px;}
+
+/* ── Results ── */
+#results-area{animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── Summary bar ── */
+.summary-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.summary-left h3{font-size:14px;font-weight:700;color:var(--accent2);}
+.summary-left p{font-size:11px;color:var(--text3);margin-top:2px;}
+.status-pills{display:flex;gap:6px;flex-wrap:wrap;}
+.pill{padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;font-family:var(--mono);}
+.pill-404{background:rgba(225,29,72,.15);color:#fb7185;border:1px solid rgba(225,29,72,.3);}
+.pill-5xx{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.3);}
+.pill-err{background:rgba(100,116,139,.12);color:#94a3b8;border:1px solid rgba(100,116,139,.25);}
+
+/* ── Filter bar ── */
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.filter-input{background:var(--surface2);border:1px solid var(--border2);border-radius:7px;padding:7px 12px;font-size:11.5px;color:var(--text);font-family:var(--sans);outline:none;width:220px;}
+.filter-input:focus{border-color:var(--border2);}
+.filter-input::placeholder{color:var(--text3);}
+.filter-select{background:var(--surface2);border:1px solid var(--border2);border-radius:7px;padding:7px 10px;font-size:11px;color:var(--text);font-family:var(--sans);outline:none;cursor:pointer;}
+
+/* ── Table ── */
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;}
+thead{background:var(--surface2);}
+th{padding:9px 13px;text-align:left;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);white-space:nowrap;border-bottom:1px solid var(--border);}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--surface2);}
+td{padding:10px 13px;font-size:11.5px;color:var(--text2);vertical-align:middle;}
+
+.col-num{color:var(--text3);font-family:var(--mono);font-size:10px;width:36px;}
+.col-page{max-width:200px;}
+.col-broken{max-width:220px;}
+.col-text{max-width:150px;}
+.col-status{white-space:nowrap;}
+.col-action{white-space:nowrap;}
+
+.cell-link{color:var(--blue);text-decoration:none;font-family:var(--mono);font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%;}
+.cell-link:hover{text-decoration:underline;}
+.cell-link.red{color:var(--accent2);}
+.cell-text{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:150px;}
+
+.status-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono);}
+.tag-404{background:rgba(225,29,72,.15);color:#fb7185;}
+.tag-410{background:rgba(239,68,68,.1);color:#fca5a5;}
+.tag-5xx{background:rgba(245,158,11,.12);color:#fbbf24;}
+.tag-err{background:rgba(100,116,139,.1);color:#94a3b8;}
+
+.action-tag{font-size:10px;color:var(--purple);font-weight:600;background:rgba(139,92,246,.08);padding:2px 8px;border-radius:4px;border:1px solid rgba(139,92,246,.2);white-space:nowrap;}
+
+/* ── Empty / Success state ── */
+.all-good{background:var(--green-bg);border:1px solid rgba(16,185,129,.25);border-radius:12px;padding:28px;text-align:center;}
+.all-good h3{font-size:15px;font-weight:700;color:var(--green);margin-bottom:4px;}
+.all-good p{font-size:12px;color:var(--text3);}
+
+/* ── Log ── */
+.live-log{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:10.5px;color:var(--text3);line-height:1.8;max-height:130px;overflow-y:auto;margin-top:10px;display:none;}
+.log-ok{color:var(--green);}
+.log-err{color:var(--accent2);}
+.log-info{color:var(--blue);}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-eyebrow">SEO Audit Tool</div>
+    <div class="header-title">Broken Link Auditor — <span>Unstop Blog</span></div>
+    <div class="header-sub">Crawl any blog or webpage, extract all outbound & internal links, and identify every 404, 5xx, or unreachable URL with full context — source page, anchor text, HTTP status, and recommended fix action.</div>
+    <div class="header-badges">
+      <span class="badge badge-red">● Live Crawl</span>
+      <span class="badge badge-green">✓ HTTP Status Check</span>
+      <span class="badge badge-blue">↓ CSV Export</span>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="card">
+    <div class="card-title">
+      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      How It Works
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num">Step 01</div><div class="step-title">Enter Target URL</div><div class="step-desc">Paste any blog index or page URL — e.g. unstop.com/blog</div></div>
+      <div class="step"><div class="step-num">Step 02</div><div class="step-title">Discover Pages</div><div class="step-desc">The crawler fetches the index page and extracts all blog post links automatically</div></div>
+      <div class="step"><div class="step-num">Step 03</div><div class="step-title">Extract All Links</div><div class="step-desc">Every anchor tag on each discovered page is parsed — internal and external</div></div>
+      <div class="step"><div class="step-num">Step 04</div><div class="step-title">Audit & Report</div><div class="step-desc">Each link is checked for HTTP status — broken links flagged with fix recommendations</div></div>
+    </div>
+  </div>
+
+  <!-- LIMITATION NOTICE -->
+  <div class="notice notice-warn">
+    <span class="notice-icon">⚠️</span>
+    <div><strong>Browser CORS Notice:</strong> Direct link checking is restricted by browser security policies. This tool uses a CORS proxy (allorigins.win) to fetch page content and verify link statuses. Some links served behind firewalls, CDNs, or bot-protection may return false negatives — always verify flagged links manually before actioning.</div>
+  </div>
+  <div class="notice notice-info">
+    <span class="notice-icon">ℹ️</span>
+    <div><strong>Best results:</strong> Run in Chrome or Edge. The tool crawls discovered blog post URLs and checks all links found on each page. For large blogs (200+ posts), use the <strong>Max Pages</strong> limit to control scope.</div>
+  </div>
+
+  <!-- INPUT CARD -->
+  <div class="card">
+    <div class="card-title">
+      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+      Target URL
+    </div>
+    <div class="input-row">
+      <input class="url-input" id="target-url" type="url" placeholder="https://unstop.com/blog" value="https://unstop.com/blog" />
+    </div>
+    <div class="options-row">
+      <label class="opt-label">
+        <input type="checkbox" id="opt-external" checked>
+        Check external links
+      </label>
+      <label class="opt-label">
+        <input type="checkbox" id="opt-internal" checked>
+        Check internal links
+      </label>
+      <label class="opt-label" style="margin-left:auto;">
+        Max pages:
+        <select class="depth-select" id="opt-maxpages">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50" selected>50</option>
+          <option value="100">100</option>
+          <option value="200">200</option>
+        </select>
+      </label>
+      <label class="opt-label">
+        Concurrency:
+        <select class="depth-select" id="opt-concurrency">
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+          <option value="5">5</option>
+        </select>
+      </label>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-start" onclick="startAudit()">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z"/></svg>
+        Start Audit
+      </button>
+      <button class="btn btn-ghost" id="btn-stop" style="display:none" onclick="stopAudit()">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+        Stop
+      </button>
+      <button class="btn btn-green" id="btn-export" style="display:none" onclick="exportCsv()">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Export CSV
+      </button>
+      <span id="status-msg" style="font-size:11.5px;color:var(--text3);"></span>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap card" id="progress-card">
+    <div class="progress-header">
+      <span class="progress-label" id="prog-label">Initialising crawl...</span>
+      <span class="progress-pct" id="prog-pct">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-bar" id="prog-bar"></div></div>
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-val" id="stat-pages" style="color:var(--blue);">0</div><div class="stat-lbl">Pages Crawled</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-links" style="color:var(--text2);">0</div><div class="stat-lbl">Links Found</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-broken" style="color:var(--accent2);">0</div><div class="stat-lbl">Broken</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-ok" style="color:var(--green);">0</div><div class="stat-lbl">OK</div></div>
+    </div>
+    <div class="live-log" id="live-log"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-area"></div>
+
+</div>
+
+<script>
+// ────────────────────────────────────────────────────────────
+//  STATE
+// ────────────────────────────────────────────────────────────
+var _running = false;
+var _broken  = [];
+var _totalLinks = 0;
+var _checkedLinks = 0;
+var _pagesCrawled = 0;
+var _totalPages = 0;
+
+// ────────────────────────────────────────────────────────────
+//  UTILITIES
+// ────────────────────────────────────────────────────────────
+function setStatus(msg, col){ var el=document.getElementById('status-msg'); if(el){el.textContent=msg;el.style.color=col||'var(--text3)';} }
+function setLabel(msg){ var el=document.getElementById('prog-label'); if(el)el.textContent=msg; }
+
+function updateProgress(){
+  var pct = _totalPages > 0 ? Math.round(_pagesCrawled/_totalPages*100) : 0;
+  var bar = document.getElementById('prog-bar');
+  var pctEl = document.getElementById('prog-pct');
+  if(bar) bar.style.width = pct+'%';
+  if(pctEl) pctEl.textContent = pct+'%';
+  var sp=document.getElementById('stat-pages'); if(sp)sp.textContent=_pagesCrawled;
+  var sl=document.getElementById('stat-links'); if(sl)sl.textContent=_totalLinks;
+  var sb=document.getElementById('stat-broken'); if(sb)sb.textContent=_broken.length;
+  var so=document.getElementById('stat-ok'); if(so)so.textContent=Math.max(0,_checkedLinks-_broken.length);
+}
+
+function log(msg, cls){
+  var el=document.getElementById('live-log');
+  if(!el)return;
+  el.style.display='block';
+  var line=document.createElement('div');
+  if(cls)line.className=cls;
+  line.textContent=msg;
+  el.appendChild(line);
+  el.scrollTop=el.scrollHeight;
+  // Keep log capped at 200 lines
+  while(el.children.length>200) el.removeChild(el.firstChild);
+}
+
+function resolveUrl(href, base){
+  if(!href) return null;
+  href = href.trim();
+  if(href.startsWith('//')) return 'https:' + href;
+  if(href.startsWith('/')){
+    try{ var b=new URL(base); return b.origin+href; }catch(e){}
+  }
+  if(href.startsWith('http')) return href;
+  return null;
+}
+
+function extractLinks(html, pageUrl){
+  var links=[];
+  var re=/<a[^>]+href=["']([^"'#][^"']*?)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  var m;
+  while((m=re.exec(html))!==null){
+    var href=m[1].trim();
+    var text=m[2].replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim().slice(0,100)||'(no text)';
+    var resolved=resolveUrl(href, pageUrl);
+    if(resolved) links.push({url:resolved, text:text});
+  }
+  // Deduplicate by URL
+  var seen={};
+  return links.filter(function(l){
+    if(seen[l.url])return false;
+    seen[l.url]=true;
+    return true;
+  });
+}
+
+function extractBlogLinks(html, baseOrigin){
+  // Extract blog post links from the index page
+  var links=[];
+  var re=/<a[^>]+href=["']([^"'#][^"']*?)["'][^>]*/gi;
+  var m;
+  while((m=re.exec(html))!==null){
+    var href=m[1].trim();
+    var resolved=resolveUrl(href, baseOrigin);
+    if(!resolved) continue;
+    // Only keep links that look like blog post URLs on the same domain
+    try{
+      var u=new URL(resolved);
+      var bo=new URL(baseOrigin);
+      if(u.hostname===bo.hostname && resolved.includes('/blog/') && resolved!==baseOrigin) links.push(resolved);
+    }catch(e){}
+  }
+  // Deduplicate
+  var seen={};
+  return links.filter(function(l){
+    if(seen[l])return false;
+    seen[l]=true;
+    return true;
+  });
+}
+
+var SKIP_PATTERNS=['google-analytics','googletagmanager','facebook.com/tr','doubleclick','googleapis.com','gstatic.com','cdnjs','cloudflare','fonts.gstatic','analytics','pixel','beacon','twitter.com/intent','linkedin.com/share','facebook.com/share','mailto:','tel:','javascript:','whatsapp'];
+
+function shouldCheck(url, checkExternal, checkInternal, targetOrigin){
+  if(!url.startsWith('http'))return false;
+  if(SKIP_PATTERNS.some(function(p){return url.includes(p);}))return false;
+  try{
+    var isInternal=(new URL(url)).hostname===(new URL(targetOrigin)).hostname;
+    if(isInternal && !checkInternal)return false;
+    if(!isInternal && !checkExternal)return false;
+  }catch(e){return false;}
+  return true;
+}
+
+// ────────────────────────────────────────────────────────────
+//  FETCH VIA PROXY
+// ────────────────────────────────────────────────────────────
+var PROXY='https://api.allorigins.win/get?url=';
+
+async function fetchViaProxy(url, timeout){
+  timeout = timeout || 12000;
+  var proxyUrl = PROXY + encodeURIComponent(url);
+  var resp = await fetch(proxyUrl, {signal: AbortSignal.timeout(timeout)});
+  if(!resp.ok) return null;
+  return await resp.json();
+}
+
+// ────────────────────────────────────────────────────────────
+//  CHECK A SINGLE LINK
+// ────────────────────────────────────────────────────────────
+async function checkLink(sourcePage, linkUrl, linkText){
+  try{
+    var data = await fetchViaProxy(linkUrl, 10000);
+    if(!data){ 
+      // null = proxy timeout
+      _broken.push({sourcePage, url:linkUrl, status:'Timeout', text:linkText});
+      _checkedLinks++;
+      updateProgress();
+      return;
+    }
+    var status = data.status && data.status.http_code ? data.status.http_code : 0;
+    _checkedLinks++;
+    if(status===404||status===410||(status>=500&&status<600)){
+      var label = status===0?'Timeout':String(status);
+      _broken.push({sourcePage, url:linkUrl, status:label, text:linkText});
+      log('✗ '+status+' — '+linkUrl.slice(0,70),'log-err');
+    }
+    updateProgress();
+  }catch(e){
+    _broken.push({sourcePage, url:linkUrl, status:'Error', text:linkText});
+    _checkedLinks++;
+    updateProgress();
+  }
+}
+
+// ────────────────────────────────────────────────────────────
+//  CRAWL ONE PAGE
+// ────────────────────────────────────────────────────────────
+async function crawlPage(pageUrl, checkExternal, checkInternal, targetOrigin, concurrency){
+  log('→ Crawling: '+pageUrl.slice(0,80),'log-info');
+  try{
+    var data = await fetchViaProxy(pageUrl, 15000);
+    if(!data || !data.contents){
+      log('  ⚠ Could not fetch page','');
+      _pagesCrawled++;
+      updateProgress();
+      return;
+    }
+    var html = data.contents;
+    var links = extractLinks(html, pageUrl);
+    var filtered = links.filter(function(l){return shouldCheck(l.url,checkExternal,checkInternal,targetOrigin);});
+    _totalLinks += filtered.length;
+    log('  Found '+filtered.length+' checkable links','');
+
+    // Check links in batches
+    for(var i=0;i<filtered.length;i+=concurrency){
+      if(!_running) break;
+      var batch = filtered.slice(i,i+concurrency);
+      await Promise.all(batch.map(function(l){return checkLink(pageUrl,l.url,l.text);}));
+    }
+  }catch(e){
+    log('  ✗ Fetch error: '+e.message,'log-err');
+  }
+  _pagesCrawled++;
+  setLabel('Crawled '+_pagesCrawled+' of '+_totalPages+' pages...');
+  updateProgress();
+}
+
+// ────────────────────────────────────────────────────────────
+//  RENDER RESULTS
+// ────────────────────────────────────────────────────────────
+function renderResults(){
+  var el=document.getElementById('results-area');
+  if(!el)return;
+
+  if(!_broken.length){
+    el.innerHTML='<div class="all-good"><h3>✅ No broken links detected</h3><p>Checked '+_pagesCrawled+' pages with '+_totalLinks+' links — everything looks healthy.</p></div>';
+    return;
+  }
+
+  // Group by source page
+  var byPage={};
+  _broken.forEach(function(b){
+    var key=b.sourcePage;
+    if(!byPage[key])byPage[key]=[];
+    byPage[key].push(b);
+  });
+  var pages=Object.keys(byPage);
+
+  // Status counts
+  var statusCounts={};
+  _broken.forEach(function(b){statusCounts[b.status]=(statusCounts[b.status]||0)+1;});
+
+  var pills='';
+  Object.keys(statusCounts).sort().forEach(function(s){
+    var cls=s==='404'||s==='410'?'pill-404':s[0]==='5'?'pill-5xx':'pill-err';
+    pills+='<span class="pill '+cls+'">'+s+': '+statusCounts[s]+'</span>';
+  });
+
+  function actionFor(status){
+    if(status==='404') return 'Replace or Remove Link';
+    if(status==='410') return 'Remove Link (Gone)';
+    if(status[0]==='5') return 'Retry — Server Error';
+    return 'Verify Manually';
+  }
+
+  function tagClass(status){
+    if(status==='404'||status==='410') return 'tag-404';
+    if(status[0]==='5') return 'tag-5xx';
+    return 'tag-err';
+  }
+
+  var rows='';
+  var idx=0;
+  pages.forEach(function(page){
+    byPage[page].forEach(function(b){
+      idx++;
+      var pagePath=page.replace(/https?:\/\/[^/]+/,'');
+      if(pagePath.length>50) pagePath=pagePath.slice(0,50)+'…';
+      var brokenUrl=b.url.length>60?b.url.slice(0,60)+'…':b.url;
+      var anchorText=b.text.length>40?b.text.slice(0,40)+'…':b.text;
+      rows+='<tr>'
+        +'<td class="col-num">'+idx+'</td>'
+        +'<td class="col-page"><a class="cell-link" href="'+page+'" target="_blank" title="'+page+'">'+pagePath+'</a></td>'
+        +'<td class="col-broken"><a class="cell-link red" href="'+b.url+'" target="_blank" title="'+b.url+'">'+brokenUrl+'</a></td>'
+        +'<td class="col-text"><span class="cell-text" title="'+b.text+'">'+anchorText+'</span></td>'
+        +'<td class="col-status"><span class="status-tag '+tagClass(b.status)+'">'+b.status+'</span></td>'
+        +'<td class="col-action"><span class="action-tag">'+actionFor(b.status)+'</span></td>'
+        +'</tr>';
+    });
+  });
+
+  el.innerHTML=
+    '<div class="card">'
+    +'<div class="summary-bar">'
+    +'<div class="summary-left"><h3>⚠ '+_broken.length+' Broken Link'+(+_broken.length!==1?'s':'')+' Found across '+pages.length+' Page'+(pages.length!==1?'s':'')+' </h3>'
+    +'<p>'+_pagesCrawled+' pages crawled · '+_totalLinks+' links audited · '+_checkedLinks+' checked</p></div>'
+    +'<div class="status-pills">'+pills+'</div>'
+    +'</div>'
+
+    +'<div class="filter-bar">'
+    +'<input class="filter-input" id="filter-input" placeholder="Filter by URL, anchor text, status…" oninput="filterResults()" />'
+    +'<select class="filter-select" id="filter-status" onchange="filterResults()">'
+    +'<option value="">All statuses</option>'
+    +Object.keys(statusCounts).sort().map(function(s){return'<option value="'+s+'">'+s+'</option>';}).join('')
+    +'</select>'
+    +'</div>'
+
+    +'<div class="table-wrap">'
+    +'<table id="result-table">'
+    +'<thead><tr><th>#</th><th>Source Page</th><th>Broken URL</th><th>Anchor Text</th><th>HTTP Status</th><th>Recommended Action</th></tr></thead>'
+    +'<tbody id="result-tbody">'+rows+'</tbody>'
+    +'</table></div></div>';
+}
+
+function filterResults(){
+  var q=(document.getElementById('filter-input')||{}).value||'';
+  var s=(document.getElementById('filter-status')||{}).value||'';
+  q=q.toLowerCase();
+  var rows=document.querySelectorAll('#result-tbody tr');
+  rows.forEach(function(r){
+    var text=r.textContent.toLowerCase();
+    var matchQ=!q||text.includes(q);
+    var matchS=!s||text.includes(s.toLowerCase());
+    r.style.display=(matchQ&&matchS)?'':'none';
+  });
+}
+
+// ────────────────────────────────────────────────────────────
+//  EXPORT CSV
+// ────────────────────────────────────────────────────────────
+function exportCsv(){
+  if(!_broken.length)return;
+  var rows=[['#','Source Page','Broken URL','Anchor Text','HTTP Status','Recommended Action']];
+  _broken.forEach(function(b,i){
+    var act=b.status==='404'?'Replace or Remove Link':b.status==='410'?'Remove Link (Gone)':b.status[0]==='5'?'Retry — Server Error':'Verify Manually';
+    rows.push([i+1,b.sourcePage,b.url,b.text,b.status,act]);
+  });
+  var csv=rows.map(function(r){return r.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob=new Blob([csv],{type:'text/csv'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='broken_links_audit_unstop_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+// ────────────────────────────────────────────────────────────
+//  STOP
+// ────────────────────────────────────────────────────────────
+function stopAudit(){
+  _running=false;
+  setStatus('Audit stopped.','var(--text3)');
+  document.getElementById('btn-stop').style.display='none';
+  document.getElementById('btn-start').disabled=false;
+  document.getElementById('btn-start').style.display='inline-flex';
+  if(_broken.length) document.getElementById('btn-export').style.display='inline-flex';
+  setLabel('Stopped at '+_pagesCrawled+'/'+_totalPages+' pages');
+  renderResults();
+}
+
+// ────────────────────────────────────────────────────────────
+//  MAIN — START AUDIT
+// ────────────────────────────────────────────────────────────
+async function startAudit(){
+  if(_running) return;
+
+  var targetUrl=(document.getElementById('target-url').value||'').trim();
+  if(!targetUrl.startsWith('http')){ setStatus('⚠ Please enter a valid URL starting with https://','var(--accent)'); return; }
+
+  var checkExternal=document.getElementById('opt-external').checked;
+  var checkInternal=document.getElementById('opt-internal').checked;
+  var maxPages=parseInt(document.getElementById('opt-maxpages').value)||50;
+  var concurrency=parseInt(document.getElementById('opt-concurrency').value)||3;
+
+  _running=true;
+  _broken=[];
+  _totalLinks=0;
+  _checkedLinks=0;
+  _pagesCrawled=0;
+  _totalPages=0;
+
+  document.getElementById('btn-start').style.display='none';
+  document.getElementById('btn-stop').style.display='inline-flex';
+  document.getElementById('btn-export').style.display='none';
+  document.getElementById('progress-card').style.display='block';
+  document.getElementById('results-area').innerHTML='';
+  document.getElementById('live-log').innerHTML='';
+
+  setStatus('Discovering blog pages…','var(--yellow)');
+  setLabel('Fetching index page…');
+  updateProgress();
+  log('Audit started → '+targetUrl,'log-info');
+
+  // ── STEP 1: Discover blog post URLs from index ──
+  var blogPages=[];
+  try{
+    var indexData=await fetchViaProxy(targetUrl,15000);
+    if(!indexData||!indexData.contents){ setStatus('⚠ Could not fetch target URL — check CORS proxy or try again.','var(--accent)'); _running=false; return; }
+    blogPages=extractBlogLinks(indexData.contents, targetUrl);
+    log('Discovered '+blogPages.length+' blog pages on index','log-ok');
+
+    // If no blog sub-links found (could be a single page or different structure), just audit the URL itself
+    if(!blogPages.length){
+      log('No sub-pages found — auditing the target URL itself','');
+      blogPages=[targetUrl];
+    }
+  }catch(e){
+    setStatus('⚠ Index fetch failed: '+e.message,'var(--accent)');
+    _running=false; return;
+  }
+
+  // Limit to maxPages
+  blogPages=blogPages.slice(0,maxPages);
+  _totalPages=blogPages.length;
+  log('Crawling '+_totalPages+' pages (max: '+maxPages+')','log-info');
+  setStatus('Crawling '+_totalPages+' pages…','var(--yellow)');
+  updateProgress();
+
+  // ── STEP 2: Crawl each page & check links ──
+  var PAGE_CONCURRENCY=concurrency;
+  for(var i=0;i<blogPages.length;i+=PAGE_CONCURRENCY){
+    if(!_running) break;
+    var batch=blogPages.slice(i,i+PAGE_CONCURRENCY);
+    await Promise.all(batch.map(function(p){return crawlPage(p,checkExternal,checkInternal,targetUrl,concurrency);}));
+    renderResults();
+  }
+
+  // ── DONE ──
+  _running=false;
+  document.getElementById('btn-stop').style.display='none';
+  document.getElementById('btn-start').style.display='inline-flex';
+  document.getElementById('btn-start').disabled=false;
+  if(_broken.length) document.getElementById('btn-export').style.display='inline-flex';
+
+  setLabel('✅ Audit complete — '+_pagesCrawled+' pages crawled');
+  setStatus('Done — '+_broken.length+' broken link'+(_broken.length!==1?'s':'')+' found', _broken.length>0?'var(--accent2)':'var(--green)');
+  log('✅ Audit complete. '+_broken.length+' broken links across '+_pagesCrawled+' pages.','log-ok');
+  renderResults();
+}
+</script>
+</body>
+</html>
