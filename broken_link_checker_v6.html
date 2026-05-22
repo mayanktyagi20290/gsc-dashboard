@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Broken Link Checker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f6fa;--surface:#fff;--surface2:#f9fafb;--border:#e5e7eb;--border2:#d1d5db;
+  --accent:#be123c;--accent-dark:#881337;--accent-light:#fff1f2;
+  --green:#059669;--green-bg:#f0fdf4;--green-border:#bbf7d0;
+  --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fde68a;
+  --blue:#2563eb;--blue-bg:#eff6ff;--blue-border:#bfdbfe;
+  --purple:#7c3aed;--text:#111827;--text2:#374151;--text3:#6b7280;--text4:#9ca3af;
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--r:12px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
+.shell{max-width:1200px;margin:0 auto;padding:28px 20px 80px;}
+
+.hero{background:linear-gradient(135deg,#881337 0%,#be123c 50%,#1e1b4b 100%);border-radius:16px;padding:28px 32px;margin-bottom:20px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;right:-60px;top:-60px;width:260px;height:260px;background:radial-gradient(circle,rgba(255,255,255,.06),transparent 65%);border-radius:50%;}
+.hero-eyebrow{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:8px;}
+.hero-title{font-size:26px;font-weight:800;color:#fff;margin-bottom:6px;}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.6);line-height:1.75;max-width:580px;}
+.hero-pills{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px;}
+.hpill{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.18);}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;margin-bottom:16px;box-shadow:var(--sh);}
+.card-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);margin-bottom:14px;}
+
+.notice{border-radius:9px;padding:11px 14px;font-size:12px;line-height:1.65;margin-bottom:12px;display:flex;gap:9px;}
+.notice-amber{background:var(--amber-bg);border:1px solid var(--amber-border);color:#92400e;}
+.notice-blue{background:var(--blue-bg);border:1px solid var(--blue-border);color:#1e40af;}
+.notice strong{font-weight:700;}
+
+.url-input{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:12px;color:var(--text);outline:none;transition:border-color .2s;margin-bottom:12px;resize:vertical;}
+.url-input:focus{border-color:var(--accent);}
+.url-input::placeholder{color:var(--text4);}
+
+.opts{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+.opt-label{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:500;}
+.opt-label input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;}
+.sel{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:11.5px;color:var(--text);font-family:var(--sans);outline:none;cursor:pointer;margin-left:4px;}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border:none;border-radius:8px;font-family:var(--sans);font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn-red{background:var(--accent-dark);color:#fff;}
+.btn-red:hover{background:var(--accent);box-shadow:0 3px 14px rgba(190,18,60,.28);transform:translateY(-1px);}
+.btn-red:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-gray{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
+.btn-gray:hover{background:var(--border);color:var(--text);}
+.btn-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
+.btn-green:hover{background:#dcfce7;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.status-msg{font-size:11.5px;color:var(--text3);}
+
+#prog-card{display:none;}
+.prog-top{display:flex;justify-content:space-between;margin-bottom:8px;}
+.prog-label{font-size:13px;font-weight:600;color:var(--text);}
+.prog-pct{font-size:12px;font-family:var(--mono);font-weight:600;color:var(--accent-dark);}
+.prog-track{height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-bottom:16px;border:1px solid var(--border);}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent-dark),var(--accent));border-radius:4px;width:0%;transition:width .5s cubic-bezier(.4,0,.2,1);}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.kpi{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:13px 10px;text-align:center;}
+.kpi-val{font-size:24px;font-weight:800;font-family:var(--mono);line-height:1;}
+.kpi-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.09em;color:var(--text4);margin-top:5px;}
+
+/* Live feed — shows each link being checked */
+.live-feed{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:10.5px;color:var(--text3);line-height:1.9;max-height:140px;overflow-y:auto;margin-top:4px;}
+.lf-ok{color:var(--green);}
+.lf-err{color:var(--accent);}
+.lf-info{color:var(--blue);}
+.lf-warn{color:var(--amber);}
+
+/* Results */
+.results-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+.results-title{font-size:14px;font-weight:800;color:var(--accent-dark);}
+.results-sub{font-size:11.5px;color:var(--text3);margin-top:3px;}
+.pills{display:flex;gap:6px;flex-wrap:wrap;}
+.pill{padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;font-family:var(--mono);}
+.pill-404{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;}
+.pill-5xx{background:var(--amber-bg);color:#b45309;border:1px solid var(--amber-border);}
+.pill-err{background:var(--surface2);color:var(--text3);border:1px solid var(--border2);}
+
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.filter-input{background:var(--surface2);border:1px solid var(--border2);border-radius:7px;padding:7px 12px;font-size:12px;color:var(--text);font-family:var(--sans);outline:none;width:260px;transition:border-color .2s;}
+.filter-input:focus{border-color:var(--accent);}
+.filter-input::placeholder{color:var(--text4);}
+.filter-sel{background:var(--surface2);border:1px solid var(--border2);border-radius:7px;padding:7px 10px;font-size:11.5px;color:var(--text);font-family:var(--sans);outline:none;}
+.res-count{font-size:11px;color:var(--text3);margin-left:auto;}
+
+.twrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;}
+thead{background:var(--surface2);}
+th{padding:10px 13px;text-align:left;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);white-space:nowrap;border-bottom:1px solid var(--border);}
+tbody tr{border-bottom:1px solid #f3f4f6;transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover td{background:#fafafa;}
+td{padding:11px 13px;font-size:12px;color:var(--text2);vertical-align:top;}
+
+.td-num{color:var(--text4);font-family:var(--mono);font-size:10px;width:34px;vertical-align:middle;}
+.link-cell{color:var(--blue);text-decoration:none;font-family:var(--mono);font-size:10.5px;display:block;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.link-cell:hover{text-decoration:underline;}
+.link-cell.broken{color:var(--accent);}
+
+/* ANCHOR TEXT — most important column */
+.anchor-text{font-size:12px;font-weight:600;color:var(--text);line-height:1.5;max-width:180px;word-break:break-word;}
+.anchor-text.empty{color:var(--text4);font-style:italic;font-weight:400;}
+
+/* Surrounding context */
+.ctx-text{font-size:11px;color:var(--text3);line-height:1.6;max-width:240px;word-break:break-word;}
+.ctx-text mark{background:#fef9c3;color:#713f12;border-radius:2px;padding:0 2px;font-weight:600;}
+
+.stag{display:inline-flex;align-items:center;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono);}
+.stag-404{background:#fee2e2;color:#dc2626;}
+.stag-410{background:#fce7f3;color:#9d174d;}
+.stag-5xx{background:var(--amber-bg);color:#b45309;}
+.stag-timeout{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;}
+.stag-err{background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe;}
+.atag{font-size:10px;color:var(--purple);font-weight:600;background:#f5f3ff;padding:3px 8px;border-radius:4px;border:1px solid #ddd6fe;white-space:nowrap;}
+
+.all-good{background:var(--green-bg);border:1px solid var(--green-border);border-radius:12px;padding:36px;text-align:center;}
+.all-good h3{font-size:15px;font-weight:800;color:var(--green);margin-bottom:4px;}
+.all-good p{font-size:12px;color:var(--text3);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.fade-in{animation:fadeUp .25s ease forwards;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="hero">
+    <div class="hero-eyebrow">SEO Audit Tool</div>
+    <div class="hero-title">🔗 Broken Link Checker</div>
+    <div class="hero-sub">Paste your blog page URLs — the tool uses Claude AI to read the real page HTML, extracts every link with its anchor text and surrounding sentence, then checks each URL's live HTTP status. You see exactly which text has a broken link so you can fix it instantly.</div>
+    <div class="hero-pills">
+      <span class="hpill">✓ Real HTTP Check</span>
+      <span class="hpill">✓ Anchor Text</span>
+      <span class="hpill">✓ Surrounding Context</span>
+      <span class="hpill">↓ CSV Export</span>
+    </div>
+  </div>
+
+  <div class="notice notice-blue">
+    <span>ℹ️</span>
+    <div><strong>How it works:</strong> Step 1 — Claude reads the real HTML of your page and extracts every link with its anchor text + surrounding sentence. Step 2 — each link URL is checked live for HTTP status (404, 5xx, etc). This is the most accurate method possible — no guessing, no CORS proxies.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Blog Page URLs (one per line)</div>
+    <textarea class="url-input" id="url-list" rows="6"
+      placeholder="https://unstop.com/blog/from-zomato-founder-to-top-executives-see-how-much-they-earn&#10;https://unstop.com/blog/virat-kohli-education&#10;https://unstop.com/blog/format-specifiers-in-c&#10;&#10;Paste your blog URLs here, one per line"></textarea>
+    <div class="opts">
+      <label class="opt-label"><input type="checkbox" id="opt-ext" checked> Check external links</label>
+      <label class="opt-label"><input type="checkbox" id="opt-int" checked> Check internal links</label>
+      <span style="margin-left:auto;">
+        <label class="opt-label">Link check timeout <select class="sel" id="opt-timeout"><option value="8000">8s</option><option value="12000" selected>12s</option><option value="20000">20s</option></select></label>
+      </span>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-red" id="btn-start" onclick="startAudit()">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z"/></svg>
+        Start Audit
+      </button>
+      <button class="btn btn-gray" id="btn-stop" style="display:none" onclick="stopAudit()">
+        <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+        Stop
+      </button>
+      <button class="btn btn-green" id="btn-export" style="display:none" onclick="exportCsv()">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Export CSV
+      </button>
+      <span class="status-msg" id="status-msg"></span>
+    </div>
+  </div>
+
+  <div class="card" id="prog-card">
+    <div class="prog-top">
+      <span class="prog-label" id="prog-label">Starting...</span>
+      <span class="prog-pct" id="prog-pct">0%</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-val" id="kpi-pages" style="color:var(--blue)">0</div><div class="kpi-lbl">Pages Done</div></div>
+      <div class="kpi"><div class="kpi-val" id="kpi-links" style="color:var(--text2)">0</div><div class="kpi-lbl">Links Checked</div></div>
+      <div class="kpi"><div class="kpi-val" id="kpi-broken" style="color:var(--accent)">0</div><div class="kpi-lbl">Broken</div></div>
+      <div class="kpi"><div class="kpi-val" id="kpi-ok" style="color:var(--green)">0</div><div class="kpi-lbl">OK</div></div>
+    </div>
+    <div class="live-feed" id="live-feed"></div>
+  </div>
+
+  <div id="results-area"></div>
+</div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────
+var _running=false, _broken=[], _totalPages=0, _donePages=0, _totalLinks=0, _okLinks=0;
+
+// ─── HELPERS ─────────────────────────────────────────────────
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function setStatus(msg,col){var e=document.getElementById('status-msg');if(e){e.textContent=msg;e.style.color=col||'var(--text3)';}}
+function setLabel(t){var e=document.getElementById('prog-label');if(e)e.textContent=t;}
+function log(msg,cls){
+  var el=document.getElementById('live-feed');if(!el)return;
+  var d=document.createElement('div');if(cls)d.className=cls;d.textContent=msg;
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+  while(el.children.length>400)el.removeChild(el.firstChild);
+}
+function updateKpis(){
+  var pct=_totalPages>0?Math.round(_donePages/_totalPages*100):0;
+  var f=document.getElementById('prog-fill');if(f)f.style.width=pct+'%';
+  var p=document.getElementById('prog-pct');if(p)p.textContent=pct+'%';
+  document.getElementById('kpi-pages').textContent=_donePages;
+  document.getElementById('kpi-links').textContent=_totalLinks;
+  document.getElementById('kpi-broken').textContent=_broken.length;
+  document.getElementById('kpi-ok').textContent=_okLinks;
+}
+
+// ─── STEP 1: Use Claude API to read page HTML & extract links ─
+async function extractLinksFromPage(pageUrl){
+  log('📄 Fetching page via Claude: '+pageUrl.replace(/https?:\/\//,'').slice(0,70),'lf-info');
+
+  const systemPrompt = `You are a precise HTML parser. Your ONLY job is to extract hyperlinks from a webpage.
+You will be given a URL. Use web_search to fetch the page content.
+Then extract EVERY <a href="..."> element from the page HTML.
+Return ONLY raw JSON — no markdown, no explanation, no preamble, no code fences.`;
+
+  const userPrompt = `Fetch this exact page using web_search: ${pageUrl}
+
+After fetching, extract every single hyperlink from the page HTML.
+For each link found, provide:
+1. href — the full URL (resolve relative URLs using base domain)
+2. anchorText — the EXACT visible text inside the <a> tag (strip HTML tags, trim whitespace). If image-only link, use "(image link)".
+3. surroundingText — copy the exact sentence or phrase (15-25 words) of text that appears immediately around this link in the page content. This helps the editor find the link location. Highlight the anchor text position.
+
+Skip these link types: mailto:, tel:, javascript:, pure #anchor links with no path, tracking pixels.
+
+Return this exact JSON structure:
+{
+  "pageUrl": "${pageUrl}",
+  "links": [
+    {
+      "href": "https://full-url.com/path",
+      "anchorText": "exact visible link text",
+      "surroundingText": "the sentence or phrase around this link on the page"
+    }
+  ]
+}
+
+Extract ALL links — internal and external. Include nav links, footer links, in-article links, everything.`;
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:8000,
+      system: systemPrompt,
+      messages:[{role:'user',content:userPrompt}],
+      tools:[{type:'web_search_20250305',name:'web_search'}]
+    })
+  });
+
+  if(!resp.ok){
+    const err=await resp.json().catch(()=>({}));
+    throw new Error('Claude API error '+resp.status+': '+(err.error&&err.error.message||'unknown'));
+  }
+
+  const data = await resp.json();
+  const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+  if(!text) throw new Error('Claude returned no text');
+
+  // Parse JSON — strip markdown fences if present
+  let clean = text.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
+  // Extract the JSON object
+  const m = clean.match(/\{[\s\S]*\}/);
+  if(!m) throw new Error('No JSON found in Claude response');
+  return JSON.parse(m[0]);
+}
+
+// ─── STEP 2: Check each URL's live HTTP status ────────────────
+function fetchWithTimeout(url, ms){
+  var ctrl = new AbortController();
+  var timer = setTimeout(()=>ctrl.abort(), ms);
+  return fetch(url, {signal:ctrl.signal, mode:'no-cors'})
+    .then(r=>{clearTimeout(timer);return r;})
+    .catch(e=>{clearTimeout(timer);throw e;});
+}
+
+async function checkLinkStatus(href, timeoutMs){
+  // no-cors means we get an opaque response — status=0 means reachable
+  // For actual 404 detection we need a different approach
+  // We use the Claude API proxy trick: fetch via allorigins to get real status
+  try{
+    var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(href);
+    var ctrl = new AbortController();
+    var timer = setTimeout(()=>ctrl.abort(), timeoutMs);
+    var resp = await fetch(proxyUrl, {signal:ctrl.signal});
+    clearTimeout(timer);
+    if(!resp.ok) return {status: resp.status, ok:false};
+    var json = await resp.json();
+    var code = json.status && json.status.http_code ? json.status.http_code : 200;
+    return {status:code, ok: code>=200 && code<400};
+  } catch(e){
+    if(e.name==='AbortError') return {status:'Timeout', ok:false};
+    return {status:'Error', ok:false, err:e.message};
+  }
+}
+
+// ─── SKIP LIST ────────────────────────────────────────────────
+var SKIP_PATTERNS = ['google-analytics','googletagmanager','facebook.com/tr','doubleclick',
+  'gstatic.com','fonts.googleapis','analytics.','pixel.','beacon.','twitter.com/intent',
+  'linkedin.com/share','facebook.com/share','whatsapp://','mailto:','tel:','javascript:'];
+
+function shouldSkip(href){
+  if(!href||!href.startsWith('http')) return true;
+  return SKIP_PATTERNS.some(p=>href.includes(p));
+}
+
+// ─── AUDIT ONE PAGE ───────────────────────────────────────────
+async function auditOnePage(pageUrl, checkExt, checkInt, timeoutMs){
+  var domain;
+  try{domain = new URL(pageUrl).hostname;}catch(e){domain='';}
+
+  // Step 1: Extract links via Claude
+  var extracted;
+  try{
+    extracted = await extractLinksFromPage(pageUrl);
+  }catch(e){
+    log('✗ Failed to extract links: '+e.message,'lf-err');
+    return;
+  }
+
+  var links = extracted.links || [];
+  log('  Found '+links.length+' links on page','lf-info');
+
+  // Filter by internal/external preference
+  var toCheck = links.filter(function(l){
+    if(shouldSkip(l.href)) return false;
+    try{
+      var isInt = new URL(l.href).hostname === domain;
+      if(isInt && !checkInt) return false;
+      if(!isInt && !checkExt) return false;
+    }catch(e){return false;}
+    return true;
+  });
+
+  log('  Checking '+toCheck.length+' links (after filtering)','');
+
+  // Step 2: Check each link's HTTP status
+  for(var i=0; i<toCheck.length; i++){
+    if(!_running) break;
+    var link = toCheck[i];
+    var shortUrl = link.href.replace(/https?:\/\//,'').slice(0,55);
+    log('  → '+shortUrl+'…','');
+
+    var result = await checkLinkStatus(link.href, timeoutMs);
+    _totalLinks++;
+
+    if(!result.ok){
+      _broken.push({
+        sourcePage: pageUrl,
+        url: link.href,
+        anchorText: link.anchorText || '(no text)',
+        surroundingText: link.surroundingText || '',
+        status: String(result.status),
+        action: actionFor(String(result.status))
+      });
+      log('  ✗ BROKEN ['+result.status+'] — '+link.anchorText.slice(0,40)+' → '+shortUrl,'lf-err');
+    } else {
+      _okLinks++;
+      log('  ✓ OK ['+result.status+'] '+shortUrl,'lf-ok');
+    }
+    updateKpis();
+  }
+}
+
+function actionFor(s){
+  if(s==='404') return 'Replace or Remove Link';
+  if(s==='410') return 'Remove Link (Gone)';
+  if(s[0]==='5') return 'Retry — Server Error';
+  if(s==='Timeout') return 'Verify Manually (Timeout)';
+  return 'Verify Manually';
+}
+
+// ─── RENDER ───────────────────────────────────────────────────
+function renderResults(){
+  var el=document.getElementById('results-area');if(!el)return;
+
+  if(!_broken.length){
+    if(_donePages===0) return;
+    el.innerHTML='<div class="all-good fade-in"><div style="font-size:36px;margin-bottom:10px">✅</div><h3>No broken links found!</h3><p>'+_donePages+' page'+(+_donePages!==1?'s':'')+' · '+_totalLinks+' links checked — everything is healthy.</p></div>';
+    return;
+  }
+
+  var sc={};
+  _broken.forEach(b=>{sc[b.status]=(sc[b.status]||0)+1;});
+  var pills=Object.keys(sc).sort().map(s=>{
+    var c=s==='404'||s==='410'?'pill-404':s[0]==='5'?'pill-5xx':'pill-err';
+    return '<span class="pill '+c+'">'+s+': '+sc[s]+'</span>';
+  }).join('');
+
+  var byPage={};
+  _broken.forEach(b=>{if(!byPage[b.sourcePage])byPage[b.sourcePage]=[];byPage[b.sourcePage].push(b);});
+
+  function tagCls(s){if(s==='404')return'stag-404';if(s==='410')return'stag-410';if(s[0]==='5')return'stag-5xx';if(s==='Timeout')return'stag-timeout';return'stag-err';}
+
+  var rows='',idx=0;
+  Object.keys(byPage).forEach(function(page){
+    byPage[page].forEach(function(b){
+      idx++;
+      var pp=page.replace(/https?:\/\/[^/]+/,'');if(pp.length>44)pp=pp.slice(0,44)+'…';
+      var bu=b.url.length>50?b.url.slice(0,50)+'…':b.url;
+      // Highlight anchor text inside surrounding text
+      var ctx=esc(b.surroundingText);
+      if(b.anchorText&&b.anchorText!=='(no text)'){
+        var kat=esc(b.anchorText);
+        ctx=ctx.replace(kat,'<mark>'+kat+'</mark>');
+      }
+      var isEmpty=!b.anchorText||b.anchorText==='(no text)';
+      rows+='<tr>'
+        +'<td class="td-num">'+idx+'</td>'
+        +'<td><a class="link-cell" href="'+esc(page)+'" target="_blank" title="'+esc(page)+'">'+esc(pp)+'</a></td>'
+        +'<td><a class="link-cell broken" href="'+esc(b.url)+'" target="_blank" title="'+esc(b.url)+'">'+esc(bu)+'</a></td>'
+        +'<td><div class="anchor-text'+(isEmpty?' empty':'')+'">'+esc(b.anchorText)+'</div></td>'
+        +'<td><div class="ctx-text">'+ctx+'</div></td>'
+        +'<td><span class="stag '+tagCls(b.status)+'">'+esc(b.status)+'</span></td>'
+        +'<td><span class="atag">'+esc(b.action)+'</span></td>'
+        +'</tr>';
+    });
+  });
+
+  el.innerHTML='<div class="card fade-in">'
+    +'<div class="results-header">'
+    +'<div><div class="results-title">⚠ '+_broken.length+' Broken Link'+(_broken.length!==1?'s':'')+' across '+Object.keys(byPage).length+' Page'+(Object.keys(byPage).length!==1?'s':'')+'</div>'
+    +'<div class="results-sub">'+_donePages+' pages audited · '+_totalLinks+' links checked</div></div>'
+    +'<div class="pills">'+pills+'</div>'
+    +'</div>'
+    +'<div class="filter-bar">'
+    +'<input class="filter-input" id="fq" placeholder="Filter by URL, anchor text, context…" oninput="doFilter()">'
+    +'<select class="filter-sel" id="fs" onchange="doFilter()"><option value="">All statuses</option>'
+    +Object.keys(sc).sort().map(s=>'<option>'+s+'</option>').join('')
+    +'</select><span class="res-count" id="res-count">'+_broken.length+' issues</span>'
+    +'</div>'
+    +'<div class="twrap"><table><thead><tr>'
+    +'<th>#</th><th>Source Page</th><th>Broken URL</th>'
+    +'<th>Anchor Text <span style="font-weight:400;opacity:.6;">(find this on page)</span></th>'
+    +'<th>Surrounding Text <span style="font-weight:400;opacity:.6;">(page context)</span></th>'
+    +'<th>Status</th><th>Action</th>'
+    +'</tr></thead><tbody id="res-tbody">'+rows+'</tbody></table></div></div>';
+}
+
+function doFilter(){
+  var q=(document.getElementById('fq')||{}).value||'';q=q.toLowerCase();
+  var s=(document.getElementById('fs')||{}).value||'';
+  var rows=document.querySelectorAll('#res-tbody tr'),n=0;
+  rows.forEach(r=>{
+    var v=(!q||r.textContent.toLowerCase().includes(q))&&(!s||r.textContent.includes(s));
+    r.style.display=v?'':'none';if(v)n++;
+  });
+  var rc=document.getElementById('res-count');if(rc)rc.textContent=n+' issues';
+}
+
+// ─── EXPORT ───────────────────────────────────────────────────
+function exportCsv(){
+  if(!_broken.length)return;
+  var rows=[['#','Source Page','Broken URL','Anchor Text','Surrounding Text','HTTP Status','Action']];
+  _broken.forEach((b,i)=>rows.push([i+1,b.sourcePage,b.url,b.anchorText,b.surroundingText,b.status,b.action]));
+  var csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='broken_links_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+// ─── STOP ─────────────────────────────────────────────────────
+function stopAudit(){
+  _running=false;
+  document.getElementById('btn-stop').style.display='none';
+  document.getElementById('btn-start').style.display='inline-flex';
+  document.getElementById('btn-start').disabled=false;
+  if(_broken.length)document.getElementById('btn-export').style.display='inline-flex';
+  setLabel('Stopped — '+_donePages+'/'+_totalPages+' pages done');
+  setStatus('Audit stopped','var(--text3)');
+  renderResults();
+}
+
+// ─── START ────────────────────────────────────────────────────
+async function startAudit(){
+  if(_running)return;
+  var raw=(document.getElementById('url-list').value||'').trim();
+  var urls=raw.split('\n').map(u=>u.trim()).filter(u=>u.startsWith('http'));
+  if(!urls.length){setStatus('⚠ Paste at least one https:// URL','var(--accent)');return;}
+
+  var checkExt=document.getElementById('opt-ext').checked;
+  var checkInt=document.getElementById('opt-int').checked;
+  var timeoutMs=parseInt(document.getElementById('opt-timeout').value)||12000;
+
+  _running=true;_broken=[];_totalPages=urls.length;_donePages=0;_totalLinks=0;_okLinks=0;
+
+  document.getElementById('btn-start').style.display='none';
+  document.getElementById('btn-stop').style.display='inline-flex';
+  document.getElementById('btn-export').style.display='none';
+  document.getElementById('prog-card').style.display='block';
+  document.getElementById('live-feed').innerHTML='';
+  document.getElementById('results-area').innerHTML='';
+  updateKpis();
+
+  setStatus('Auditing '+urls.length+' page'+(urls.length!==1?'s':'')+'…','var(--amber)');
+
+  for(var i=0;i<urls.length;i++){
+    if(!_running)break;
+    var url=urls[i];
+    setLabel('Page '+(i+1)+'/'+urls.length+': '+url.replace(/https?:\/\//,'').slice(0,55)+'…');
+    await auditOnePage(url, checkExt, checkInt, timeoutMs);
+    _donePages++;
+    updateKpis();
+    renderResults();
+  }
+
+  _running=false;
+  document.getElementById('btn-stop').style.display='none';
+  document.getElementById('btn-start').style.display='inline-flex';
+  document.getElementById('btn-start').disabled=false;
+  if(_broken.length)document.getElementById('btn-export').style.display='inline-flex';
+  setLabel('✅ Done — '+_donePages+' page'+(+_donePages!==1?'s':'')+' audited');
+  setStatus(''+_broken.length+' broken link'+(_broken.length!==1?'s':'')+' found',_broken.length>0?'var(--accent)':'var(--green)');
+  renderResults();
+}
+</script>
+</body>
+</html>
