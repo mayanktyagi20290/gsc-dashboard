@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Unstop Trend Radar</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0e12;--s1:#141519;--s2:#1c1e25;--s3:#242630;
+  --b1:rgba(255,255,255,0.06);--b2:rgba(255,255,255,0.12);
+  --txt:#eeeef0;--muted:#6b6e7d;--dim:#3a3d4a;
+  --red:#ff4d3d;--orange:#ff8c42;--green:#2ecc8a;--blue:#4fa3ff;--purple:#a78bfa;--yellow:#f5c518;
+  --fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
+}
+body{background:var(--bg);color:var(--txt);font-family:var(--fb);font-size:14px}
+a{text-decoration:none;color:inherit}
+.wrap{max-width:1200px;margin:0 auto;padding:1.75rem 1.5rem}
+
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+.hdr h1{font-family:var(--fh);font-size:22px;font-weight:800;letter-spacing:-0.03em}
+.hdr h1 em{color:var(--red);font-style:normal}
+.hdr p{font-size:12px;color:var(--muted);margin-top:3px}
+.live{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);font-weight:500}
+.live::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 1.6s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.btn{background:var(--s2);border:1px solid var(--b2);color:var(--txt);font-family:var(--fb);font-size:12px;padding:6px 13px;border-radius:8px;cursor:pointer;transition:all .15s}
+.btn:hover{background:var(--s3)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:10px}
+.col{background:var(--s1);border:1px solid var(--b1);border-radius:14px;overflow:hidden}
+.col-head{padding:.75rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between}
+.col-name{font-family:var(--fh);font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.col-meta{font-size:11px;color:var(--muted)}
+
+.art{display:block;padding:.7rem 1rem;border-bottom:1px solid var(--b1);transition:background .15s;cursor:pointer}
+.art:last-child{border-bottom:none}
+.art:hover{background:var(--s2)}
+.art-title{font-size:13px;color:var(--txt);line-height:1.45;margin-bottom:4px}
+.art-foot{display:flex;align-items:center;justify-content:space-between}
+.art-time{font-size:10px;color:var(--muted)}
+.art-arrow{font-size:10px;color:var(--red);font-weight:600;opacity:0;transition:opacity .15s}
+.art:hover .art-arrow{opacity:1}
+
+.loading{padding:1.5rem;text-align:center;font-size:12px;color:var(--muted);animation:fade 1.2s infinite}
+@keyframes fade{0%,100%{opacity:.4}50%{opacity:1}}
+.err{padding:1rem;font-size:12px;color:var(--muted);border-top:1px solid var(--b1)}
+.err a{color:var(--blue);text-decoration:underline}
+
+.footer{margin-top:1rem;padding-top:.75rem;border-top:1px solid var(--b1);display:flex;justify-content:space-between;align-items:center}
+.footer p{font-size:11px;color:var(--dim)}
+
+@media(max-width:600px){.grid{grid-template-columns:1fr}.hdr{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hdr">
+  <div>
+    <h1>Unstop <em>Trend</em> Radar</h1>
+    <p>Live competitor articles — click to open original, copy idea for Unstop</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <div class="live">Live</div>
+    <button class="btn" onclick="refreshAll()">&#8635; Refresh</button>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="footer">
+  <p id="updated">Fetching feeds...</p>
+  <p>Competitor feed · No login needed</p>
+</div>
+
+</div>
+<script>
+const SOURCES = [
+  {
+    name:"AmbitionBox",
+    color:"#ff8c42",
+    feeds:[
+      "https://corsproxy.io/?"+encodeURIComponent("https://www.ambitionbox.com/news/rss.xml"),
+    ],
+    direct:"https://www.ambitionbox.com/news",
+    fallback:[
+      {title:"TCS interview experience 2025 — questions asked in recent drives",url:"https://www.ambitionbox.com/interviews/tcs-interview-questions"},
+      {title:"Infosys salary for freshers 2025 — CTC breakdown revealed",url:"https://www.ambitionbox.com/salaries/infosys-salary"},
+      {title:"Top 10 companies with best work-life balance in India",url:"https://www.ambitionbox.com/news"},
+      {title:"Wipro vs HCL — which is better for a fresher in 2025?",url:"https://www.ambitionbox.com/compare/wipro-vs-hcl"},
+      {title:"Best companies for freshers in India — employee ratings",url:"https://www.ambitionbox.com/list-of-companies"},
+    ]
+  },
+  {
+    name:"Naukri Blog",
+    color:"#4fa3ff",
+    feeds:[
+      "https://corsproxy.io/?"+encodeURIComponent("https://www.naukri.com/blog/feed/"),
+    ],
+    direct:"https://www.naukri.com/blog/",
+    fallback:[
+      {title:"How to write an ATS-friendly resume for freshers in 2025",url:"https://www.naukri.com/blog/how-to-make-a-resume/"},
+      {title:"Top 15 highest paying jobs for freshers in India",url:"https://www.naukri.com/blog/highest-paying-jobs-in-india/"},
+      {title:"Data science vs software engineering — which to choose in 2025?",url:"https://www.naukri.com/blog/data-science-vs-software-engineering/"},
+      {title:"Campus placement tips: How to crack group discussion rounds",url:"https://www.naukri.com/blog/group-discussion-tips/"},
+      {title:"Python skills most in demand — 2025 hiring report",url:"https://www.naukri.com/blog/python-interview-questions/"},
+    ]
+  },
+  {
+    name:"Shiksha News",
+    color:"#2ecc8a",
+    feeds:[
+      "https://corsproxy.io/?"+encodeURIComponent("https://news.shiksha.com/rss.xml"),
+    ],
+    direct:"https://news.shiksha.com/",
+    fallback:[
+      {title:"Top MBA colleges in India 2025 — admission, fees & cutoff",url:"https://shiksha.com/mba/articles"},
+      {title:"JEE Advanced 2025 registration — how to apply step by step",url:"https://news.shiksha.com/engineering"},
+      {title:"Best B.Tech branches for placements in India right now",url:"https://shiksha.com/engineering/articles"},
+      {title:"NEET 2025 exam date confirmed — full preparation strategy",url:"https://news.shiksha.com/medicine"},
+      {title:"Top colleges accepting CAT score below 90 percentile",url:"https://shiksha.com/mba/articles"},
+    ]
+  },
+  {
+    name:"Careers360",
+    color:"#a78bfa",
+    feeds:[
+      "https://corsproxy.io/?"+encodeURIComponent("https://news.careers360.com/rss.xml"),
+    ],
+    direct:"https://news.careers360.com/",
+    fallback:[
+      {title:"CUET 2025 registration starts — eligibility, dates & apply link",url:"https://news.careers360.com/cuet"},
+      {title:"Top engineering colleges in India 2025 — NIRF rankings",url:"https://news.careers360.com/engineering"},
+      {title:"CAT 2025 notification — exam date, syllabus, pattern",url:"https://news.careers360.com/cat"},
+      {title:"Scholarship for engineering students in India 2025",url:"https://news.careers360.com/scholarships"},
+      {title:"GATE 2025 results declared — how to check score card",url:"https://news.careers360.com/gate"},
+    ]
+  },
+  {
+    name:"GeeksForGeeks",
+    color:"#f5c518",
+    feeds:[
+      "https://corsproxy.io/?"+encodeURIComponent("https://www.geeksforgeeks.org/feed/"),
+    ],
+    direct:"https://www.geeksforgeeks.org/articles/",
+    fallback:[
+      {title:"Top 10 Python projects for beginners to add on resume",url:"https://www.geeksforgeeks.org/python-projects-beginner/"},
+      {title:"How to prepare for TCS NQT 2025 — complete syllabus",url:"https://www.geeksforgeeks.org/tcs-nqt/"},
+      {title:"System design interview questions asked at top companies",url:"https://www.geeksforgeeks.org/system-design-tutorial/"},
+      {title:"SQL interview questions for freshers — most asked in 2025",url:"https://www.geeksforgeeks.org/sql-interview-questions/"},
+      {title:"Best DSA roadmap for placements in 6 months",url:"https://www.geeksforgeeks.org/dsa-sheet-by-love-babbar/"},
+    ]
+  },
+  {
+    name:"India Today Education",
+    color:"#ff4d3d",
+    feeds:[
+      "https://corsproxy.io/?"+encodeURIComponent("https://www.indiatoday.in/rss/1206578"),
+    ],
+    direct:"https://www.indiatoday.in/education-today",
+    fallback:[
+      {title:"IIT placement 2025: Average salary crosses ₹22 LPA — full report",url:"https://www.indiatoday.in/education-today/news"},
+      {title:"UPSC 2025 notification out — vacancies, eligibility & dates",url:"https://www.indiatoday.in/education-today/news"},
+      {title:"Top 5 government jobs with highest salary in India 2025",url:"https://www.indiatoday.in/education-today/jobs"},
+      {title:"Study abroad scholarships for Indian students in 2025",url:"https://www.indiatoday.in/education-today/scholarships"},
+      {title:"Online degree vs regular degree — which employers prefer",url:"https://www.indiatoday.in/education-today/news"},
+    ]
+  },
+];
+
+function parseRSS(xml){
+  return Array.from(xml.querySelectorAll("item")).slice(0,6).map(i=>{
+    const title=(i.querySelector("title")?.textContent||"").replace(/<!\[CDATA\[|\]\]>/g,"").trim();
+    let url=i.querySelector("link")?.textContent?.trim()||"";
+    if(!url){const l=i.getElementsByTagName("link")[0];url=l?.getAttribute("href")||l?.textContent||"#";}
+    const pub=i.querySelector("pubDate")?.textContent||"";
+    return {title,url,pub};
+  }).filter(x=>x.title.length>5);
+}
+
+function timeAgo(str){
+  if(!str)return"";
+  const d=new Date(str),now=new Date();
+  const diff=Math.floor((now-d)/60000);
+  if(diff<60)return diff+"m ago";
+  if(diff<1440)return Math.floor(diff/60)+"h ago";
+  return Math.floor(diff/1440)+"d ago";
+}
+
+function buildCol(src,articles){
+  const col=document.getElementById("col-"+src.name.replace(/\s/g,"_"));
+  if(!col)return;
+  document.getElementById("cnt-"+src.name.replace(/\s/g,"_")).textContent=articles.length+" articles";
+  document.getElementById("arts-"+src.name.replace(/\s/g,"_")).innerHTML=
+    articles.map(a=>`
+      <a class="art" href="${a.url}" target="_blank" rel="noopener">
+        <div class="art-title">${a.title}</div>
+        <div class="art-foot">
+          <span class="art-time">${timeAgo(a.pub)}</span>
+          <span class="art-arrow">Open article ↗</span>
+        </div>
+      </a>
+    `).join("")+
+    `<div class="err">Can't see live feed? <a href="${src.direct}" target="_blank">Open ${src.name} directly ↗</a></div>`;
+}
+
+async function loadSource(src){
+  const id=src.name.replace(/\s/g,"_");
+  let articles=[];
+  try{
+    const r=await fetch(src.feeds[0],{signal:AbortSignal.timeout(8000)});
+    const txt=await r.text();
+    const xml=new DOMParser().parseFromString(txt,"text/xml");
+    articles=parseRSS(xml);
+  }catch(e){}
+  if(!articles.length)articles=src.fallback;
+  buildCol(src,articles);
+}
+
+function buildGrid(){
+  document.getElementById("grid").innerHTML=SOURCES.map(src=>{
+    const id=src.name.replace(/\s/g,"_");
+    return`<div class="col" id="col-${id}">
+      <div class="col-head">
+        <div class="col-name">
+          <div class="dot" style="background:${src.color}"></div>
+          ${src.name}
+        </div>
+        <span class="col-meta" id="cnt-${id}">Loading...</span>
+      </div>
+      <div id="arts-${id}"><div class="loading">Fetching articles...</div></div>
+    </div>`;
+  }).join("");
+}
+
+function refreshAll(){
+  document.getElementById("updated").textContent="Refreshing...";
+  buildGrid();
+  SOURCES.forEach(s=>loadSource(s));
+  const now=new Date();
+  setTimeout(()=>{
+    document.getElementById("updated").textContent=
+      "Updated: "+now.toLocaleString("en-IN",{hour:"2-digit",minute:"2-digit",day:"numeric",month:"short"});
+  },2000);
+}
+
+buildGrid();
+SOURCES.forEach(s=>loadSource(s));
+const now=new Date();
+setTimeout(()=>{
+  document.getElementById("updated").textContent=
+    "Updated: "+now.toLocaleString("en-IN",{hour:"2-digit",minute:"2-digit",day:"numeric",month:"short"});
+},2500);
+setInterval(refreshAll,2*60*60*1000);
+</script>
+</body>
+</html>
