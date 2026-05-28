@@ -143,7 +143,30 @@ td:first-child,th:first-child{padding-left:13px}
 .action-item{font-size:12px;color:var(--t2);padding:3px 0;display:flex;gap:6px;align-items:flex-start;line-height:1.5}
 .action-item::before{content:'→';color:var(--pu);font-weight:700;flex-shrink:0}
 
-@media(max-width:768px){.two{grid-template-columns:1fr}.week-row{grid-template-columns:1fr}.steps{grid-template-columns:1fr}}
+/* SLOT CARDS */
+.slot-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:12px;transition:border .15s}
+.slot-card.filled{border-color:var(--te);background:var(--tel)}
+.slot-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.slot-num{width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.gsc-num{background:var(--pul);color:var(--pud)}
+.ga-num{background:var(--tel);color:var(--ted)}
+.slot-title{font-size:12px;font-weight:700;color:var(--t);margin-bottom:2px;display:flex;align-items:center;gap:6px}
+.slot-desc{font-size:10px;color:var(--t3);line-height:1.5}
+.slot-badge{font-size:9px;font-weight:700;padding:1px 6px;border-radius:100px;text-transform:uppercase;letter-spacing:.04em}
+.gsc-badge{background:var(--pul);color:var(--pud)}
+.ga-badge{background:var(--tel);color:var(--ted)}
+.slot-drop{display:flex;flex-direction:column;align-items:center;justify-content:center;border:1.5px dashed var(--b);border-radius:var(--rs);padding:12px 8px;cursor:pointer;transition:all .12s;min-height:68px;text-align:center;gap:3px}
+.slot-drop input{display:none}
+.slot-drop:hover{border-color:var(--pu);background:var(--pul)}
+.slot-drop.drag{border-color:var(--pu);background:var(--pul)}
+.slot-drop.done{border-color:var(--te);background:var(--tel);border-style:solid}
+.slot-icon{font-size:18px;line-height:1}
+.slot-cta{font-size:11px;font-weight:600;color:var(--t2)}
+.slot-fname{font-size:10px;color:var(--t3);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot-drop.done .slot-cta{color:var(--te)}
+.slot-drop.done .slot-fname{color:var(--ted);font-weight:600}
+
+@media(max-width:768px){.two{grid-template-columns:1fr}.week-row{grid-template-columns:1fr}}
 @media print{.nav,.tabs,.gen-btn,.nbtn{display:none!important}.page{display:block!important;padding:0;page-break-inside:avoid}.page.on{display:block}}
 </style>
 </head>
@@ -170,17 +193,10 @@ td:first-child,th:first-child{padding-left:13px}
 </div>
 
 <!-- INPUT PAGE -->
-<div id="input-page" class="page on" style="max-width:720px;margin:0 auto;padding:24px 18px">
+<div id="input-page" class="page on" style="max-width:780px;margin:0 auto;padding:24px 18px">
   <div class="upload-hero">
     <h1>Unstop SEO Report Generator</h1>
-    <p>Upload 6 files — GSC xlsx + 5 GA4 CSVs — and the full report with boss summary will be ready instantly.</p>
-  </div>
-
-  <div class="steps">
-    <div class="step"><div class="step-num">1</div><h3>GSC Export (xlsx)</h3><p>GSC → Performance → Compare 2 weeks → Export as Excel. 1 file.</p></div>
-    <div class="step"><div class="step-num">2</div><h3>GA4 CSVs (5 files)</h3><p>Int Skills, Int Locations, Job Skills, Job Locations, AI Traffic — each as CSV from GA4.</p></div>
-    <div class="step"><div class="step-num">3</div><h3>Week Labels</h3><p>Enter current and previous week date labels (e.g. 18 May–24 May).</p></div>
-    <div class="step"><div class="step-num">4</div><h3>Generate!</h3><p>Report + Boss Summary tab with all insights ready.</p></div>
+    <p>Upload each file in its named slot below — then hit Generate. No guessing, no confusion.</p>
   </div>
 
   <div class="week-row">
@@ -188,24 +204,131 @@ td:first-child,th:first-child{padding-left:13px}
     <div class="wi"><label>📅 Previous Week</label><input id="wk-p" placeholder="11 May – 17 May" value="11 May – 17 May"></div>
   </div>
 
-  <div class="file-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-    <input type="file" id="file-input" multiple accept=".xlsx,.csv" onchange="handleFiles(this.files)">
-    <div class="fz-icon">📂</div>
-    <div class="fz-title">Drop files here or click to browse</div>
-    <div class="fz-sub">GSC.xlsx + 5 GA4 CSVs (any order) · Max 6 files</div>
+  <!-- 6 NAMED FILE SLOTS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+
+    <div class="slot-card" id="slot-xlsx">
+      <div class="slot-header">
+        <span class="slot-num gsc-num">1</span>
+        <div>
+          <div class="slot-title">GSC Export <span class="slot-badge gsc-badge">XLSX</span></div>
+          <div class="slot-desc">GSC → Performance → Compare 2 weeks → Export Excel</div>
+        </div>
+      </div>
+      <label class="slot-drop" id="drop-xlsx" ondrop="slotDrop(event,'xlsx')" ondragover="slotOver(event)" ondragleave="slotLeave(event,'xlsx')">
+        <input type="file" accept=".xlsx" onchange="slotFile(this,'xlsx')">
+        <span class="slot-icon">📊</span>
+        <span class="slot-cta">Click or drop file here</span>
+        <span class="slot-fname" id="fname-xlsx">No file selected</span>
+      </label>
+    </div>
+
+    <div class="slot-card" id="slot-ai">
+      <div class="slot-header">
+        <span class="slot-num ga-num">2</span>
+        <div>
+          <div class="slot-title">AI Traffic <span class="slot-badge ga-badge">GA4 CSV</span></div>
+          <div class="slot-desc">GA4 → Acquisition → Traffic Acquisition → filter AI sources → compare → Export CSV</div>
+        </div>
+      </div>
+      <label class="slot-drop" id="drop-ai" ondrop="slotDrop(event,'ai')" ondragover="slotOver(event)" ondragleave="slotLeave(event,'ai')">
+        <input type="file" accept=".csv" onchange="slotFile(this,'ai')">
+        <span class="slot-icon">🤖</span>
+        <span class="slot-cta">Click or drop file here</span>
+        <span class="slot-fname" id="fname-ai">No file selected</span>
+      </label>
+    </div>
+
+    <div class="slot-card" id="slot-int_skills">
+      <div class="slot-header">
+        <span class="slot-num ga-num">3</span>
+        <div>
+          <div class="slot-title">Internship Skills <span class="slot-badge ga-badge">GA4 CSV</span></div>
+          <div class="slot-desc">GA4 → Landing page → filter /internship/ skill URLs → compare → Export CSV</div>
+        </div>
+      </div>
+      <label class="slot-drop" id="drop-int_skills" ondrop="slotDrop(event,'int_skills')" ondragover="slotOver(event)" ondragleave="slotLeave(event,'int_skills')">
+        <input type="file" accept=".csv" onchange="slotFile(this,'int_skills')">
+        <span class="slot-icon">💼</span>
+        <span class="slot-cta">Click or drop file here</span>
+        <span class="slot-fname" id="fname-int_skills">No file selected</span>
+      </label>
+    </div>
+
+    <div class="slot-card" id="slot-int_locs">
+      <div class="slot-header">
+        <span class="slot-num ga-num">4</span>
+        <div>
+          <div class="slot-title">Internship Locations <span class="slot-badge ga-badge">GA4 CSV</span></div>
+          <div class="slot-desc">GA4 → Landing page → filter /internship/internship-in- → compare → Export CSV</div>
+        </div>
+      </div>
+      <label class="slot-drop" id="drop-int_locs" ondrop="slotDrop(event,'int_locs')" ondragover="slotOver(event)" ondragleave="slotLeave(event,'int_locs')">
+        <input type="file" accept=".csv" onchange="slotFile(this,'int_locs')">
+        <span class="slot-icon">📍</span>
+        <span class="slot-cta">Click or drop file here</span>
+        <span class="slot-fname" id="fname-int_locs">No file selected</span>
+      </label>
+    </div>
+
+    <div class="slot-card" id="slot-job_skills">
+      <div class="slot-header">
+        <span class="slot-num ga-num">5</span>
+        <div>
+          <div class="slot-title">Job Skills <span class="slot-badge ga-badge">GA4 CSV</span></div>
+          <div class="slot-desc">GA4 → Landing page → filter /job/ skill URLs → compare → Export CSV</div>
+        </div>
+      </div>
+      <label class="slot-drop" id="drop-job_skills" ondrop="slotDrop(event,'job_skills')" ondragover="slotOver(event)" ondragleave="slotLeave(event,'job_skills')">
+        <input type="file" accept=".csv" onchange="slotFile(this,'job_skills')">
+        <span class="slot-icon">🏢</span>
+        <span class="slot-cta">Click or drop file here</span>
+        <span class="slot-fname" id="fname-job_skills">No file selected</span>
+      </label>
+    </div>
+
+    <div class="slot-card" id="slot-job_locs">
+      <div class="slot-header">
+        <span class="slot-num ga-num">6</span>
+        <div>
+          <div class="slot-title">Job Locations <span class="slot-badge ga-badge">GA4 CSV</span></div>
+          <div class="slot-desc">GA4 → Landing page → filter /job/jobs-in- → compare → Export CSV</div>
+        </div>
+      </div>
+      <label class="slot-drop" id="drop-job_locs" ondrop="slotDrop(event,'job_locs')" ondragover="slotOver(event)" ondragleave="slotLeave(event,'job_locs')">
+        <input type="file" accept=".csv" onchange="slotFile(this,'job_locs')">
+        <span class="slot-icon">📍</span>
+        <span class="slot-cta">Click or drop file here</span>
+        <span class="slot-fname" id="fname-job_locs">No file selected</span>
+      </label>
+    </div>
+
+    <div class="slot-card" id="slot-ai_pages" style="grid-column:1/-1">
+      <div class="slot-header">
+        <span class="slot-num ga-num">7</span>
+        <div>
+          <div class="slot-title">AI Traffic — Landing Pages <span class="slot-badge ga-badge">GA4 CSV</span> <span style="font-size:10px;color:var(--t3);font-weight:400">(optional but recommended)</span></div>
+          <div class="slot-desc">GA4 → Reports → Engagement → Landing page → filter Session source contains "chatgpt / gemini / perplexity / claude" → set date comparison → Export CSV &nbsp;·&nbsp; This shows <b>which pages AI tools are sending traffic to</b></div>
+        </div>
+      </div>
+      <label class="slot-drop" id="drop-ai_pages" ondrop="slotDrop(event,'ai_pages')" ondragover="slotOver(event)" ondragleave="slotLeave(event,'ai_pages')" style="min-height:52px;flex-direction:row;gap:10px;justify-content:flex-start;padding:10px 14px">
+        <input type="file" accept=".csv" onchange="slotFile(this,'ai_pages')">
+        <span class="slot-icon" style="font-size:16px">🔗</span>
+        <span class="slot-cta">Click or drop Landing Pages CSV here</span>
+        <span class="slot-fname" id="fname-ai_pages" style="margin-left:auto">No file selected</span>
+      </label>
+    </div>
+
   </div>
 
-  <div class="file-list" id="file-list"></div>
-  <div class="parse-log" id="parse-log">Waiting for files...</div>
-
+  <div class="parse-log" id="parse-log">Upload at least the GSC file to generate a report. GA4 CSVs are optional.</div>
   <button class="gen-btn" id="gen-btn" onclick="generate()" disabled>⚡ Generate Report</button>
 
-  <div style="margin-top:16px;padding:12px;background:var(--s);border-radius:var(--rs);border:1px solid var(--b)">
-    <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:6px">📋 How to export GA4 CSVs:</div>
-    <div style="font-size:11px;color:var(--t3);line-height:1.7">
-      <b>Int/Job Skills:</b> GA4 → Reports → Landing page → Filter by /internship/ or /job/ → Compare dates → Export CSV<br>
-      <b>Int/Job Locations:</b> Same but filter by /internship/internship-in- or /job/jobs-in-<br>
-      <b>AI Traffic:</b> GA4 → Reports → Traffic acquisition → Filter session source (chatgpt, gemini, etc.) → Compare → Export CSV
+  <div style="margin-top:14px;padding:12px;background:var(--s);border-radius:var(--rs);border:1px solid var(--b)">
+    <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:5px">💡 Tip — GA4 CSV export path:</div>
+    <div style="font-size:11px;color:var(--t3);line-height:1.8">
+      <b>Skills/Locations:</b> GA4 → Reports → Engagement → Landing page → set date comparison → filter URL contains → Share → Download CSV<br>
+      <b>AI Traffic:</b> GA4 → Reports → Acquisition → Traffic acquisition → filter Session source contains "chatgpt / gemini / perplexity" → compare → Download CSV
     </div>
   </div>
 </div>
@@ -288,115 +411,117 @@ function progTable(data, color, maxV=null){
 }
 
 // ════════════════════════════════════════
-// FILE HANDLING
+// NAMED SLOT FILE HANDLING
 // ════════════════════════════════════════
-let fileMap = {} // key -> {file, type, parsed}
-const FILE_TYPES = {
-  xlsx: 'gsc',
-  int_skills: 'ga4_int_skills',
-  int_locs: 'ga4_int_locs',
-  job_skills: 'ga4_job_skills',
-  job_locs: 'ga4_job_locs',
-  ai: 'ga4_ai'
+let fileMap = {} // slot key -> {data, name, isArray}
+
+const SLOTS = ['xlsx','ai','int_skills','int_locs','job_skills','job_locs','ai_pages']
+
+function slotOver(e){ e.preventDefault(); e.currentTarget.classList.add('drag') }
+function slotLeave(e, key){ document.getElementById('drop-'+key).classList.remove('drag') }
+
+function slotDrop(e, key){
+  e.preventDefault()
+  document.getElementById('drop-'+key).classList.remove('drag')
+  const file = e.dataTransfer.files[0]
+  if(file) readSlotFile(file, key)
 }
 
-function handleDragOver(e){ e.preventDefault(); document.getElementById('drop-zone').classList.add('drag') }
-function handleDragLeave(){ document.getElementById('drop-zone').classList.remove('drag') }
-function handleDrop(e){ e.preventDefault(); handleDragLeave(); handleFiles(e.dataTransfer.files) }
-
-function detectFileType(fname, content){
-  const f = fname.toLowerCase()
-  if(f.endsWith('.xlsx')) return 'xlsx'
-  if(!content) return 'unknown'
-  const lines = content.split('\n').slice(0,5).join(' ').toLowerCase()
-  if(lines.includes('ai traffic') || lines.includes('session source')) return 'ai'
-  if(lines.includes('internship') && lines.includes('location')) return 'int_locs'
-  if(lines.includes('internship') && lines.includes('skill')) return 'int_skills'
-  if(lines.includes('internship')) return 'int_skills'
-  if(lines.includes('job') && lines.includes('location')) return 'job_locs'
-  if(lines.includes('job') && lines.includes('skill')) return 'job_skills'
-  if(lines.includes('job')) return 'job_skills'
-  return 'unknown'
+function slotFile(input, key){
+  const file = input.files[0]
+  if(file) readSlotFile(file, key)
 }
 
-function handleFiles(files){
-  Array.from(files).forEach(file => {
-    const reader = new FileReader()
-    if(file.name.endsWith('.xlsx')){
-      reader.onload = e => {
-        fileMap['xlsx'] = { file, type: 'xlsx', data: e.target.result, name: file.name }
-        updateFileList()
-      }
-      reader.readAsArrayBuffer(file)
-    } else {
-      reader.onload = e => {
-        const content = e.target.result
-        const type = detectFileType(file.name, content)
-        fileMap[type] = { file, type, data: content, name: file.name }
-        updateFileList()
-      }
-      reader.readAsText(file)
+function readSlotFile(file, key){
+  const reader = new FileReader()
+  if(key === 'xlsx'){
+    reader.onload = e => {
+      fileMap[key] = { data: e.target.result, name: file.name }
+      markSlotFilled(key, file.name)
+      updateStatus()
     }
-  })
+    reader.readAsArrayBuffer(file)
+  } else {
+    reader.onload = e => {
+      fileMap[key] = { data: e.target.result, name: file.name }
+      markSlotFilled(key, file.name)
+      updateStatus()
+    }
+    reader.readAsText(file)
+  }
 }
 
-const typeLabels = {
-  xlsx: {label:'GSC Export', cls:'fi-gsc'},
-  int_skills: {label:'Int. Skills', cls:'fi-ga'},
-  int_locs: {label:'Int. Locations', cls:'fi-ga'},
-  job_skills: {label:'Job Skills', cls:'fi-ga'},
-  job_locs: {label:'Job Locations', cls:'fi-ga'},
-  ai: {label:'AI Traffic', cls:'fi-ga'},
-  unknown: {label:'Unknown', cls:'fi-uk'}
+function markSlotFilled(key, fname){
+  const drop = document.getElementById('drop-'+key)
+  const label = document.getElementById('fname-'+key)
+  if(drop) drop.classList.add('done')
+  if(label) label.textContent = '✓ ' + fname
+  document.getElementById('slot-'+key)?.classList.add('filled')
 }
 
-function updateFileList(){
-  const list = document.getElementById('file-list')
-  const entries = Object.entries(fileMap)
-  list.innerHTML = entries.map(([key, f]) => {
-    const tl = typeLabels[f.type] || typeLabels.unknown
-    return `<div class="file-item">
-      <span class="fi-icon">${f.type==='xlsx'?'📊':'📄'}</span>
-      <span class="fi-name">${f.name}</span>
-      <span class="fi-type ${tl.cls}">${tl.label}</span>
-      <span class="fi-rm" onclick="removeFile('${key}')">✕</span>
-    </div>`
-  }).join('')
-
+function updateStatus(){
   const log = document.getElementById('parse-log')
-  const count = entries.length
   const hasGSC = !!fileMap['xlsx']
-  const ga4Keys = ['int_skills','int_locs','job_skills','job_locs','ai']
+  const ga4Keys = ['ai','int_skills','int_locs','job_skills','job_locs']
   const ga4Count = ga4Keys.filter(k=>fileMap[k]).length
-  const unknowns = entries.filter(([k])=>k==='unknown').length
+  const total = (hasGSC?1:0) + ga4Count
 
-  if(count===0){ log.className='parse-log'; log.textContent='Waiting for files...'; document.getElementById('gen-btn').disabled=true; return }
-  if(unknowns>0) log.className='parse-log err', log.textContent=`⚠ ${unknowns} file(s) could not be detected. Try renaming the files or re-export from GA4.`
-  else if(count>=2){ log.className='parse-log ok'; log.textContent=`✓ ${count} files ready — GSC: ${hasGSC?'✓':'✗'} · GA4 CSVs: ${ga4Count}/5. ${ga4Count<5?'Remaining CSVs are optional.':'All files ready!'}` }
-
-  document.getElementById('gen-btn').disabled = count < 1
+  if(total === 0){
+    log.className='parse-log'; log.textContent='Upload at least the GSC file to generate a report. GA4 CSVs are optional.'
+    document.getElementById('gen-btn').disabled = true; return
+  }
+  if(!hasGSC){
+    log.className='parse-log err'; log.textContent='⚠ GSC xlsx file is required. Please upload it in Slot 1.'
+    document.getElementById('gen-btn').disabled = true; return
+  }
+  log.className='parse-log ok'
+  log.textContent = `✓ ${total} file${total>1?'s':''} ready — GSC ✓ · GA4 CSVs: ${ga4Count}/5. ${ga4Count<5?'Remaining GA4 CSVs are optional — those tabs will be skipped.':'All 6 files loaded!'}`
+  document.getElementById('gen-btn').disabled = false
 }
-
-function removeFile(key){ delete fileMap[key]; updateFileList() }
 
 // ════════════════════════════════════════
 // CSV PARSER
 // ════════════════════════════════════════
-function parseGA4CSV(content){
+function parseGA4CSV(content, slotKey){
   const rows = [], lines = content.split('\n')
   let ck=null, cv=null, pv=null
-  let dateC='', dateP=''
 
-  // detect date labels
+  // Get week labels from inputs for matching
+  const wkC = document.getElementById('wk-c').value.trim()
+  const wkP = document.getElementById('wk-p').value.trim()
+  // Extract first part before – for matching (e.g. "18 May" from "18 May – 24 May")
+  const cParts = wkC.split(/[–-]/).map(s=>s.trim())
+  const pParts = wkP.split(/[–-]/).map(s=>s.trim())
+  const cStart = cParts[0] || ''  // e.g. "18 May"
+  const pStart = pParts[0] || ''  // e.g. "11 May"
+  // Also detect 8-digit date codes in header
+  let dateC='', dateP=''
   for(const l of lines.slice(0,10)){
     const m = l.match(/(\d{8})/g)
     if(m && m.length>=2){ dateC=m[0]; dateP=m[1]; break }
   }
 
-  function isDateC(s){ return s.includes('May 18')||s.includes('May 19')||s.includes('May 20')||s.includes('May 21')||s.includes('May 22')||s.includes('May 23')||s.includes('May 24')||(dateC&&s.includes(dateC.slice(4,6)+'/'+dateC.slice(6))) }
-  function isDateP(s){ return s.includes('May 11')||s.includes('May 12')||s.includes('May 13')||s.includes('May 14')||s.includes('May 15')||s.includes('May 16')||s.includes('May 17')||(dateP&&s.includes(dateP.slice(4,6)+'/'+dateP.slice(6))) }
+  function matchesCurr(s){
+    if(!s) return false
+    if(cStart && s.includes(cStart)) return true
+    if(dateC){
+      // dateC like "20260518" → "05/18" or "2026-05-18"
+      const mo=dateC.slice(4,6), dy=dateC.slice(6,8)
+      if(s.includes(`${mo}/${dy}`) || s.includes(`${parseInt(mo)}/${parseInt(dy)}`)) return true
+    }
+    return false
+  }
+  function matchesPrev(s){
+    if(!s) return false
+    if(pStart && s.includes(pStart)) return true
+    if(dateP){
+      const mo=dateP.slice(4,6), dy=dateP.slice(6,8)
+      if(s.includes(`${mo}/${dy}`) || s.includes(`${parseInt(mo)}/${parseInt(dy)}`)) return true
+    }
+    return false
+  }
 
-  // CSV parse properly
+  // Proper CSV row parser (handles quoted commas)
   function parseRow(line){
     const res=[]; let inQ=false, cur='', i=0
     for(;i<line.length;i++){
@@ -407,14 +532,6 @@ function parseGA4CSV(content){
     }
     res.push(cur.trim()); return res
   }
-
-  const wkC = document.getElementById('wk-c').value.trim()
-  const wkP = document.getElementById('wk-p').value.trim()
-  const [mc1,mc2] = wkC.split('–').map(s=>s.trim())
-  const [mp1,mp2] = wkP.split('–').map(s=>s.trim())
-
-  function matchesCurr(s){ return mc1&&s.includes(mc1) || isDateC(s) }
-  function matchesPrev(s){ return mp1&&s.includes(mp1) || isDateP(s) }
 
   for(const line of lines){
     if(!line.trim()||line.startsWith('#')) continue
@@ -539,29 +656,39 @@ async function generate(){
       }
     }
 
-    // Parse GA4 CSVs
+    // Parse GA4 CSVs — each slot key maps directly
     btn.textContent='⏳ Reading GA4 CSVs...'
-    const ga4Keys = ['int_skills','int_locs','job_skills','job_locs','ai']
-    for(const key of ga4Keys){
-      if(!fileMap[key]) continue
-      const rows = parseGA4CSV(fileMap[key].data)
+    const ga4Map = {
+      int_skills: ['int_sk', 'int_sk_total'],
+      int_locs:   ['int_lo', 'int_lo_total'],
+      job_skills: ['job_sk', 'job_sk_total'],
+      job_locs:   ['job_lo', 'job_lo_total'],
+    }
+    for(const [slotKey, [dataKey, totalKey]] of Object.entries(ga4Map)){
+      if(!fileMap[slotKey]) continue
+      const rows = parseGA4CSV(fileMap[slotKey].data, slotKey)
       const total = rows.find(r=>r.k==='Grand Total')||{k:'T',c:0,p:0}
-      const data = rows.filter(r=>r.k!=='Grand Total')
-      if(key==='int_skills'){ D.int_sk=data; D.int_sk_total=total }
-      else if(key==='int_locs'){ D.int_lo=data; D.int_lo_total=total }
-      else if(key==='job_skills'){ D.job_sk=data; D.job_sk_total=total }
-      else if(key==='job_locs'){ D.job_lo=data; D.job_lo_total=total }
-      else if(key==='ai'){
-        // Merge AI sources
-        const merged={}
-        for(const r of data){
-          let base=r.k.includes('chatgpt')?'chatgpt.com':r.k.includes('gemini')?'gemini.google.com':r.k.includes('perplexity')?'perplexity.ai':r.k.includes('claude')?'claude.ai':r.k.split(' /')[0]
-          if(!merged[base]) merged[base]={k:base,c:0,p:0}
-          merged[base].c+=r.c; merged[base].p+=r.p
-        }
-        D.ai = Object.values(merged).sort((a,b)=>b.c-a.c)
-        D.ai_total = total
+      const data  = rows.filter(r=>r.k!=='Grand Total')
+      D[dataKey]  = data
+      D[totalKey] = total
+    }
+    // AI
+    if(fileMap['ai']){
+      const rows = parseGA4CSV(fileMap['ai'].data, 'ai')
+      const merged={}
+      for(const r of rows.filter(r=>r.k!=='Grand Total')){
+        let base = r.k.includes('chatgpt')?'chatgpt.com':r.k.includes('gemini')?'gemini.google.com':r.k.includes('perplexity')?'perplexity.ai':r.k.includes('claude')?'claude.ai':r.k.split(' /')[0]
+        if(!merged[base]) merged[base]={k:base,c:0,p:0}
+        merged[base].c+=r.c; merged[base].p+=r.p
       }
+      D.ai = Object.values(merged).sort((a,b)=>b.c-a.c)
+      D.ai_total = rows.find(r=>r.k==='Grand Total')||{k:'T',c:0,p:0}
+    }
+
+    // AI pages (landing pages receiving AI traffic)
+    if(fileMap['ai_pages']){
+      const rows = parseGA4CSV(fileMap['ai_pages'].data, 'ai_pages')
+      D.ai_pages = rows.filter(r=>r.k!=='Grand Total' && r.k.startsWith('/')).sort((a,b)=>b.c-a.c)
     }
 
     btn.textContent='⏳ Rendering report...'
@@ -597,6 +724,17 @@ function goHome(){
   document.getElementById('btn-home').style.display='none'
   document.getElementById('btn-pdf').style.display='none'
   Object.values(charts).forEach(c=>c.destroy()); charts={}; cIdx=0
+  // Reset slot UI
+  fileMap={}
+  SLOTS.forEach(key=>{
+    const drop=document.getElementById('drop-'+key)
+    const fname=document.getElementById('fname-'+key)
+    const card=document.getElementById('slot-'+key)
+    if(drop){drop.classList.remove('done','drag')}
+    if(fname){fname.textContent='No file selected'}
+    if(card){card.classList.remove('filled')}
+  })
+  updateStatus()
 }
 
 function ST(id,el){
@@ -716,8 +854,7 @@ function renderSummary(){
         claude?{dot: claudeD>=0?'g':'r', text:`<b>Claude.ai:</b> ${fmt(claude.c)} sessions ${claudeD!=null?fp(claudeD):''}. ${claudeD>100?'Explosive growth — Unstop recommendations increasing in Claude.':'Growing.'}`}:null,
       ].filter(Boolean),
       actions:[
-        'In GA4, check AI source → Landing page breakdown to see which pages receive AI traffic.',
-        'Add structured content, FAQs and clear definitions — this improves AI citation rates.',
+        'In GA4, check AI source → Landing page breakdown to see which pages receive AI traffic.',        'Add structured content, FAQs and clear definitions — this improves AI citation rates.',
         geminiD!=null&&geminiD>20?'Gemini is growing fast — optimise for Google Search Generative Experience.':null,
         claudeD!=null&&claudeD>100?'Claude.ai is sending significant traffic — identify which pages and create similar content.':null,
       ].filter(Boolean)
@@ -998,24 +1135,79 @@ function renderAI(){
   const ai=D.ai, total=D.ai_total||{c:0,p:0}
   const cid1='c'+(++cIdx), cid2='c'+(++cIdx)
 
+  // Landing pages section
+  let pagesHTML = ''
+  if(D.ai_pages?.length){
+    const maxP = Math.max(...D.ai_pages.map(r=>r.c),1)
+    pagesHTML = sh('🔗 Top Landing Pages Receiving AI Traffic') +
+    ins_(`<b>These pages are being linked or cited by AI tools (ChatGPT, Gemini, Perplexity, Claude).</b> Strengthen these pages with more structured content, FAQs and internal links to improve AI discoverability further.`,'b') +
+    `<div class="tw"><div class="th"><h3>${D.ai_pages.length} pages getting AI traffic</h3><span style="font-size:10px;color:var(--t3)">Sorted by sessions (current week)</span></div>
+    <table><thead><tr><th>#</th><th>Landing Page</th><th>AI Sessions</th><th>vs Prev</th><th>Share of AI</th><th>Bar</th></tr></thead><tbody>` +
+    D.ai_pages.slice(0,30).map((r,i)=>{
+      const d = pct(r.c,r.p)
+      const share = total.c ? Math.round(r.c/total.c*100) : 0
+      const name = r.k.replace('/blog/','blog: ').replace('/internship/','int: ').replace('/job/','job: ').replace('/hackathons/','hack: ').replace('/competitions/','comp: ')
+      return `<tr>
+        <td style="color:var(--t3)">${i+1}</td>
+        <td style="font-size:11px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.k}">${name}</td>
+        <td><b>${fmt(r.c)}</b></td>
+        <td>${bdg_(d)}</td>
+        <td><span class="bdg bdg-n">${share}%</span></td>
+        <td><div class="pb" style="width:80px"><div class="pf" style="width:${Math.round(r.c/maxP*100)}%;background:var(--pu)"></div></div></td>
+      </tr>`
+    }).join('') +
+    `</tbody></table></div>`
+  } else {
+    pagesHTML = sh('🔗 Landing Pages — AI Traffic') +
+    `<div class="ins a" style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px">📂</span>
+      <div><b>Upload Slot 7 (AI Landing Pages CSV) to see which pages AI tools are sending traffic to.</b><br>
+      <span style="font-size:12px;color:var(--t2)">GA4 → Engagement → Landing page → filter Session source contains "chatgpt" → date compare → Export CSV</span></div>
+    </div>`
+  }
+
   document.getElementById('tab-ai').innerHTML = `
-  ${sh('🤖 AI Traffic Sources')}
+  ${sh('🤖 AI Traffic Sources — Overview')}
   <div class="mg">
     ${MC('Total AI Sessions',total.c,total.p)}
-    ${ai.map(r=>`<div class="mc ${pct(r.c,r.p)>=0?'g':'r'}"><div class="ml">${r.k.replace('.com','').replace('.ai','').replace('.google','')}</div><div class="mv">${fmt(r.c)}</div><div class="md ${dc(pct(r.c,r.p))}">${fp(pct(r.c,r.p))}</div></div>`).join('')}
+    ${ai.map(r=>`<div class="mc ${pct(r.c,r.p)>=0?'g':'r'}">
+      <div class="ml">${r.k.replace('.com','').replace('.ai','').replace('.google','')}</div>
+      <div class="mv">${fmt(r.c)}</div>
+      <div class="md ${dc(pct(r.c,r.p))}">${fp(pct(r.c,r.p))} <span style="font-weight:400;color:var(--t3)">prev ${fmt(r.p)}</span></div>
+    </div>`).join('')}
   </div>
-  <div class="two">
-    <div class="cc"><div class="ct">AI Sources — ${D.wc} vs ${D.wp}</div><div style="position:relative;height:200px"><canvas id="${cid1}" role="img" aria-label="AI sources">AI sources.</canvas></div></div>
-    <div class="cc"><div class="ct">Share (Current Week)</div><div style="position:relative;height:200px"><canvas id="${cid2}" role="img" aria-label="AI share">AI share.</canvas></div></div>
-  </div>
-  ${sh('Source Breakdown')}
-  <div class="tw"><div class="th"><h3>All AI Sources</h3></div><table><thead><tr><th>Source</th><th>Curr</th><th>Prev</th><th>Change</th><th>Share</th></tr></thead><tbody>
-  ${ai.map(r=>`<tr><td><b>${r.k}</b></td><td><b>${fmt(r.c)}</b></td><td>${fmt(r.p)}</td><td>${bdg_(pct(r.c,r.p))}</td><td>${total.c?Math.round(r.c/total.c*100):0}%</td></tr>`).join('')}
-  </tbody></table></div>
-  ${ins_('<b>Action:</b> In GA4, check Sessions → Landing Page breakdown by AI source to see which pages receive AI traffic. Add structured content, FAQs and definitions to those pages.','b')}`
 
-  mkChart(cid1,'bar',ai.map(r=>r.k.replace('.com','').replace('.ai','').replace('.google','')),[{label:D.wc,data:ai.map(r=>r.c),backgroundColor:'#534AB7',borderRadius:4},{label:D.wp,data:ai.map(r=>r.p),backgroundColor:'#e0ddf8',borderRadius:4}],{legend:true})
-  mkChart(cid2,'doughnut',ai.map(r=>r.k.replace('.com','').replace('.ai','').replace('.google','')),[{data:ai.map(r=>r.c),backgroundColor:['#534AB7','#0F6E56','#BA7517','#D85A30'],borderWidth:2}],{legend:true})
+  <div class="two" style="margin-bottom:12px">
+    <div class="cc"><div class="ct">${D.wc} vs ${D.wp}</div><div style="position:relative;height:200px"><canvas id="${cid1}" role="img" aria-label="AI sources">AI sources comparison.</canvas></div></div>
+    <div class="cc"><div class="ct">Share — Current Week</div><div style="position:relative;height:200px"><canvas id="${cid2}" role="img" aria-label="AI share">AI share.</canvas></div></div>
+  </div>
+
+  ${sh('📊 Source Breakdown — Full Detail')}
+  <div class="tw"><div class="th"><h3>All AI Sources</h3></div>
+  <table><thead><tr><th>Source</th><th>Curr Sessions</th><th>Prev Sessions</th><th>Change</th><th>Engaged</th><th>Share</th></tr></thead>
+  <tbody>${ai.map(r=>`<tr>
+    <td><b>${r.k}</b></td>
+    <td><b>${fmt(r.c)}</b></td>
+    <td>${fmt(r.p)}</td>
+    <td>${bdg_(pct(r.c,r.p))}</td>
+    <td style="color:var(--t3)">—</td>
+    <td>${total.c?Math.round(r.c/total.c*100):0}%</td>
+  </tr>`).join('')}
+  </tbody></table></div>
+
+  ${pagesHTML}
+
+  ${ins_('<b>Action:</b> In GA4, check Sessions → Landing Page breakdown by AI source to see which pages receive AI traffic. Add structured content, FAQs and definitions to those pages to improve AI citation rates.','b')}`
+
+  mkChart(cid1,'bar',ai.map(r=>r.k.replace('.com','').replace('.ai','').replace('.google','')),[
+    {label:D.wc,data:ai.map(r=>r.c),backgroundColor:'#534AB7',borderRadius:4},
+    {label:D.wp,data:ai.map(r=>r.p),backgroundColor:'#e0ddf8',borderRadius:4}
+  ],{legend:true})
+  mkChart(cid2,'doughnut',ai.map(r=>r.k.replace('.com','').replace('.ai','').replace('.google','')),[{
+    data:ai.map(r=>r.c),
+    backgroundColor:['#534AB7','#0F6E56','#BA7517','#D85A30','#185FA5'],
+    borderWidth:2
+  }],{legend:true})
 }
 </script>
 </body>
