@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Unstop — Weekly SEO Tracker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#edeae5; --s:#fff; --s2:#f6f4f1; --s3:#edebe8;
+  --b:rgba(0,0,0,0.08); --b2:rgba(0,0,0,0.04);
+  --t:#0f0f0f; --t2:#555; --t3:#999;
+  --pu:#534AB7; --pul:#EEEDFE; --pud:#3C3489;
+  --te:#0F6E56; --tel:#E1F5EE;
+  --re:#A32D2D; --rel:#FCEBEB;
+  --am:#BA7517; --aml:#FAEEDA;
+  --bl:#185FA5; --bll:#E6F1FB;
+  --co:#D85A30; --col:#FAECE7;
+  --r:12px; --rs:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+
+/* ── NAV ── */
+.nav{background:var(--s);border-bottom:1px solid var(--b);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:200;gap:12px}
+.nav-logo{font-size:15px;font-weight:700;color:var(--pu);white-space:nowrap}
+.nav-logo span{font-weight:400;color:var(--t3);font-size:12px;margin-left:6px}
+.nav-week{display:flex;align-items:center;gap:8px;flex:1;justify-content:center}
+.week-pill{background:var(--pul);color:var(--pud);font-size:12px;font-weight:600;padding:4px 12px;border-radius:100px}
+.nav-btns{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:6px 14px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--b);background:transparent;color:var(--t2);transition:all .12s;white-space:nowrap}
+.btn:hover{background:var(--s2)}
+.btn.primary{background:var(--pu);color:#fff;border-color:var(--pu)}
+.btn.primary:hover{background:var(--pud)}
+
+/* ── MAIN LAYOUT ── */
+.wrap{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 52px)}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(--s);border-right:1px solid var(--b);padding:16px;overflow-y:auto;position:sticky;top:52px;height:calc(100vh - 52px)}
+.sb-title{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-left:2px}
+.sb-section{margin-bottom:18px}
+textarea{width:100%;border:1px solid var(--b);border-radius:var(--rs);padding:8px 10px;font-size:11px;font-family:'SF Mono',monospace;color:var(--t);background:var(--s2);resize:vertical;outline:none;transition:border .12s;line-height:1.5}
+textarea:focus{border-color:var(--pu);background:var(--s)}
+.ta-label{font-size:11px;font-weight:600;color:var(--t2);margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.ta-hint{font-size:10px;color:var(--t3);margin-top:3px;line-height:1.4}
+.go-btn{width:100%;padding:10px;background:var(--pu);color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:700;cursor:pointer;margin-top:6px;transition:background .12s}
+.go-btn:hover{background:var(--pud)}
+.divider{height:1px;background:var(--b2);margin:14px 0}
+.quick-fill{font-size:11px;color:var(--pu);cursor:pointer;font-weight:600;margin-left:auto}
+.quick-fill:hover{text-decoration:underline}
+.week-inputs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.week-inputs input{width:100%;padding:6px 8px;border:1px solid var(--b);border-radius:var(--rs);font-size:11px;background:var(--s2);outline:none;color:var(--t)}
+.week-inputs input:focus{border-color:var(--pu)}
+.wi-label{font-size:10px;color:var(--t3);margin-bottom:3px}
+
+/* ── MAIN CONTENT ── */
+.main{padding:18px;overflow-y:auto}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;color:var(--t3);text-align:center;gap:10px}
+.empty-state svg{opacity:.25}
+.empty-state p{font-size:14px;font-weight:500}
+.empty-state small{font-size:12px;max-width:280px;line-height:1.5}
+
+/* ── REPORT ── */
+.report-hdr{margin-bottom:18px}
+.report-hdr h1{font-size:20px;font-weight:700}
+.report-hdr p{font-size:13px;color:var(--t2);margin-top:3px}
+.section{margin-bottom:24px}
+.sec-hdr{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sec-hdr::after{content:'';flex:1;height:1px;background:var(--b2)}
+
+/* ── METRIC CARDS ── */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin-bottom:10px}
+.mc{background:var(--s);border:1px solid var(--b2);border-radius:var(--r);padding:13px 14px}
+.mc.g{border-left:3px solid var(--te)}.mc.r{border-left:3px solid var(--re)}.mc.a{border-left:3px solid var(--am)}.mc.n{border-left:3px solid var(--pu)}.mc.b{border-left:3px solid var(--bl)}
+.mc-label{font-size:10px;font-weight:600;color:var(--t3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em}
+.mc-val{font-size:20px;font-weight:700;line-height:1.1}
+.mc-delta{font-size:11px;font-weight:600;margin-top:4px}
+.du{color:var(--te)}.dd{color:var(--re)}.df{color:var(--t3)}
+
+/* ── INSIGHT ── */
+.ins{border-radius:var(--rs);padding:10px 13px;font-size:12.5px;line-height:1.65;margin-bottom:8px;border-left:3px solid}
+.ins.g{background:var(--tel);border-color:var(--te)}.ins.r{background:var(--rel);border-color:var(--re)}.ins.a{background:var(--aml);border-color:var(--am)}.ins.n{background:var(--pul);border-color:var(--pu)}.ins.b{background:var(--bll);border-color:var(--bl)}
+.ins b{font-weight:700;color:var(--t)}
+
+/* ── SIGNALS ── */
+.signals{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-bottom:14px}
+.sig{border-radius:var(--rs);padding:10px 12px;display:flex;gap:8px}
+.sig.g{background:var(--tel)}.sig.r{background:var(--rel)}.sig.a{background:var(--aml)}.sig.n{background:var(--pul)}.sig.b{background:var(--bll)}
+.sig-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.sig.g .sig-dot{background:var(--te)}.sig.r .sig-dot{background:var(--re)}.sig.a .sig-dot{background:var(--am)}.sig.n .sig-dot{background:var(--pu)}.sig.b .sig-dot{background:var(--bl)}
+.sig-body{font-size:12px;color:var(--t);line-height:1.5}
+.sig-body strong{display:block;font-weight:700;margin-bottom:1px;font-size:12px}
+
+/* ── TABLE ── */
+.tbl-wrap{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
+.tbl-head{padding:10px 14px;border-bottom:1px solid var(--b);background:var(--s2);display:flex;align-items:center;justify-content:space-between}
+.tbl-head h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--t)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{font-size:10px;font-weight:700;color:var(--t3);text-align:left;padding:7px 12px;border-bottom:1px solid var(--b);background:var(--s2);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid var(--b2);color:var(--t2);vertical-align:middle}
+tr:hover td{background:var(--s2)}
+tr:last-child td{border-bottom:none}
+td:first-child{color:var(--t);font-weight:500}
+.bdg{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;white-space:nowrap}
+.bdg-g{background:var(--tel);color:var(--te)}.bdg-r{background:var(--rel);color:var(--re)}.bdg-f{background:var(--s3);color:var(--t3)}.bdg-a{background:var(--aml);color:var(--am)}.bdg-b{background:var(--bll);color:var(--bl)}.bdg-n{background:var(--pul);color:var(--pud)}
+
+/* ── CHART ── */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.chart-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:14px}
+.chart-ttl{font-size:11px;font-weight:700;color:var(--t2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.03em}
+.chart-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;font-size:11px;color:var(--t2)}
+.legend-item{display:flex;align-items:center;gap:4px}
+.legend-dot{width:10px;height:10px;border-radius:2px}
+
+/* ── PROGRESS BAR ── */
+.prog-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--b2);font-size:12px}
+.prog-row:last-child{border-bottom:none}
+.prog-name{min-width:170px;color:var(--t2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prog-bar{flex:1;height:6px;background:var(--s3);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .4s}
+.prog-num{min-width:50px;text-align:right;font-weight:700;color:var(--t)}
+.prog-diff{min-width:60px;text-align:right;font-size:11px;font-weight:600}
+
+/* ── WoW TABLE ── */
+.wow-table{display:grid;gap:0}
+.wow-row{display:grid;grid-template-columns:120px repeat(4,1fr);border-bottom:1px solid var(--b2);font-size:12px}
+.wow-row:last-child{border-bottom:none}
+.wow-row.hdr{background:var(--s2);font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.04em}
+.wow-cell{padding:8px 10px;display:flex;align-items:center}
+.wow-row:hover:not(.hdr){background:var(--s2)}
+
+/* ── TOOLTIP ── */
+.tooltip-ctr{font-size:10px;color:var(--t3);background:var(--s3);padding:2px 6px;border-radius:4px;margin-left:6px}
+
+@media(max-width:900px){.wrap{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--b)}.chart-grid{grid-template-columns:1fr}}
+@media print{.nav,.sidebar,.go-btn,.btn,.sec-actions{display:none!important}.wrap{grid-template-columns:1fr}.main{padding:0}.section{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">📊 Unstop SEO Tracker <span>Weekly Comparison</span></div>
+  <div class="nav-week">
+    <span class="week-pill" id="nav-week-label">Enter data → Generate</span>
+  </div>
+  <div class="nav-btns">
+    <button class="btn" onclick="resetAll()">↺ Reset</button>
+    <button class="btn primary" onclick="window.print()">⬇ PDF</button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <!-- ═══ SIDEBAR ═══ -->
+  <div class="sidebar">
+
+    <div class="sb-section">
+      <div class="sb-title">Week Labels</div>
+      <div class="week-inputs">
+        <div><div class="wi-label">Current Week</div><input id="wk-curr" value="18 May – 24 May" placeholder="18 May – 24 May"></div>
+        <div><div class="wi-label">Previous Week</div><input id="wk-prev" value="11 May – 17 May" placeholder="11 May – 17 May"></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="sb-section">
+      <div class="sb-title">📊 Branded vs Non-Branded</div>
+      <div class="ta-label">
+        Paste data (2 rows: curr then prev)
+        <span class="quick-fill" onclick="fillBranded()">Demo</span>
+      </div>
+      <textarea id="ta-branded" rows="4" placeholder="Branded: clicks, impressions, ctr%, avgpos
+Non-Branded: clicks, impressions, ctr%, avgpos
+
+Row 1 = Current week
+Row 2 = Previous week
+
+Example:
+67406,645127,10.45,1.78,54886,2897813,1.89,7.19
+66441,646722,10.27,1.73,50977,3095735,1.65,7.15"></textarea>
+      <div class="ta-hint">Columns: BrandClicks, BrandImp, BrandCTR%, BrandPos, NBClicks, NBImp, NBCTR%, NBPos</div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">💼 Internships (GSC)</div>
+      <div class="ta-label">Clicks, Impressions, CTR%, AvgPos <span class="quick-fill" onclick="fillInternships()">Demo</span></div>
+      <textarea id="ta-int" rows="3" placeholder="Current: 6965,171500,4.06,7.58
+Previous: 8081,192462,4.20,8.16"></textarea>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">🏢 Jobs (GSC)</div>
+      <div class="ta-label">Clicks, Impressions, CTR%, AvgPos <span class="quick-fill" onclick="fillJobs()">Demo</span></div>
+      <textarea id="ta-job" rows="3" placeholder="Current: 3259,107092,3.04,7.29
+Previous: 3023,96286,3.14,7.69"></textarea>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">🤖 AI Traffic (GA4)</div>
+      <div class="ta-label">Sessions curr, Sessions prev <span class="quick-fill" onclick="fillAI()">Demo</span></div>
+      <textarea id="ta-ai" rows="2" placeholder="8437
+8071"></textarea>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">📍 Internship Skills & Locations (GA4)</div>
+      <div class="ta-label">Name, CurrSessions, PrevSessions <span class="quick-fill" onclick="fillIntSkills()">Demo</span></div>
+      <textarea id="ta-int-sk" rows="6" placeholder="data analysis,850,420
+software development,640,310
+data science,420,180
+web development,380,160
+applied ai,290,120
+full stack,210,95"></textarea>
+      <div class="ta-hint" style="margin-top:4px">Internship Locations:</div>
+      <textarea id="ta-int-loc" rows="4" placeholder="bangalore,28,12
+delhi,18,8
+chennai,14,6
+hyderabad,12,5
+pune,10,4"></textarea>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">🏢 Job Skills & Locations (GA4)</div>
+      <div class="ta-label">Name, CurrSessions, PrevSessions <span class="quick-fill" onclick="fillJobSkills()">Demo</span></div>
+      <textarea id="ta-job-sk" rows="5" placeholder="data analytics,380,180
+backend development,290,140
+frontend development,245,115
+mechanical engineer,198,88
+content writing,175,76"></textarea>
+      <div class="ta-hint" style="margin-top:4px">Job Locations:</div>
+      <textarea id="ta-job-loc" rows="4" placeholder="bangalore,32,14
+delhi,24,10
+mumbai,18,8
+hyderabad,15,6"></textarea>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">📝 Blog (GSC)</div>
+      <div class="ta-label">Clicks, Impressions, CTR%, AvgPos <span class="quick-fill" onclick="fillBlog()">Demo</span></div>
+      <textarea id="ta-blog" rows="3" placeholder="Current: 17528,2073714,0.85,7.14
+Previous: 18302,2264661,0.81,6.96"></textarea>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">📈 GA4 Overall</div>
+      <div class="ta-label">Sessions curr, Sessions prev <span class="quick-fill" onclick="fillGA4()">Demo</span></div>
+      <textarea id="ta-ga4" rows="2" placeholder="167882
+165026"></textarea>
+    </div>
+
+    <button class="go-btn" onclick="generate()">⚡ Generate Report</button>
+    <button class="btn" style="width:100%;margin-top:8px;text-align:center" onclick="fillAllDemo()">🧪 Load All Demo Data</button>
+
+  </div>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main" id="main">
+    <div class="empty-state" id="empty">
+      <svg width="60" height="60" viewBox="0 0 60 60" fill="none"><rect x="6" y="6" width="48" height="48" rx="8" stroke="#999" stroke-width="1.5"/><path d="M18 42l8-10 8 8 8-14" stroke="#999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <p>Data paste karo, Report milegi</p>
+      <small>Left sidebar mein koi bhi section fill karo — sirf wahi sections report mein aayenge. "Demo" buttons se sample data dekh sakte ho.</small>
+    </div>
+    <div id="report" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+// ── UTILS ──
+const V = id => { const e=document.getElementById(id); return e?e.value.trim():''; }
+const n = v => { const x=parseFloat(v); return isNaN(x)?null:x; }
+const pct = (c,p) => (c==null||p==null||p===0)?null:((c-p)/p*100)
+const fmt = v => { if(v==null)return'—'; v=+v; if(v>=1e7)return(v/1e7).toFixed(1)+'Cr'; if(v>=1e5)return(v/1e5).toFixed(1)+'L'; if(v>=1000)return(v/1000).toFixed(1)+'K'; return Math.round(v).toLocaleString() }
+const fmtPct = v => v==null?'':(v>=0?'↑ +':'↓ ')+Math.abs(v).toFixed(1)+'%'
+const dCls = (v,inv=false) => v==null?'df':(inv?(v>0?'dd':'du'):(v>0?'du':'dd'))
+const sCls = (v,inv=false) => v==null?'n':(inv?(v>0?'r':'g'):(v>0?'g':'r'))
+const mCls = (v,inv=false) => v==null?'n':(inv?(v>0?'r':'g'):(v>0?'g':'r'))
+
+function parseLines(raw) {
+  return raw.split('\n').map(l=>l.trim()).filter(l=>l && !l.startsWith('#') && !l.startsWith('//'))
+}
+
+function parseCSVLine(line) {
+  return line.split(/[,\t]/).map(s=>s.trim())
+}
+
+// ── METRIC CARD ──
+function MC(label, curr, prev, inv=false, suffix='', decimals=0) {
+  const d = pct(curr, prev)
+  const diff = (curr!=null&&prev!=null) ? Math.abs(curr-prev) : null
+  const sign = d!=null&&d<0?'-':'+'
+  const diffStr = diff!=null ? ` (${sign}${fmt(diff)}${suffix})` : ''
+  return `<div class="mc ${mCls(d,inv)}">
+    <div class="mc-label">${label}</div>
+    <div class="mc-val">${fmt(curr)}${suffix}</div>
+    <div class="mc-delta ${dCls(d,inv)}">${d!=null?fmtPct(d)+diffStr:(prev!=null?`prev: ${fmt(prev)}${suffix}`:'')}</div>
+  </div>`
+}
+
+function INS(text, type='n') { return `<div class="ins ${type}">${text}</div>` }
+function SIG(type, title, body) { return `<div class="sig ${type}"><div class="sig-dot"></div><div class="sig-body"><strong>${title}</strong>${body}</div></div>` }
+function SH(t) { return `<div class="sec-hdr">${t}</div>` }
+
+// ── CHART IDS ──
+let chartIdx = 0
+const charts = {}
+function cid() { return 'c'+(++chartIdx) }
+function destroyChart(id) { if(charts[id]){ charts[id].destroy(); delete charts[id] } }
+
+function barChart(id, labels, datasets, opts={}) {
+  setTimeout(()=>{
+    const el = document.getElementById(id); if(!el) return
+    destroyChart(id)
+    charts[id] = new Chart(el, {
+      type: 'bar',
+      data: { labels, datasets },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:!!opts.legend, labels:{font:{size:10},boxWidth:10,padding:8} } },
+        scales:{
+          x:{ ticks:{font:{size:10},maxRotation:30}, grid:{display:false} },
+          y:{ ticks:{font:{size:10},callback:v=>v>=1000?Math.round(v/1000)+'K':v}, grid:{color:'rgba(0,0,0,0.04)'} }
+        }
+      }
+    })
+  }, 80)
+}
+
+function lineChart(id, labels, datasets) {
+  setTimeout(()=>{
+    const el = document.getElementById(id); if(!el) return
+    destroyChart(id)
+    charts[id] = new Chart(el, {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:true, labels:{font:{size:10},boxWidth:10,padding:8} } },
+        scales:{
+          x:{ ticks:{font:{size:10},maxRotation:30}, grid:{display:false} },
+          y:{ ticks:{font:{size:10},callback:v=>v>=1000?Math.round(v/1000)+'K':v}, grid:{color:'rgba(0,0,0,0.04)'} }
+        },
+        elements:{ line:{tension:.3}, point:{radius:4} }
+      }
+    })
+  }, 80)
+}
+
+// ── PROGRESS BARS ──
+function progBars(rows, color, maxVal) {
+  const max = maxVal || Math.max(...rows.map(r=>r.curr||0), 1)
+  return rows.map(r => {
+    const d = pct(r.curr, r.prev)
+    return `<div class="prog-row">
+      <div class="prog-name">${r.name}</div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${Math.round((r.curr||0)/max*100)}%;background:${color}"></div></div>
+      <div class="prog-num">${fmt(r.curr)}</div>
+      <div class="prog-diff ${dCls(d)}">${d!=null?fmtPct(d):'—'}</div>
+    </div>`
+  }).join('')
+}
+
+// ── PARSE HELPERS ──
+function parse2Row(raw) {
+  const lines = parseLines(raw)
+  if(!lines.length) return null
+  // Support "Current: 6965,..." or just "6965,..."
+  const clean = lines.map(l => l.replace(/^(current|previous|prev|curr)[:\s]*/i,''))
+  const r1 = parseCSVLine(clean[0])
+  const r2 = clean[1] ? parseCSVLine(clean[1]) : null
+  return { curr: r1, prev: r2 }
+}
+
+function parseNameValRows(raw) {
+  return parseLines(raw).map(l => {
+    const p = parseCSVLine(l)
+    return { name: p[0]||'', curr: n(p[1]), prev: n(p[2]) }
+  }).filter(r => r.name && r.curr!=null)
+}
+
+// ── MAIN GENERATE ──
+function generate() {
+  const currW = V('wk-curr') || 'Current Week'
+  const prevW = V('wk-prev') || 'Previous Week'
+  document.getElementById('nav-week-label').textContent = `${currW} vs ${prevW}`
+
+  let html = `<div class="report-hdr"><h1>📊 Weekly SEO Report</h1><p style="color:var(--t2);font-size:13px"><b>${currW}</b> vs ${prevW}</p></div>`
+  const sigs = []
+  let hasContent = false
+
+  // ── 1. BRANDED vs NON-BRANDED ──
+  const bRaw = V('ta-branded')
+  if(bRaw) {
+    const parsed = parse2Row(bRaw)
+    if(parsed?.curr) {
+      hasContent = true
+      const C = parsed.curr, P = parsed.prev
+      const [bc,bi,bctr,bpos,nc,ni,nctr,npos] = C.map(n)
+      const [bcp,bip,bctrp,bposp,ncp,nip,nctrp,nposp] = P ? P.map(n) : Array(8).fill(null)
+
+      const bcD=pct(bc,bcp), ncD=pct(nc,ncp), niD=pct(ni,nip), nctrD=pct(nctr,nctrp)
+
+      if(bcD!=null&&bcD>5) sigs.push(SIG('g','Branded clicks growing',`${fmt(bcp)} → ${fmt(bc)} (${fmtPct(bcD)})`))
+      if(ncD!=null&&ncD>5&&niD!=null&&niD<0) sigs.push(SIG('n','Non-branded efficiency up',`Clicks ${fmtPct(ncD)} but impressions ${fmtPct(niD)} — CTR improve ho rahi hai`))
+      if(ncD!=null&&ncD<-10) sigs.push(SIG('r','Non-branded traffic dip',`${fmtPct(ncD)} — Check which non-brand pages lost rankings`))
+
+      const cid1=cid(), cid2=cid()
+      html += SH('1 · Branded vs Non-Branded (GSC)')
+      html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px">🏷 BRANDED</div>
+          <div class="metrics">${MC('Clicks',bc,bcp)}${MC('Impressions',bi,bip)}${MC('CTR',bctr,bctrp,false,'%',2)}${MC('Avg Pos',bpos,bposp,true,'',2)}</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px">🌐 NON-BRANDED</div>
+          <div class="metrics">${MC('Clicks',nc,ncp)}${MC('Impressions',ni,nip)}${MC('CTR',nctr,nctrp,false,'%',2)}${MC('Avg Pos',npos,nposp,true,'',2)}</div>
+        </div>
+      </div>`
+
+      if(bc&&nc) html += INS(`<b>Traffic mix:</b> Branded <b>${Math.round(bc/(bc+nc)*100)}%</b> vs Non-Branded <b>${Math.round(nc/(bc+nc)*100)}%</b>. ${Math.round(nc/(bc+nc)*100)>40?'✓ Healthy non-branded share.':'⚠ Branded-heavy — non-branded SEO push karo.'}${ncD!=null&&niD!=null&&ncD>0&&niD<0?' <b>Non-branded CTR efficiency improving</b> — impressions giri lekin clicks bade.':''}`, ncD>=0?'g':'a')
+
+      // Compare chart
+      if(bcp!=null) {
+        html += `<div class="chart-grid">
+          <div class="chart-card"><div class="chart-ttl">Branded vs Non-Branded — Clicks</div>
+            <div class="chart-legend"><div class="legend-item"><div class="legend-dot" style="background:#534AB7"></div>${currW}</div><div class="legend-item"><div class="legend-dot" style="background:#e0ddf8"></div>${prevW}</div></div>
+            <div style="position:relative;height:180px"><canvas id="${cid1}" role="img" aria-label="Branded vs Non-branded clicks comparison">Branded: ${bc}, Non-Branded: ${nc}.</canvas></div>
+          </div>
+          <div class="chart-card"><div class="chart-ttl">CTR Comparison</div>
+            <div style="position:relative;height:180px"><canvas id="${cid2}" role="img" aria-label="CTR comparison">Branded CTR: ${bctr}%, Non-branded CTR: ${nctr}%.</canvas></div>
+          </div>
+        </div>`
+        barChart(cid1, ['Branded','Non-Branded'],
+          [{label:currW,data:[bc,nc],backgroundColor:'#534AB7',borderRadius:4},{label:prevW,data:[bcp,ncp],backgroundColor:'#e0ddf8',borderRadius:4}],
+          {legend:true})
+        barChart(cid2, ['Branded CTR','Non-Branded CTR'],
+          [{label:currW,data:[bctr,nctr],backgroundColor:'#0F6E56',borderRadius:4},{label:prevW,data:[bctrp,nctrp],backgroundColor:'#c0e8dc',borderRadius:4}],
+          {legend:true})
+      }
+    }
+  }
+
+  // ── 2. INTERNSHIPS ──
+  const iRaw = V('ta-int')
+  if(iRaw) {
+    const parsed = parse2Row(iRaw)
+    if(parsed?.curr) {
+      hasContent = true
+      const [ic,ii,ictr,ipos] = parsed.curr.map(n)
+      const [icp,iip,ictrp,iposp] = parsed.prev ? parsed.prev.map(n) : Array(4).fill(null)
+      const icD=pct(ic,icp), iiD=pct(ii,iip)
+
+      if(icD!=null&&icD<-10) sigs.push(SIG('r','Internship clicks dipping',`${fmtPct(icD)} — ${fmt(icp)} → ${fmt(ic)}. Listing expiry check karo.`))
+      else if(icD!=null&&icD>10) sigs.push(SIG('g','Internship clicks growing',`${fmtPct(icD)} — ${fmt(icp)} → ${fmt(ic)}`))
+
+      html += SH('2 · Internships (GSC)')
+      html += `<div class="metrics">${MC('Clicks',ic,icp)}${MC('Impressions',ii,iip)}${MC('CTR',ictr,ictrp,false,'%',2)}${MC('Avg Pos',ipos,iposp,true,'',2)}</div>`
+      html += INS(`Internship clicks <b>${icD!=null?fmtPct(icD):'—'}</b>, impressions <b>${iiD!=null?fmtPct(iiD):'—'}</b>. ${ipos&&iposp&&ipos<iposp?'✓ Position improved '+iposp+' → '+ipos+'.':''}${icD!=null&&icD<0?' Main reason: listing expiry + /internships/ redirect. Fresh listings add karo regularly.':''}`, icD!=null?sCls(icD):'n')
+    }
+  }
+
+  // ── 3. JOBS ──
+  const jRaw = V('ta-job')
+  if(jRaw) {
+    const parsed = parse2Row(jRaw)
+    if(parsed?.curr) {
+      hasContent = true
+      const [jc,ji,jctr,jpos] = parsed.curr.map(n)
+      const [jcp,jip,jctrp,jposp] = parsed.prev ? parsed.prev.map(n) : Array(4).fill(null)
+      const jcD=pct(jc,jcp), jiD=pct(ji,jip)
+
+      if(jcD!=null&&jcD>5) sigs.push(SIG('g','Jobs clicks growing',`${fmtPct(jcD)} — ${fmt(jcp)} → ${fmt(jc)}`))
+      if(jiD!=null&&jiD>10) sigs.push(SIG('g','Jobs impressions recovering',`${fmtPct(jiD)} — Position improve ho rahi hai`))
+
+      html += SH('3 · Jobs (GSC)')
+      html += `<div class="metrics">${MC('Clicks',jc,jcp)}${MC('Impressions',ji,jip)}${MC('CTR',jctr,jctrp,false,'%',2)}${MC('Avg Pos',jpos,jposp,true,'',2)}</div>`
+      html += INS(`Jobs clicks <b>${jcD!=null?fmtPct(jcD):'—'}</b>, impressions <b>${jiD!=null?fmtPct(jiD):'—'}</b>. ${jpos&&jposp&&jpos<jposp?'✓ Position improved '+jposp+' → '+jpos+'.':''} Main /job/ page low CTR hai — category page titles optimize karo.`, jcD!=null?sCls(jcD):'n')
+    }
+  }
+
+  // ── INT + JOBS COMPARE CHART ──
+  const iRawD = parse2Row(V('ta-int')), jRawD = parse2Row(V('ta-job'))
+  if(iRawD?.curr && jRawD?.curr) {
+    const [ic]=iRawD.curr.map(n), [icp]=iRawD.prev?.map(n)||[null]
+    const [jc]=jRawD.curr.map(n), [jcp]=jRawD.prev?.map(n)||[null]
+    if(ic&&jc&&icp&&jcp) {
+      const cid3=cid()
+      html += `<div class="chart-card" style="margin-bottom:12px"><div class="chart-ttl">Internships vs Jobs — Clicks Comparison</div>
+        <div class="chart-legend"><div class="legend-item"><div class="legend-dot" style="background:#534AB7"></div>${currW}</div><div class="legend-item"><div class="legend-dot" style="background:#e0ddf8"></div>${prevW}</div></div>
+        <div style="position:relative;height:160px"><canvas id="${cid3}" role="img" aria-label="Internships vs Jobs clicks">Internships: ${ic}, Jobs: ${jc}.</canvas></div>
+      </div>`
+      barChart(cid3,['Internships','Jobs'],
+        [{label:currW,data:[ic,jc],backgroundColor:'#534AB7',borderRadius:4},{label:prevW,data:[icp,jcp],backgroundColor:'#e0ddf8',borderRadius:4}],
+        {legend:true})
+    }
+  }
+
+  // ── 4. AI TRAFFIC ──
+  const aiRaw = V('ta-ai')
+  if(aiRaw) {
+    const lines = parseLines(aiRaw)
+    const aiC = n(lines[0]), aiP = n(lines[1])
+    if(aiC!=null) {
+      hasContent = true
+      const aiD = pct(aiC, aiP)
+      if(aiD!=null&&aiD>50) sigs.push(SIG('g','🚀 AI traffic explosion!',`+${aiD.toFixed(0)}% — ${fmt(aiP)} → ${fmt(aiC)}. Source identify karo GA4 mein.`))
+      else if(aiD!=null&&aiD>10) sigs.push(SIG('g','AI traffic growing',`${fmtPct(aiD)} — ${fmt(aiC)} sessions this week`))
+      else if(aiD!=null&&aiD<-20) sigs.push(SIG('r','AI traffic dipping',`${fmtPct(aiD)} — ${fmt(aiP)} → ${fmt(aiC)}`))
+
+      html += SH('4 · AI Traffic (GA4)')
+      html += `<div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+        ${MC('AI Sessions',aiC,aiP)}
+        <div class="mc b"><div class="mc-label">Prev Week</div><div class="mc-val">${fmt(aiP)||'—'}</div></div>
+        ${aiC!=null&&aiP!=null?`<div class="mc ${sCls(aiD)}"><div class="mc-label">Change</div><div class="mc-val" style="font-size:16px">${fmtPct(aiD)}</div></div>`:''}
+      </div>`
+      html += INS(aiD!=null&&aiD>50
+        ? `<b>🚀 Massive AI traffic jump!</b> ${fmt(aiP)} → ${fmt(aiC)} (+${aiD.toFixed(0)}%). GA4 → Acquisition → Traffic Acquisition mein filter karo: chatgpt.com, perplexity.ai, gemini.google.com. Jo source bhej raha hai us par content optimize karo.`
+        : aiD!=null&&aiD>10
+        ? `<b>AI traffic growing ${fmtPct(aiD)}.</b> ${fmt(aiC)} sessions this week. Positive trend — structured content aur definitions AI visibility badhate hain.`
+        : `<b>AI traffic:</b> ${fmt(aiC)} sessions. ${aiD!=null?fmtPct(aiD)+' WoW':''} — GA4 mein source breakdown dekho.`
+      , aiD!=null?(aiD>20?'g':aiD>0?'n':'r'):'n')
+    }
+  }
+
+  // ── 5. INTERNSHIP SKILLS & LOCATIONS ──
+  const isRaw = V('ta-int-sk'), ilRaw = V('ta-int-loc')
+  if(isRaw || ilRaw) {
+    hasContent = true
+    const skills = parseNameValRows(isRaw)
+    const locs = parseNameValRows(ilRaw)
+
+    if(skills.length||locs.length) {
+      html += SH('5 · Internship Skills & Locations (GA4)')
+      const skillTotal = skills.reduce((a,r)=>a+(r.curr||0),0)
+      const locTotal = locs.reduce((a,r)=>a+(r.curr||0),0)
+      const skillTotalP = skills.reduce((a,r)=>a+(r.prev||0),0)
+      const locTotalP = locs.reduce((a,r)=>a+(r.prev||0),0)
+
+      html += `<div class="metrics" style="grid-template-columns:repeat(4,1fr)">
+        ${MC('Skills Sessions',skillTotal,skillTotalP)}
+        ${MC('Location Sessions',locTotal,locTotalP)}
+        ${MC('Combined',skillTotal+locTotal,skillTotalP+locTotalP)}
+      </div>`
+
+      const gap = locTotal>0 ? Math.round(skillTotal/locTotal) : null
+      if(gap&&gap>5) sigs.push(SIG('a',`Skills vs Location gap: ${gap}x`,`Skills ${fmt(skillTotal)} vs Locations ${fmt(locTotal)} — Location pages scale karo`))
+
+      const top3sk = [...skills].sort((a,b)=>(b.curr||0)-(a.curr||0)).slice(0,3)
+      if(top3sk.length) sigs.push(SIG('n','Top internship skills',top3sk.map(s=>`${s.name}: ${fmt(s.curr)}`).join(', ')))
+
+      html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">`
+      if(skills.length) {
+        const cid4=cid()
+        html += `<div>
+          <div class="tbl-wrap"><div class="tbl-head"><h3>By Skill — ${skills.length} pages</h3></div>
+            <div style="padding:8px 12px">${progBars(skills.sort((a,b)=>(b.curr||0)-(a.curr||0)),'#534AB7')}</div>
+          </div>
+          <div class="chart-card"><div class="chart-ttl">Skill Sessions — ${currW} vs ${prevW}</div>
+            <div style="position:relative;height:${Math.max(120,skills.length*28)}px">
+              <canvas id="${cid4}" role="img" aria-label="Internship skills sessions comparison">Skills session data.</canvas>
+            </div>
+          </div>
+        </div>`
+        const topS = skills.slice(0,6)
+        barChart(cid4, topS.map(s=>s.name.length>12?s.name.slice(0,12)+'…':s.name),
+          [{label:currW,data:topS.map(s=>s.curr),backgroundColor:'#534AB7',borderRadius:3},{label:prevW,data:topS.map(s=>s.prev||0),backgroundColor:'#e0ddf8',borderRadius:3}],
+          {legend:true})
+      }
+      if(locs.length) {
+        const cid5=cid()
+        html += `<div>
+          <div class="tbl-wrap"><div class="tbl-head"><h3>By Location — ${locs.length} cities</h3></div>
+            <div style="padding:8px 12px">${progBars(locs.sort((a,b)=>(b.curr||0)-(a.curr||0)),'#D85A30')}</div>
+          </div>
+          <div class="chart-card"><div class="chart-ttl">Location Sessions</div>
+            <div style="position:relative;height:${Math.max(120,locs.length*28)}px">
+              <canvas id="${cid5}" role="img" aria-label="Internship locations comparison">Location session data.</canvas>
+            </div>
+          </div>
+        </div>`
+        const topL = locs.slice(0,6)
+        barChart(cid5, topL.map(s=>s.name.length>12?s.name.slice(0,12)+'…':s.name),
+          [{label:currW,data:topL.map(s=>s.curr),backgroundColor:'#D85A30',borderRadius:3},{label:prevW,data:topL.map(s=>s.prev||0),backgroundColor:'#f8ddd4',borderRadius:3}],
+          {legend:true})
+      }
+      html += `</div>`
+
+      if(gap&&gap>5) html += INS(`<b>⚠ ${gap}x gap:</b> Internship skill pages ${fmt(skillTotal)} sessions la rahi hain, location pages sirf ${fmt(locTotal)}. Location-specific content aur listings badhao — Bangalore, Delhi, Mumbai high priority.`, 'a')
+    }
+  }
+
+  // ── 6. JOB SKILLS & LOCATIONS ──
+  const jsRaw = V('ta-job-sk'), jlRaw = V('ta-job-loc')
+  if(jsRaw || jlRaw) {
+    hasContent = true
+    const skills = parseNameValRows(jsRaw)
+    const locs = parseNameValRows(jlRaw)
+
+    if(skills.length||locs.length) {
+      html += SH('6 · Job Skills & Locations (GA4)')
+      const skillTotal = skills.reduce((a,r)=>a+(r.curr||0),0)
+      const locTotal = locs.reduce((a,r)=>a+(r.curr||0),0)
+      const skillTotalP = skills.reduce((a,r)=>a+(r.prev||0),0)
+      const locTotalP = locs.reduce((a,r)=>a+(r.prev||0),0)
+
+      html += `<div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+        ${MC('Skills Sessions',skillTotal,skillTotalP)}
+        ${MC('Location Sessions',locTotal,locTotalP)}
+        ${MC('Combined',skillTotal+locTotal,skillTotalP+locTotalP)}
+      </div>`
+
+      html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">`
+      if(skills.length) {
+        const cid6=cid()
+        html += `<div>
+          <div class="tbl-wrap"><div class="tbl-head"><h3>Job Skills — ${skills.length} pages</h3></div>
+            <div style="padding:8px 12px">${progBars(skills.sort((a,b)=>(b.curr||0)-(a.curr||0)),'#0F6E56')}</div>
+          </div>
+          <div class="chart-card"><div class="chart-ttl">Job Skill Sessions</div>
+            <div style="position:relative;height:${Math.max(120,skills.length*28)}px">
+              <canvas id="${cid6}" role="img" aria-label="Job skills comparison">Job skills data.</canvas>
+            </div>
+          </div>
+        </div>`
+        const topS = skills.slice(0,6)
+        barChart(cid6, topS.map(s=>s.name.length>12?s.name.slice(0,12)+'…':s.name),
+          [{label:currW,data:topS.map(s=>s.curr),backgroundColor:'#0F6E56',borderRadius:3},{label:prevW,data:topS.map(s=>s.prev||0),backgroundColor:'#c0e8dc',borderRadius:3}],
+          {legend:true})
+      }
+      if(locs.length) {
+        const cid7=cid()
+        html += `<div>
+          <div class="tbl-wrap"><div class="tbl-head"><h3>Job Locations — ${locs.length} cities</h3></div>
+            <div style="padding:8px 12px">${progBars(locs.sort((a,b)=>(b.curr||0)-(a.curr||0)),'#BA7517')}</div>
+          </div>
+          <div class="chart-card"><div class="chart-ttl">Location Sessions</div>
+            <div style="position:relative;height:${Math.max(120,locs.length*28)}px">
+              <canvas id="${cid7}" role="img" aria-label="Job locations comparison">Job location data.</canvas>
+            </div>
+          </div>
+        </div>`
+        const topL = locs.slice(0,6)
+        barChart(cid7, topL.map(s=>s.name.length>12?s.name.slice(0,12)+'…':s.name),
+          [{label:currW,data:topL.map(s=>s.curr),backgroundColor:'#BA7517',borderRadius:3},{label:prevW,data:topL.map(s=>s.prev||0),backgroundColor:'#f8e8c8',borderRadius:3}],
+          {legend:true})
+      }
+      html += `</div>`
+    }
+  }
+
+  // ── 7. BLOG ──
+  const blRaw = V('ta-blog')
+  if(blRaw) {
+    const parsed = parse2Row(blRaw)
+    if(parsed?.curr) {
+      hasContent = true
+      const [bc,bi,bctr,bpos] = parsed.curr.map(n)
+      const [bcp,bip,bctrp,bposp] = parsed.prev ? parsed.prev.map(n) : Array(4).fill(null)
+      const bcD=pct(bc,bcp), biD=pct(bi,bip)
+
+      if(bpos&&bposp&&bpos>bposp) sigs.push(SIG('a','Blog avg position worsening',`${bposp} → ${bpos} — Rankings slip ho rahi hain. Content refresh karo.`))
+      if(bcD!=null&&bcD<-10) sigs.push(SIG('r','Blog clicks declining',`${fmtPct(bcD)} — Existing articles update karo.`))
+
+      html += SH('7 · Blog (GSC)')
+      html += `<div class="metrics">${MC('Clicks',bc,bcp)}${MC('Impressions',bi,bip)}${MC('CTR',bctr,bctrp,false,'%',2)}${MC('Avg Pos',bpos,bposp,true,'',2)}</div>`
+      html += INS(`Blog clicks <b>${bcD!=null?fmtPct(bcD):'—'}</b>. ${bpos&&bposp?bpos>bposp?`<b>⚠ Position worsening ${bposp} → ${bpos}</b> — Top articles refresh karo.`:`<b>✓ Position improved ${bposp} → ${bpos}</b>.`:''}${bctr&&bctrp&&bctr>bctrp?' <b>CTR improving</b> — titles better matching intent.':''}`, bcD!=null?sCls(bcD):'n')
+    }
+  }
+
+  // ── 8. GA4 OVERALL ──
+  const gaRaw = V('ta-ga4')
+  if(gaRaw) {
+    const lines = parseLines(gaRaw)
+    const gaC = n(lines[0]), gaP = n(lines[1])
+    if(gaC!=null) {
+      hasContent = true
+      const gaD = pct(gaC, gaP)
+      if(gaD!=null&&gaD>5) sigs.push(SIG('g','GA4 overall traffic growing',`${fmt(gaP)} → ${fmt(gaC)} (${fmtPct(gaD)})`))
+      else if(gaD!=null&&gaD<-5) sigs.push(SIG('r','GA4 overall traffic declining',`${fmt(gaP)} → ${fmt(gaC)} (${fmtPct(gaD)})`))
+
+      html += SH('8 · GA4 Overall Traffic')
+      html += `<div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+        ${MC('Total Sessions',gaC,gaP)}
+        <div class="mc n"><div class="mc-label">Per Day (est)</div><div class="mc-val">${fmt(gaC/7)}</div></div>
+        ${gaD!=null?`<div class="mc ${sCls(gaD)}"><div class="mc-label">WoW Change</div><div class="mc-val" style="font-size:16px">${fmtPct(gaD)}</div></div>`:''}
+      </div>`
+      html += INS(`GA4 overall sessions <b>${gaD!=null?fmtPct(gaD):'—'}</b>. Total: <b>${fmt(gaC)} sessions</b> (≈${fmt(Math.round(gaC/7))}/day). ${gaD!=null&&gaD<0?' Investigate which channel se traffic drop hua.':' Positive trend continue ho raha hai.'}`, gaD!=null?sCls(gaD):'n')
+    }
+  }
+
+  // ── SIGNAL BOARD (top) ──
+  if(sigs.length) {
+    html = SH('🚦 Key Signals — This Week') + `<div class="signals">${sigs.join('')}</div>` + html
+  }
+
+  // ── RENDER ──
+  if(!hasContent) {
+    alert('Koi data nahi mila. Kam se kam ek section fill karo.')
+    return
+  }
+  document.getElementById('empty').style.display = 'none'
+  document.getElementById('report').style.display = 'block'
+  document.getElementById('report').innerHTML = html
+}
+
+// ── QUICK FILL ──
+function fillBranded(){ document.getElementById('ta-branded').value = '67406,645127,10.45,1.78,54886,2897813,1.89,7.19\n66441,646722,10.27,1.73,50977,3095735,1.65,7.15' }
+function fillInternships(){ document.getElementById('ta-int').value = 'Current: 6965,171500,4.06,7.58\nPrevious: 8081,192462,4.20,8.16' }
+function fillJobs(){ document.getElementById('ta-job').value = 'Current: 3259,107092,3.04,7.29\nPrevious: 3023,96286,3.14,7.69' }
+function fillAI(){ document.getElementById('ta-ai').value = '8437\n8071' }
+function fillBlog(){ document.getElementById('ta-blog').value = 'Current: 17528,2073714,0.85,7.14\nPrevious: 18302,2264661,0.81,6.96' }
+function fillGA4(){ document.getElementById('ta-ga4').value = '167882\n165026' }
+function fillIntSkills(){
+  document.getElementById('ta-int-sk').value = 'data analysis,3412,2313\nsoftware development,640,310\ndata science,420,180\nweb development,380,160\napplied ai,290,120\nfull stack,210,95\ndevops,185,80'
+  document.getElementById('ta-int-loc').value = 'bangalore,28,12\ndelhi,18,8\nchennai,14,6\nhyderabad,12,5\npune,10,4\nkolkata,7,3'
+}
+function fillJobSkills(){
+  document.getElementById('ta-job-sk').value = 'data analytics,1105,819\nbackend development,290,140\nfrontend development,245,115\nmechanical engineer,198,88\ncontent writing,175,76\nmachine learning,142,60'
+  document.getElementById('ta-job-loc').value = 'bangalore,32,14\ndelhi,24,10\nmumbai,18,8\nhyderabad,15,6\nahmedabad,12,5\npune,10,4'
+}
+function fillAllDemo(){ fillBranded();fillInternships();fillJobs();fillAI();fillBlog();fillGA4();fillIntSkills();fillJobSkills();generate() }
+function resetAll(){ if(confirm('Reset all?')) location.reload() }
+</script>
+</body>
+</html>
