@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<!-- v4 -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unstop B2B SEO Dashboard</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0c0e14;--surface:#13151f;--surface2:#1a1d2b;--surface3:#222538;
+  --border:#2a2d3e;--border2:#353850;
+  --text:#e8eaf0;--muted:#7a7f9a;--faint:#3a3d52;
+  --blue:#4f8ef7;--blue-dim:#1e3a6e;--blue-soft:#dbeafe;
+  --green:#34d399;--green-dim:#064e3b;
+  --amber:#fbbf24;--amber-dim:#78350f;
+  --red:#f87171;--red-dim:#7f1d1d;
+  --purple:#a78bfa;--purple-dim:#3b1d8a;
+  --accent:#4f8ef7;
+}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh;}
+
+/* ── UPLOAD SCREEN ── */
+#upload-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:radial-gradient(ellipse at 20% 50%,#1a1d40 0%,var(--bg) 60%);}
+.up-wrap{max-width:520px;width:100%;}
+.up-brand{display:flex;align-items:center;gap:10px;margin-bottom:2.5rem;}
+.up-brand-dot{width:10px;height:10px;border-radius:50%;background:var(--blue);}
+.up-brand-name{font-size:14px;font-weight:600;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;}
+.up-h1{font-size:30px;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:.75rem;}
+.up-h1 span{color:var(--blue);}
+.up-sub{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:2rem;}
+.drop-zone{border:1.5px dashed var(--border2);border-radius:14px;padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--surface);}
+.drop-zone:hover,.drop-zone.over{border-color:var(--blue);background:var(--surface2);}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.drop-icon{width:52px;height:52px;background:var(--blue-dim);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
+.drop-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:5px;}
+.drop-sub{font-size:12px;color:var(--muted);}
+.how-steps{margin-top:1.5rem;background:var(--surface2);border-radius:10px;padding:1rem 1.25rem;}
+.how-title{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;}
+.how-step{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;font-size:12px;color:var(--muted);}
+.how-step:last-child{margin-bottom:0;}
+.how-num{min-width:18px;height:18px;background:var(--blue-dim);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--blue);margin-top:1px;}
+.err-msg{background:#2d1515;border:1px solid var(--red-dim);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--red);margin-top:12px;display:none;}
+
+/* ── LAYOUT ── */
+#dashboard{display:none;}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);height:100vh;position:fixed;left:0;top:0;display:flex;flex-direction:column;z-index:50;}
+.sb-logo{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.sb-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--blue);}
+.sb-logo-text{font-size:13px;font-weight:600;color:var(--text);letter-spacing:.04em;}
+.sb-logo-badge{font-size:9px;background:var(--blue-dim);color:var(--blue);padding:2px 6px;border-radius:4px;font-weight:600;letter-spacing:.04em;margin-left:auto;}
+.sb-nav{padding:8px;flex:1;overflow-y:auto;scrollbar-width:none;}
+.sb-nav::-webkit-scrollbar{display:none;}
+.sb-section{font-size:9px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.12em;padding:4px 8px;margin:8px 0 3px;}
+.sb-item{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--muted);font-weight:500;transition:all .15s;margin-bottom:1px;border:1px solid transparent;}
+.sb-item:hover{background:var(--surface2);color:var(--text);}
+.sb-item.active{background:var(--blue-dim);color:var(--blue);border-color:var(--blue-dim);}
+.sb-item svg{width:14px;height:14px;flex-shrink:0;}
+.sb-item .sb-count{margin-left:auto;font-size:10px;background:var(--surface3);color:var(--muted);padding:1px 6px;border-radius:99px;}
+.sb-item.active .sb-count{background:rgba(79,142,247,.2);color:var(--blue);}
+.sb-bottom{padding:10px;border-top:1px solid var(--border);}
+.sb-upload-btn{width:100%;padding:8px;background:var(--surface2);color:var(--muted);border:1px solid var(--border2);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:system-ui,sans-serif;transition:all .15s;}
+.sb-upload-btn:hover{background:var(--surface3);color:var(--text);}
+
+.content{margin-left:220px;min-height:100vh;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;}
+.tb-title{font-size:15px;font-weight:600;color:var(--text);}
+.tb-meta{display:flex;gap:8px;align-items:center;}
+.tb-pill{font-size:11px;padding:3px 10px;border-radius:99px;border:1px solid;}
+.tb-pill-blue{color:var(--blue);border-color:var(--blue-dim);background:var(--blue-dim);}
+.tb-pill-green{color:var(--green);border-color:var(--green-dim);background:var(--green-dim);}
+.tb-pill-amber{color:var(--amber);border-color:var(--amber-dim);background:var(--amber-dim);}
+
+.main{padding:22px;flex:1;}
+.tab-sec{display:none;}
+.tab-sec.active{display:block;}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat-card.blue::before{background:var(--blue);}
+.stat-card.green::before{background:var(--green);}
+.stat-card.amber::before{background:var(--amber);}
+.stat-card.purple::before{background:var(--purple);}
+.stat-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.stat-val{font-size:28px;font-weight:700;line-height:1;margin-bottom:4px;}
+.stat-card.blue .stat-val{color:var(--blue);}
+.stat-card.green .stat-val{color:var(--green);}
+.stat-card.amber .stat-val{color:var(--amber);}
+.stat-card.purple .stat-val{color:var(--purple);}
+.stat-sub{font-size:11px;color:var(--muted);}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:14px;}
+.card-hdr{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.card-sub{font-size:11px;color:var(--muted);font-weight:400;margin-left:6px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+
+/* ── TABLE ── */
+.twrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;font-size:10px;font-weight:600;color:var(--muted);padding:7px 10px;border-bottom:1px solid var(--border);white-space:nowrap;letter-spacing:.05em;text-transform:uppercase;}
+td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text);font-size:12px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);}
+.mono{font-family:system-ui,sans-serif;font-size:11px;color:var(--muted);}
+.link-cell a{color:var(--blue);text-decoration:none;font-family:system-ui,sans-serif;font-size:10px;}
+.link-cell a:hover{text-decoration:underline;}
+
+/* ── BADGES ── */
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;}
+.badge-green{background:var(--green-dim);color:var(--green);}
+.badge-blue{background:var(--blue-dim);color:var(--blue);}
+.badge-amber{background:var(--amber-dim);color:var(--amber);}
+.badge-red{background:var(--red-dim);color:var(--red);}
+.badge-purple{background:var(--purple-dim);color:var(--purple);}
+.badge-gray{background:var(--surface3);color:var(--muted);}
+
+/* pos/ctr helpers */
+.pos-top{color:var(--green);font-weight:600;}
+.pos-mid{color:var(--blue);font-weight:600;}
+.pos-low{color:var(--amber);font-weight:600;}
+.pos-bad{color:var(--red);font-weight:600;}
+
+/* ── URL BARS ── */
+.url-bars .url-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+.url-bars .url-row:last-child{border-bottom:none;}
+.url-path{font-family:system-ui,sans-serif;font-size:10px;color:var(--muted);min-width:160px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bar-wrap{flex:1;}
+.bar-bg{height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;}
+.url-stats{display:flex;gap:12px;}
+.us{text-align:right;}
+.us-v{font-size:12px;font-weight:600;color:var(--text);}
+.us-l{font-size:9px;color:var(--muted);text-transform:uppercase;font-weight:600;}
+
+/* ── SIGNALS ── */
+.signals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;}
+.sig{border-radius:10px;padding:12px 14px;border:1px solid;}
+.sig-green{background:#051f15;border-color:var(--green-dim);}
+.sig-red{background:#1f0505;border-color:var(--red-dim);}
+.sig-amber{background:#1f1405;border-color:var(--amber-dim);}
+.sig-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;}
+.sig-green .sig-title{color:var(--green);}
+.sig-red .sig-title{color:var(--red);}
+.sig-amber .sig-title{color:var(--amber);}
+.sig-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;}
+.sig-row:last-child{border-bottom:none;}
+.sig-l{color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px;}
+.sig-v{font-weight:600;white-space:nowrap;}
+.sig-green .sig-v{color:var(--green);}
+.sig-red .sig-v{color:var(--red);}
+.sig-amber .sig-v{color:var(--amber);}
+
+/* ── BLOG SETUP ── */
+.blog-setup{background:var(--surface2);border:1px dashed var(--border2);border-radius:12px;padding:20px;margin-bottom:18px;}
+.blog-setup-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;}
+.blog-setup-sub{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;}
+.blog-setup-badge{display:inline-flex;align-items:center;gap:5px;background:var(--blue-dim);color:var(--blue);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;margin-bottom:14px;}
+.blog-textarea{width:100%;min-height:140px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:12px;font-family:system-ui,sans-serif;font-size:11px;color:var(--text);resize:vertical;outline:none;line-height:1.7;}
+.blog-textarea:focus{border-color:var(--blue);}
+.blog-textarea::placeholder{color:var(--faint);}
+.blog-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.btn{padding:7px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:system-ui,sans-serif;border:none;transition:all .15s;}
+.btn-primary{background:var(--blue);color:#fff;}
+.btn-primary:hover{opacity:.9;}
+.btn-ghost{background:var(--surface3);color:var(--muted);border:1px solid var(--border2);}
+.btn-ghost:hover{color:var(--text);background:var(--surface2);}
+.blog-count-chip{display:inline-flex;align-items:center;gap:5px;background:var(--green-dim);color:var(--green);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;}
+
+/* ── CHART ── */
+.chart-wrap{position:relative;width:100%;}
+.chart-wrap canvas{border-radius:8px;}
+
+/* ── NOTICE ── */
+.notice{border-radius:10px;padding:11px 14px;margin-bottom:12px;border:1px solid;}
+.notice-blue{background:var(--blue-dim);border-color:rgba(79,142,247,.3);}
+.notice-amber{background:var(--amber-dim);border-color:rgba(251,191,36,.3);}
+.notice-green{background:var(--green-dim);border-color:rgba(52,211,153,.3);}
+.notice-title{font-size:12px;font-weight:600;margin-bottom:2px;}
+.notice-blue .notice-title{color:var(--blue);}
+.notice-amber .notice-title{color:var(--amber);}
+.notice-green .notice-title{color:var(--green);}
+.notice-body{font-size:11px;color:var(--muted);}
+
+/* ── ACTION ITEMS ── */
+.action-list{}
+.action-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.action-row:last-child{border-bottom:none;}
+.action-num{min-width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:2px;}
+.action-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.action-sub{font-size:11px;color:var(--muted);line-height:1.6;}
+.action-impact{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;margin-top:4px;}
+
+/* ── EMPTY STATE ── */
+.empty{padding:3rem;text-align:center;color:var(--muted);}
+.empty-icon{font-size:32px;margin-bottom:10px;opacity:.5;}
+.empty-text{font-size:13px;}
+
+@media(max-width:1024px){.sidebar{display:none;}.content{margin-left:0;}.stat-grid{grid-template-columns:1fr 1fr;}.two-col{grid-template-columns:1fr;}.signals{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- UPLOAD SCREEN -->
+<div id="upload-screen">
+  <div class="up-wrap">
+    <div class="up-brand">
+      <div class="up-brand-dot"></div>
+      <div class="up-brand-name">Unstop · B2B SEO</div>
+    </div>
+    <h1 class="up-h1">B2B SEO<br><span>Intelligence Dashboard</span></h1>
+    <p class="up-sub">Upload your GSC Performance export. The dashboard automatically segments <strong style="color:var(--text)">/employers/</strong> B2B pages and lets you add your B2B blog URLs for separate tracking.</p>
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+      <div class="drop-icon">
+        <svg width="24" height="24" fill="none" stroke="#4f8ef7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="drop-title">Drop GSC Excel file here</div>
+      <div class="drop-sub">or click to browse · .xlsx .xls .csv supported</div>
+    </div>
+    <div class="how-steps">
+      <div class="how-title">How to export from GSC</div>
+      <div class="how-step"><div class="how-num">1</div><span>GSC → Performance → set date range → Export → Download Excel</span></div>
+      <div class="how-step"><div class="how-num">2</div><span>Upload here → /employers/ pages auto-detected</span></div>
+      <div class="how-step"><div class="how-num">3</div><span>Paste your B2B blog URLs in the Blog Tracker tab</span></div>
+    </div>
+    <div class="err-msg" id="errMsg"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-dot"></div>
+      <div class="sb-logo-text">B2B SEO Dash</div>
+      <div class="sb-logo-badge">UNSTOP</div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section">Overview</div>
+      <div class="sb-item active" data-tab="overview" onclick="showTab('overview',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        B2B Overview
+        <span class="sb-count" id="cnt-overview">—</span>
+      </div>
+
+      <div class="sb-section">Employers Pages</div>
+      <div class="sb-item" data-tab="employers" onclick="showTab('employers',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+        All /employers/ Pages
+        <span class="sb-count" id="cnt-employers">—</span>
+      </div>
+      <div class="sb-item" data-tab="emp-wins" onclick="showTab('emp-wins',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Quick Wins
+        <span class="sb-count" id="cnt-empwins">—</span>
+      </div>
+      <div class="sb-item" data-tab="emp-potential" onclick="showTab('emp-potential',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        High Potential
+        <span class="sb-count" id="cnt-emppot">—</span>
+      </div>
+      <div class="sb-item" data-tab="emp-clusters" onclick="showTab('emp-clusters',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        Product Clusters
+      </div>
+
+      <div class="sb-section">B2B Blog Tracker</div>
+      <div class="sb-item" data-tab="blog-setup" onclick="showTab('blog-setup',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        Setup Blog URLs
+      </div>
+      <div class="sb-item" data-tab="blogs" onclick="showTab('blogs',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        B2B Blog Performance
+        <span class="sb-count" id="cnt-blogs">—</span>
+      </div>
+      <div class="sb-item" data-tab="blog-wins" onclick="showTab('blog-wins',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Blog Opportunities
+        <span class="sb-count" id="cnt-blogwins">—</span>
+      </div>
+
+      <div class="sb-section">Intelligence</div>
+      <div class="sb-item" data-tab="combined" onclick="showTab('combined',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-6"/></svg>
+        Combined B2B View
+      </div>
+      <div class="sb-item" data-tab="actions" onclick="showTab('actions',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Action Items
+      </div>
+    </div>
+    <div class="sb-bottom">
+      <button class="sb-upload-btn" onclick="goBack()">↑ Upload new file</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="topbar">
+      <div class="tb-title">B2B SEO Intelligence</div>
+      <div class="tb-meta">
+        <span class="tb-pill tb-pill-blue" id="tb-site">site.com</span>
+        <span class="tb-pill tb-pill-amber" id="tb-date">—</span>
+        <span class="tb-pill tb-pill-green" id="tb-b2b-pages">0 B2B pages</span>
+      </div>
+    </div>
+    <div class="main" id="main-content">
+      <!-- tabs rendered here -->
+      <div id="t-overview" class="tab-sec active"></div>
+      <div id="t-employers" class="tab-sec"></div>
+      <div id="t-emp-wins" class="tab-sec"></div>
+      <div id="t-emp-potential" class="tab-sec"></div>
+      <div id="t-emp-clusters" class="tab-sec"></div>
+      <div id="t-blog-setup" class="tab-sec"></div>
+      <div id="t-blogs" class="tab-sec"></div>
+      <div id="t-blog-wins" class="tab-sec"></div>
+      <div id="t-combined" class="tab-sec"></div>
+      <div id="t-actions" class="tab-sec"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────────
+var D={}, EMP=[], BLOGS=[], ALL_BLOG_PAGES=[], B2B_BLOG_URLS=[], CHARTS=[];
+
+// Persisted blog URLs
+function loadBlogURLs(){
+  try{var s=localStorage.getItem('b2b_blog_urls');if(s)B2B_BLOG_URLS=JSON.parse(s);}catch(e){}
+}
+function saveBlogURLs(urls){
+  B2B_BLOG_URLS=urls;
+  try{localStorage.setItem('b2b_blog_urls',JSON.stringify(urls));}catch(e){}
+}
+loadBlogURLs();
+
+// ── FILE HANDLING ──────────────────────────────────────────────────────────────
+var dz=document.getElementById('dropZone'),fi=document.getElementById('fileInput');
+dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('over');});
+dz.addEventListener('dragleave',function(){dz.classList.remove('over');});
+dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('over');if(e.dataTransfer.files[0])processFile(e.dataTransfer.files[0]);});
+fi.addEventListener('change',function(e){if(e.target.files[0])processFile(e.target.files[0]);});
+
+function showErr(m){var el=document.getElementById('errMsg');el.style.display='block';el.textContent='⚠ '+m;}
+
+function processFile(file){
+  document.getElementById('errMsg').style.display='none';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=e.target.result;
+      var wb=XLSX.read(new Uint8Array(data),{type:'array'});
+      var Q=[],P=[],C=[];
+
+      // GSC CTR is stored as decimal (0.0318 = 3.18%) — always multiply by 100
+      function parseCtr(v){
+        if(v===undefined||v===null||v==='')return 0;
+        if(typeof v==='number') return v<=1?v*100:v; // decimal → percent
+        var s=String(v).trim();
+        if(s.includes('%')) return parseFloat(s)||0; // already percent string
+        var n=parseFloat(s)||0;
+        return n<=1?n*100:n; // decimal → percent
+      }
+
+      // Find column index by header name
+      function findCol(hdr,keywords){
+        for(var i=0;i<hdr.length;i++){
+          var h=String(hdr[i]||'').toLowerCase().trim();
+          for(var k=0;k<keywords.length;k++){if(h.includes(keywords[k]))return i;}
+        }
+        return -1;
+      }
+
+      wb.SheetNames.forEach(function(name){
+        var ws=wb.Sheets[name];
+        var rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+        rows=rows.filter(function(r){return r.some(function(c){return c!==''&&c!==null&&c!==undefined;});});
+        if(rows.length<2)return;
+
+        var n=name.toLowerCase().trim();
+        var hdr=rows[0];
+        var data=rows.slice(1);
+
+        // Skip non-data sheets
+        if(n==='filters'||n==='countries'||n==='devices'||n==='search appearance'||n==='search type')return;
+
+        // Detect columns
+        var urlCol=findCol(hdr,['top page','landing page','page url','page','url']);
+        var qCol=findCol(hdr,['top quer','query','keyword','search term']);
+        var clkCol=findCol(hdr,['click']);
+        var impCol=findCol(hdr,['impress']);
+        var ctrCol=findCol(hdr,['ctr','click-through','rate']);
+        var posCol=findCol(hdr,['position','pos','rank']);
+
+        // Fallback: positional defaults
+        if(clkCol<0)clkCol=1;
+        if(impCol<0)impCol=2;
+        if(ctrCol<0)ctrCol=3;
+        if(posCol<0)posCol=4;
+
+        // Determine sheet type
+        var isPageSheet=(n==='pages'||n==='top pages')||urlCol>=0;
+        var isQuerySheet=(n==='queries'||n==='top queries')||qCol>=0;
+        var isDateSheet=(n==='chart'||n==='days'||n==='date'||n==='trend');
+
+        // Also detect by first data cell
+        var firstCell=String(data[0]?data[0][0]||'':'').trim();
+        if(!isPageSheet&&!isQuerySheet&&!isDateSheet){
+          if(firstCell.startsWith('http'))isPageSheet=true;
+          else if(/^\d{4}-\d{2}-\d{2}/.test(firstCell))isDateSheet=true;
+          else isQuerySheet=true;
+        }
+
+        var dataUrlCol=urlCol>=0?urlCol:(qCol>=0?qCol:0);
+
+        if(isPageSheet){
+          data.forEach(function(r){
+            var u=String(r[dataUrlCol]||r[0]||'').trim();
+            if(u&&u.length>5&&(u.startsWith('http')||u.startsWith('/')))
+              P.push({url:u,clicks:+r[clkCol]||0,impr:+r[impCol]||0,ctr:parseCtr(r[ctrCol]),pos:parseFloat(r[posCol])||0});
+          });
+        } else if(isQuerySheet){
+          data.forEach(function(r){
+            var q=String(r[dataUrlCol]||r[0]||'').trim();
+            if(q&&q.length>0&&!q.startsWith('http'))
+              Q.push({q:q,clicks:+r[clkCol]||0,impr:+r[impCol]||0,ctr:parseCtr(r[ctrCol]),pos:parseFloat(r[posCol])||0});
+          });
+        } else if(isDateSheet){
+          data.forEach(function(r){
+            if(r[0])C.push({d:String(r[0]).slice(0,10),clicks:+r[1]||0,impr:+r[2]||0});
+          });
+        }
+      });
+
+      if(!P.length&&!Q.length){
+        showErr('Could not read data. Sheets: '+wb.SheetNames.join(', ')+'. Make sure this is a GSC Performance .xlsx export.');
+        return;
+      }
+
+      var allURLs=P.slice(0,10).map(function(p){return p.url;});
+      D={Q:Q,P:P,C:C,fn:file.name,_allURLs:allURLs,
+         site:(file.name.match(/([a-z0-9-]+\.[a-z]+)/i)||[])[1]||'unstop.com'};
+      buildDashboard();
+    }catch(err){showErr('Error reading file: '+err.message+' — '+err.stack);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── HELPERS ────────────────────────────────────────────────────────────────────
+function fmt(n){if(!n||isNaN(n))return'—';n=+n;return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'K':Math.round(n).toLocaleString();}
+function pct(n){return(+n||0).toFixed(1)+'%';}
+function posClass(p){return p<5?'pos-top':p<10?'pos-mid':p<20?'pos-low':'pos-bad';}
+function ctrClass(c){return c>5?'badge-green':c>2?'badge-blue':c>1?'badge-amber':'badge-red';}
+function posTag(p){var c=p<5?'badge-green':p<10?'badge-blue':p<20?'badge-amber':'badge-red';return '<span class="badge '+c+'">'+p.toFixed(1)+'</span>';}
+function ctrTag(c){return '<span class="badge '+ctrClass(c)+'">'+c.toFixed(1)+'%</span>';}
+function shortPath(url){return url.replace(/https?:\/\/[^/]+/,'').slice(0,52)||'/';}
+
+function goBack(){
+  CHARTS.forEach(function(c){try{c.destroy();}catch(e){}});CHARTS=[];
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('upload-screen').style.display='flex';
+  document.getElementById('fileInput').value='';
+}
+
+function showTab(id,el){
+  document.querySelectorAll('.sb-item').forEach(function(e){e.classList.remove('active');});
+  if(el)el.classList.add('active');
+  document.querySelectorAll('.tab-sec').forEach(function(e){e.classList.remove('active');});
+  var t=document.getElementById('t-'+id);
+  if(t)t.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  // Lazy render
+  if(id==='employers')renderEmployers();
+  if(id==='emp-wins')renderEmpWins();
+  if(id==='emp-potential')renderEmpPotential();
+  if(id==='emp-clusters')renderEmpClusters();
+  if(id==='blog-setup')renderBlogSetup();
+  if(id==='blogs')renderBlogs();
+  if(id==='blog-wins')renderBlogWins();
+  if(id==='combined')renderCombined();
+  if(id==='actions')renderActions();
+}
+
+// ── BUILD DASHBOARD ────────────────────────────────────────────────────────────
+function buildDashboard(){
+  CHARTS.forEach(function(c){try{c.destroy();}catch(e){}});CHARTS=[];
+
+  var P=D.P,C=D.C;
+
+  // Segment: /employers/ pages
+  // Robust /employers/ detection — matches with or without trailing slash, full URL or path
+  EMP=P.filter(function(p){
+    var u=p.url.toLowerCase();
+    return u.includes('/employers')||u.includes('employers/');
+  }).sort(function(a,b){return b.clicks-a.clicks;});
+
+  // Debug: show what URLs were found in GSC for troubleshooting
+  D.debugURLSample=P.slice(0,5).map(function(p){return p.url;});
+
+  // All /blog/ pages from GSC
+  ALL_BLOG_PAGES=P.filter(function(p){var u=p.url.toLowerCase();return u.includes('/blog/')||u.includes('blog/');}).sort(function(a,b){return b.clicks-a.clicks;});
+
+  // Match B2B blog URLs to GSC data
+  buildBlogData();
+
+  // Topbar
+  document.getElementById('upload-screen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('tb-site').textContent=D.site;
+  if(C.length>1)document.getElementById('tb-date').textContent=C[0].d+' → '+C[C.length-1].d;
+  document.getElementById('tb-b2b-pages').textContent=EMP.length+' employers pages';
+
+  // Sidebar counts
+  document.getElementById('cnt-employers').textContent=EMP.length;
+  document.getElementById('cnt-empwins').textContent=EMP.filter(function(p){return p.pos>=5&&p.pos<=20;}).length;
+  document.getElementById('cnt-emppot').textContent=EMP.filter(function(p){return p.impr>500&&p.ctr<2&&p.pos<30;}).length;
+  document.getElementById('cnt-blogs').textContent=BLOGS.length;
+
+  renderOverview();
+}
+
+function buildBlogData(){
+  if(!B2B_BLOG_URLS.length){BLOGS=[];document.getElementById('cnt-blogs').textContent='0';document.getElementById('cnt-blogwins').textContent='0';return;}
+  var normalised=B2B_BLOG_URLS.map(function(u){return u.toLowerCase().trim().replace(/\/$/,'');});
+  BLOGS=ALL_BLOG_PAGES.filter(function(p){
+    var pu=p.url.toLowerCase().trim().replace(/\/$/,'');
+    return normalised.some(function(n){return pu===n||pu.includes(n)||n.includes(pu);});
+  }).sort(function(a,b){return b.clicks-a.clicks;});
+  document.getElementById('cnt-blogs').textContent=BLOGS.length;
+  document.getElementById('cnt-blogwins').textContent=BLOGS.filter(function(p){return (p.pos>=5&&p.pos<=20)||(p.impr>500&&p.ctr<2);}).length;
+}
+
+// ── OVERVIEW ───────────────────────────────────────────────────────────────────
+function renderOverview(){
+  var el=document.getElementById('t-overview');
+
+  // ── DEBUG PANEL (shows if employers = 0) ──
+  var debugHtml='';
+  if(EMP.length===0&&D._allURLs&&D._allURLs.length>0){
+    debugHtml='<div style="background:#2d1505;border:1px solid #7c3a00;border-radius:10px;padding:14px 16px;margin-bottom:16px;">';
+    debugHtml+='<div style="font-size:12px;font-weight:700;color:#f97316;margin-bottom:8px;">⚠️ 0 /employers/ pages detected — GSC URL format check</div>';
+    debugHtml+='<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Your GSC export has <strong style="color:var(--text);">'+D.P.length+' total pages</strong>. Sample URLs from your file:</div>';
+    debugHtml+='<div style="font-family:system-ui,sans-serif;font-size:10px;background:var(--surface);border-radius:6px;padding:10px;line-height:1.8;">';
+    D._allURLs.forEach(function(u){debugHtml+='<div style="color:#34d399;">'+u+'</div>';});
+    debugHtml+='</div>';
+    debugHtml+='<div style="font-size:11px;color:var(--muted);margin-top:8px;">The dashboard looks for URLs containing <code style="background:var(--surface);padding:2px 5px;border-radius:3px;">/employers</code> or <code style="background:var(--surface);padding:2px 5px;border-radius:3px;">employers/</code>. ';
+    debugHtml+='If your URLs look correct above but show 0, make sure your GSC export includes the <strong style="color:var(--text);">Pages tab</strong> (not just the Queries tab).</div>';
+    debugHtml+='</div>';
+  }
+
+  var empTC=EMP.reduce(function(s,p){return s+p.clicks;},0);
+  var empTI=EMP.reduce(function(s,p){return s+p.impr;},0);
+  var empAP=EMP.length?EMP.reduce(function(s,p){return s+p.pos;},0)/EMP.length:0;
+  var empAC=empTI?empTC/empTI*100:0;
+
+  var blogTC=BLOGS.reduce(function(s,p){return s+p.clicks;},0);
+  var blogTI=BLOGS.reduce(function(s,p){return s+p.impr;},0);
+
+  var empQW=EMP.filter(function(p){return p.pos>=5&&p.pos<=20;});
+  var empHP=EMP.filter(function(p){return p.impr>500&&p.ctr<2&&p.pos<30;});
+
+  // Signals
+  var good=[],warn=[],opp=[];
+  var topEmp=EMP[0];
+  if(topEmp)good.push({l:shortPath(topEmp.url).slice(0,30),v:fmt(topEmp.clicks)+' clicks'});
+  var topCtr=EMP.filter(function(p){return p.ctr>5;}).sort(function(a,b){return b.clicks-a.clicks;})[0];
+  if(topCtr)good.push({l:'"'+shortPath(topCtr.url).slice(0,25)+'"',v:topCtr.ctr.toFixed(1)+'% CTR'});
+  var zeroCTR=EMP.filter(function(p){return p.impr>500&&p.ctr<0.5&&p.pos<15;}).sort(function(a,b){return b.impr-a.impr;});
+  zeroCTR.slice(0,3).forEach(function(p){warn.push({l:shortPath(p.url).slice(0,28),v:fmt(p.impr)+' impr, '+p.ctr.toFixed(1)+'% CTR'});});
+  opp.push({l:empQW.length+' quick wins (pos 5-20)',v:'Push to page 1'});
+  opp.push({l:empHP.length+' high potential',v:'Fix CTR → +clicks'});
+  if(BLOGS.length){
+    var blogHP=BLOGS.filter(function(p){return p.impr>300&&p.ctr<2;});
+    if(blogHP.length)opp.push({l:blogHP.length+' B2B blog opportunities',v:'Low CTR, high impr'});
+  }
+
+  function sigRows(arr){return arr.map(function(s){return'<div class="sig-row"><span class="sig-l">'+s.l+'</span><span class="sig-v">'+s.v+'</span></div>';}).join('');}
+
+  var html='';
+
+  // Stat grid — employers
+  html+=debugHtml;
+  html+='<div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">📊 Employers Section Performance</div>';
+  html+='<div class="stat-grid">';
+  html+='<div class="stat-card blue"><div class="stat-label">Total Clicks</div><div class="stat-val">'+fmt(empTC)+'</div><div class="stat-sub">'+EMP.length+' /employers/ pages</div></div>';
+  html+='<div class="stat-card green"><div class="stat-label">Impressions</div><div class="stat-val">'+fmt(empTI)+'</div><div class="stat-sub">B2B search appearances</div></div>';
+  html+='<div class="stat-card amber"><div class="stat-label">Avg. CTR</div><div class="stat-val">'+pct(empAC)+'</div><div class="stat-sub">'+(empAC<2?'⚠ Below 2% — needs work':'On track')+'</div></div>';
+  html+='<div class="stat-card purple"><div class="stat-label">Avg. Position</div><div class="stat-val">'+empAP.toFixed(1)+'</div><div class="stat-sub">'+(empAP<10?'Good':'Needs improvement')+'</div></div>';
+  html+='</div>';
+
+  // Blog stats if available
+  if(BLOGS.length){
+    html+='<div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;margin-top:6px;">✍️ B2B Blog Performance</div>';
+    var blogAP=BLOGS.length?BLOGS.reduce(function(s,p){return s+p.pos;},0)/BLOGS.length:0;
+    var blogAC=blogTI?blogTC/blogTI*100:0;
+    html+='<div class="stat-grid">';
+    html+='<div class="stat-card blue"><div class="stat-label">Blog Clicks</div><div class="stat-val">'+fmt(blogTC)+'</div><div class="stat-sub">'+BLOGS.length+' B2B blogs tracked</div></div>';
+    html+='<div class="stat-card green"><div class="stat-label">Blog Impressions</div><div class="stat-val">'+fmt(blogTI)+'</div><div class="stat-sub">B2B blog appearances</div></div>';
+    html+='<div class="stat-card amber"><div class="stat-label">Blog Avg. CTR</div><div class="stat-val">'+pct(blogAC)+'</div><div class="stat-sub">'+(blogAC<2?'⚠ Fix title tags':'Good')+'</div></div>';
+    html+='<div class="stat-card purple"><div class="stat-label">Blog Avg. Pos.</div><div class="stat-val">'+blogAP.toFixed(1)+'</div><div class="stat-sub">'+(blogAP<10?'Strong':'Needs links')+'</div></div>';
+    html+='</div>';
+  } else {
+    html+='<div class="notice notice-blue" style="margin-top:4px;"><div class="notice-title">ℹ️ B2B Blog Tracking not set up</div><div class="notice-body">Go to "Setup Blog URLs" tab and paste your 83 B2B blog URLs to enable blog performance tracking.</div></div>';
+  }
+
+  // Signals
+  html+='<div class="signals">';
+  html+='<div class="sig sig-green"><div class="sig-title">✅ What\'s working</div>'+sigRows(good.length?good:[{l:'Upload data to see signals',v:''}])+'</div>';
+  html+='<div class="sig sig-red"><div class="sig-title">⚠ Needs attention</div>'+sigRows(warn.length?warn:[{l:'No critical issues found',v:'✓'}])+'</div>';
+  html+='<div class="sig sig-amber"><div class="sig-title">🚀 Opportunities</div>'+sigRows(opp.length?opp:[{l:'Analysing...',v:''}])+'</div>';
+  html+='</div>';
+
+  // Chart + top employers
+  html+='<div class="two-col">';
+
+  // Top employers
+  html+='<div class="card" style="margin-bottom:0;"><div class="card-hdr">Top /employers/ pages<span class="card-sub">by clicks</span></div>';
+  html+='<div class="twrap"><table><thead><tr><th>#</th><th>URL</th><th>Clicks</th><th>CTR</th><th>Pos.</th></tr></thead><tbody>';
+  EMP.slice(0,10).forEach(function(p,i){
+    html+='<tr><td style="color:var(--muted);font-size:10px;">'+(i+1)+'</td>';
+    html+='<td class="link-cell"><a href="'+p.url+'" target="_blank" title="'+p.url+'">'+shortPath(p.url).slice(0,38)+'</a></td>';
+    html+='<td style="font-weight:600;color:var(--blue);">'+fmt(p.clicks)+'</td>';
+    html+=ctrTag(p.ctr)+'</td>';
+    html+=posTag(p.pos)+'</td></tr>';
+  });
+  html+='</tbody></table></div></div>';
+
+  // Top blogs if available
+  html+='<div class="card" style="margin-bottom:0;"><div class="card-hdr">Top B2B Blogs<span class="card-sub">'+(BLOGS.length?'by clicks':'not set up yet')+'</span></div>';
+  if(BLOGS.length){
+    html+='<div class="twrap"><table><thead><tr><th>#</th><th>URL</th><th>Clicks</th><th>CTR</th><th>Pos.</th></tr></thead><tbody>';
+    BLOGS.slice(0,10).forEach(function(p,i){
+      html+='<tr><td style="color:var(--muted);font-size:10px;">'+(i+1)+'</td>';
+      html+='<td class="link-cell"><a href="'+p.url+'" target="_blank" title="'+p.url+'">'+shortPath(p.url).slice(0,38)+'</a></td>';
+      html+='<td style="font-weight:600;color:var(--blue);">'+fmt(p.clicks)+'</td>';
+      html+='<td>'+ctrTag(p.ctr)+'</td>';
+      html+='<td>'+posTag(p.pos)+'</td></tr>';
+    });
+    html+='</tbody></table></div>';
+  } else {
+    html+='<div class="empty"><div class="empty-icon">✍️</div><div class="empty-text">Add B2B blog URLs in the Setup tab to start tracking blog performance here.</div></div>';
+  }
+  html+='</div>';
+  html+='</div>'; // two-col
+
+  el.innerHTML=html;
+}
+
+// ── EMPLOYERS PAGES ────────────────────────────────────────────────────────────
+function renderEmployers(){
+  var el=document.getElementById('t-employers');
+  if(el._rendered)return; el._rendered=true;
+  var maxC=EMP.length?EMP[0].clicks:1;
+  var html='<div class="card"><div class="card-hdr">All /employers/ pages <span class="card-sub">'+EMP.length+' total · sorted by clicks</span></div>';
+  html+='<div class="url-bars">';
+  EMP.forEach(function(p){
+    var pct2=Math.round(p.clicks/maxC*100);
+    var col=p.ctr>5?'#34d399':p.ctr>2?'#4f8ef7':p.ctr>1?'#fbbf24':'#f87171';
+    html+='<div class="url-row">';
+    html+='<div class="url-path" title="'+p.url+'">'+shortPath(p.url)+'</div>';
+    html+='<div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:'+pct2+'%;background:'+col+'"></div></div></div>';
+    html+='<div class="url-stats"><div class="us"><div class="us-v" style="color:'+col+'">'+fmt(p.clicks)+'</div><div class="us-l">Clicks</div></div>';
+    html+='<div class="us"><div class="us-v">'+fmt(p.impr)+'</div><div class="us-l">Impr</div></div>';
+    html+='<div class="us"><div class="us-v">'+p.ctr.toFixed(1)+'%</div><div class="us-l">CTR</div></div>';
+    html+='<div class="us"><div class="us-v">'+p.pos.toFixed(1)+'</div><div class="us-l">Pos</div></div></div>';
+    html+='</div>';
+  });
+  html+='</div></div>';
+
+  html+='<div class="card"><div class="card-hdr">Full data table</div>';
+  html+='<div class="twrap"><table><thead><tr><th>#</th><th>URL</th><th>Clicks</th><th>Impressions</th><th>CTR</th><th>Position</th><th>Est. extra clicks</th></tr></thead><tbody>';
+  EMP.forEach(function(p,i){
+    var gain=Math.max(0,Math.round(p.impr*0.05-p.clicks));
+    html+='<tr><td style="color:var(--muted);font-size:10px;">'+(i+1)+'</td>';
+    html+='<td class="link-cell" style="max-width:280px;"><a href="'+p.url+'" target="_blank" title="'+p.url+'">'+shortPath(p.url)+'</a></td>';
+    html+='<td style="font-weight:600;color:var(--blue);">'+fmt(p.clicks)+'</td>';
+    html+='<td>'+fmt(p.impr)+'</td>';
+    html+='<td>'+ctrTag(p.ctr)+'</td>';
+    html+='<td>'+posTag(p.pos)+'</td>';
+    html+='<td style="color:var(--green);font-weight:600;">'+(gain>0?'+'+fmt(gain):'—')+'</td></tr>';
+  });
+  html+='</tbody></table></div></div>';
+  el.innerHTML=html;
+}
+
+// ── EMP QUICK WINS ─────────────────────────────────────────────────────────────
+function renderEmpWins(){
+  var el=document.getElementById('t-emp-wins');
+  if(el._rendered)return; el._rendered=true;
+  var wins=EMP.filter(function(p){return p.pos>=5&&p.pos<=20;}).sort(function(a,b){return b.impr-a.impr;});
+  var totalGain=wins.reduce(function(s,p){return s+Math.max(0,Math.round(p.impr*0.08-p.clicks));},0);
+  var html='';
+  html+='<div class="notice notice-amber"><div class="notice-title">⚡ '+wins.length+' quick win opportunities — est. +'+fmt(totalGain)+' clicks/month</div><div class="notice-body">These /employers/ pages rank on page 1-2. Add internal links + FAQ schema to push to top 3.</div></div>';
+  html+='<div class="card"><div class="card-hdr">Quick wins — pos 5 to 20</div>';
+  html+='<div class="twrap"><table><thead><tr><th>#</th><th>URL</th><th>Position</th><th>Impressions</th><th>CTR</th><th>Est. extra clicks</th><th>Action</th></tr></thead><tbody>';
+  wins.forEach(function(p,i){
+    var g=Math.max(0,Math.round(p.impr*0.08-p.clicks));
+    html+='<tr><td style="color:var(--muted);font-size:10px;">'+(i+1)+'</td>';
+    html+='<td class="link-cell"><a href="'+p.url+'" target="_blank" title="'+p.url+'">'+shortPath(p.url).slice(0,42)+'</a></td>';
+    html+='<td>'+posTag(p.pos)+'</td>';
+    html+='<td>'+fmt(p.impr)+'</td>';
+    html+='<td>'+ctrTag(p.ctr)+'</td>';
+    html+='<td style="font-weight:600;color:var(--green);">+'+fmt(g)+'</td>';
+    html+='<td style="font-size:10px;color:var(--blue);">'+(p.pos<=10?'Title + FAQ schema':'Refresh + links')+'</td></tr>';
+  });
+  html+='</tbody></table></div></div>';
+  el.innerHTML=html;
+}
+
+// ── EMP HIGH POTENTIAL ─────────────────────────────────────────────────────────
+function renderEmpPotential(){
+  var el=document.getElementById('t-emp-potential');
+  if(el._rendered)return; el._rendered=true;
+  var hp=EMP.filter(function(p){return p.impr>500&&p.ctr<2&&p.pos<30;}).sort(function(a,b){return b.impr-a.impr;});
+  var totalGain=hp.reduce(function(s,p){return s+Math.max(0,Math.round(p.impr*0.05-p.clicks));},0);
+  var html='';
+  html+='<div class="notice notice-blue"><div class="notice-title">📈 '+hp.length+' high potential pages — est. +'+fmt(totalGain)+' clicks</div><div class="notice-body">High impressions but low CTR. Fix title tags to be specific, benefit-driven, with year/numbers. No ranking change needed.</div></div>';
+  html+='<div class="card"><div class="card-hdr">High impressions · Low CTR</div>';
+  html+='<div class="twrap"><table><thead><tr><th>#</th><th>URL</th><th>Impressions</th><th>Current CTR</th><th>Position</th><th>At 5% CTR</th><th>Priority</th></tr></thead><tbody>';
+  hp.forEach(function(p,i){
+    var g=Math.max(0,Math.round(p.impr*0.05-p.clicks));
+    var pri=g>2000?'🔴 Critical':g>500?'🟡 High':'🟢 Medium';
+    html+='<tr><td style="color:var(--muted);font-size:10px;">'+(i+1)+'</td>';
+    html+='<td class="link-cell"><a href="'+p.url+'" target="_blank" title="'+p.url+'">'+shortPath(p.url).slice(0,42)+'</a></td>';
+    html+='<td style="font-weight:600;">'+fmt(p.impr)+'</td>';
+    html+='<td>'+ctrTag(p.ctr)+'</td>';
+    html+='<td>'+posTag(p.pos)+'</td>';
+    html+='<td style="font-weight:600;color:var(--green);">+'+fmt(g)+'</td>';
+    html+='<td style="font-size:11px;">'+pri+'</td></tr>';
+  });
+  html+='</tbody></table></div></div>';
+  el.innerHTML=html;
+}
+
+// ── EMP CLUSTERS ────────────────────────────────────────────────────────────────
+function renderEmpClusters(){
+  var el=document.getElementById('t-emp-clusters');
+  if(el._rendered)return; el._rendered=true;
+
+  var clusterDefs=[
+    {name:'Assessment',seg:'/online-assessment',icon:'📝',col:'#4f8ef7'},
+    {name:'Proctoring',seg:'/360-degree',icon:'🎥',col:'#a78bfa'},
+    {name:'AI Interview',seg:'/virtual-interview',icon:'🤖',col:'#34d399'},
+    {name:'ATS / Campus',seg:'/hiring-automation',icon:'🏫',col:'#fbbf24'},
+    {name:'AI Screening',seg:'/screen-candidates',icon:'🔍',col:'#f87171'},
+    {name:'Sourcing',seg:'/source-candidates',icon:'🎯',col:'#fb923c'},
+    {name:'Employer Branding',seg:'/employer-branding',icon:'🏆',col:'#e879f9'},
+    {name:'Hire Developers',seg:'/hire-',icon:'💻',col:'#22d3ee'},
+    {name:'Resources',seg:'/advertise',icon:'📋',col:'#7a7f9a'},
+  ];
+
+  var clusters=clusterDefs.map(function(c){
+    var pages=EMP.filter(function(p){return p.url.toLowerCase().includes(c.seg);});
+    var tc=pages.reduce(function(s,p){return s+p.clicks;},0);
+    var ti=pages.reduce(function(s,p){return s+p.impr;},0);
+    var ap=pages.length?pages.reduce(function(s,p){return s+p.pos;},0)/pages.length:0;
+    return Object.assign({},c,{pages:pages,clicks:tc,impr:ti,ctr:ti?tc/ti*100:0,pos:ap});
+  }).filter(function(c){return c.pages.length>0;}).sort(function(a,b){return b.clicks-a.clicks;});
+
+  var maxC=clusters.length?clusters[0].clicks:1;
+  var html='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;">';
+  clusters.forEach(function(c){
+    var pct2=Math.round(c.clicks/maxC*100);
+    html+='<div class="card" style="margin-bottom:0;border-top:2px solid '+c.col+';">';
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">';
+    html+='<span style="font-size:18px;">'+c.icon+'</span>';
+    html+='<div style="font-size:13px;font-weight:600;color:var(--text);">'+c.name+'</div>';
+    html+='<span class="badge badge-gray" style="margin-left:auto;">'+c.pages.length+'p</span>';
+    html+='</div>';
+    html+='<div style="font-size:22px;font-weight:700;color:'+c.col+';">'+fmt(c.clicks)+'</div>';
+    html+='<div style="font-size:11px;color:var(--muted);margin-top:2px;">CTR '+c.ctr.toFixed(1)+'% · pos '+c.pos.toFixed(1)+' · '+fmt(c.impr)+' impr</div>';
+    html+='<div class="bar-bg" style="margin-top:8px;"><div class="bar-fill" style="width:'+pct2+'%;background:'+c.col+'"></div></div>';
+    html+='</div>';
+  });
+  html+='</div>';
+
+  // Per-cluster tables
+  clusters.forEach(function(c){
+    html+='<div class="card"><div class="card-hdr"><span style="color:'+c.col+';">'+c.icon+' '+c.name+'</span><span class="card-sub">'+c.pages.length+' pages</span></div>';
+    html+='<div class="twrap"><table><thead><tr><th>URL</th><th>Clicks</th><th>Impr.</th><th>CTR</th><th>Pos.</th></tr></thead><tbody>';
+    c.pages.forEach(function(p){
+      html+='<tr><td class="link-cell" style="max-width:280px;"><a href="'+p.url+'" target="_blank" title="'+p.url+'">'+shortPath(p.url)+'</a></td>';
+      html+='<td style="font-weight:600;color:var(--blue);">'+fmt(p.clicks)+'</td>';
+      html+='<td>'+fmt(p.impr)+'</td>';
+      html+='<td>'+ctrTag(p.ctr)+'</td>';
+      html+='<td>'+posTag(p.pos)+'</td></tr>';
+    });
+    html+='</tbody></table></div></div>';
+  });
+  el.innerHTML=html;
+}
+
+// ── BLOG SETUP ─────────────────────────────────────────────────────────────────
+function renderBlogSetup(){
+  var el=document.getElementById('t-blog-setup');
+  var currentURLs=B2B_BLOG_URLS.join('\n');
+  var html='';
+
+  html+='<div class="blog-setup">';
+  html+='<div class="blog-setup-title">🎯 Add Your B2B Blog URLs</div>';
+  html+='<div class="blog-setup-sub">Paste all your B2B blog URLs below — one per line. The dashboard will automatically match them against your GSC data and show their performance separately from general blogs.<br><br>All '+ALL_BLOG_PAGES.length+' /blog/ pages found in your GSC file — paste whichever ones are B2B-focused.</div>';
+
+  if(B2B_BLOG_URLS.length){
+    html+='<div style="margin-bottom:10px;"><span class="blog-count-chip">✓ '+B2B_BLOG_URLS.length+' B2B blogs saved · '+BLOGS.length+' matched in GSC data</span></div>';
+  } else {
+    html+='<div style="margin-bottom:10px;"><span class="blog-setup-badge">⚡ No B2B blogs added yet</span></div>';
+  }
+
+  html+='<textarea class="blog-textarea" id="blog-url-input" placeholder="https://unstop.com/blog/what-is-online-assessment-platform\nhttps://unstop.com/blog/how-to-choose-right-online-assessment-platform\nhttps://unstop.com/blog/what-is-ai-proctoring\n...(one URL per line)">'+currentURLs+'</textarea>';
+  html+='<div class="blog-btns">';
+  html+='<button class="btn btn-primary" onclick="applyBlogURLs()">✓ Save & Track These Blogs</button>';
+  html+='<button class="btn btn-ghost" onclick="loadAllB2BBlogs()">📋 Load Unstop B2B Blog List</button>';
+  html+='<button class="btn btn-ghost" onclick="clearBlogURLs()">✕ Clear All</button>';
+  html+='</div>';
+  html+='<div id="blog-save-msg" style="margin-top:8px;font-size:11px;color:var(--green);display:none;"></div>';
+  html+='</div>';
+
+  // Show all /blog/ pages found in GSC
+  html+='<div class="card"><div class="card-hdr">All /blog/ pages in your GSC data<span class="card-sub">'+ALL_BLOG_PAGES.length+' total — click any URL to add</span></div>';
+  html+='<div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Click any row to toggle it as a B2B blog. Green = already added.</div>';
+  html+='<div class="twrap"><table><thead><tr><th>Status</th><th>Blog URL</th><th>Clicks</th><th>Impr.</th><th>CTR</th><th>Pos.</th></tr></thead><tbody>';
+  ALL_BLOG_PAGES.slice(0,150).forEach(function(p,i){
+    var normalised=B2B_BLOG_URLS.map(function(u){return u.toLowerCase().trim().replace(/\/$/,'');});
+    var isB2B=normalised.some(function(n){var pu=p.url.toLowerCase().trim().replace(/\/$/,'');return pu===n||pu.includes(n)||n.includes(pu);});
+    html+='<tr id="blog-row-'+i+'" style="cursor:pointer;"'+(isB2B?' class="b2b-row"':'')+' onclick="toggleBlogRow(\''+p.url.replace(/'/g,"\\'")+'\')" title="Click to add/remove as B2B blog">';
+    html+='<td><span class="badge '+(isB2B?'badge-green':'badge-gray')+'">'+(isB2B?'B2B':'—')+'</span></td>';
+    html+='<td class="link-cell" style="max-width:320px;"><span style="font-family:system-ui,sans-serif;font-size:10px;color:var(--blue);">'+shortPath(p.url).slice(0,52)+'</span></td>';
+    html+='<td style="font-weight:600;color:var(--blue);">'+fmt(p.clicks)+'</td>';
+    html+='<td>'+fmt(p.impr)+'</td>';
+    html+='<td>'+ctrTag(p.ctr)+'</td>';
+    html+='<td>'+posTag(p.pos)+'</td></tr>';
+  });
+  html+='</tbody></table></div>';
+  if(ALL_BLOG_PAGES.length>150)html+='<div style="padding:8px;font-size:11px;color:var(--muted);">Showing first 150 of '+ALL_BLOG_PAGES.length+' blog pages</div>';
+  html+='</div>';
+
+  el.innerHTML=html;
+}
+
+function toggleBlogRow(url){
+  var urls=B2B_BLOG_URLS.slice();
+  var idx=urls.findIndex(function(u){return u.toLowerCase().trim()===url.toLowerCase().trim();});
+  if(idx>-1){urls.splice(idx,1);}else{urls.push(url);}
+  saveBlogURLs(urls);
+  buildBlogData();
+  // Re-render setup
+  document.getElementById('t-blog-setup')._rendered=false;
+  renderBlogSetup();
+}
+
+function applyBlogURLs(){
+  var raw=document.getElementById('blog-url-input').value||'';
+  var urls=raw.split('\n').map(function(u){return u.trim();}).filter(function(u){return u.length>5&&u.includes('/blog/');});
+  saveBlogURLs(urls);
+  buildBlogData();
+  var msg=document.getElementById('blog-save-msg');
+  msg.style.display='block';
+  msg.textContent='✓ Saved '+urls.length+' URLs — '+BLOGS.length+' matched in your GSC data.';
+  // Re-render overview
+  renderOverview();
+  // Reset other tabs
+  document.getElementById('t-blogs')._rendered=false;
+  document.getElementById('t-blog-wins')._rendered=false;
+  document.getElementById('t-combined')._rendered=false;
+  document.getElementById('t-actions')._rendered=false;
+  setTimeout(function(){msg.style.display='none';},4000);
+}
+
+function clearBlogURLs(){
+  saveBlogURLs([]);buildBlogData();
+  document.getElementById('t-blog-setup')._rendered=false;
+  renderBlogSetup();
+  renderOverview();
+}
+
+function loadAllB2BBlogs(){
+  // Pre-filled list of Unstop B2B blogs
+  var b2bList=[
+    'https://unstop.com/blog/talent-assessment-in-hiring',
+    'https://unstop.com/blog/how-ai-is-transforming-talent-assessment-for-high-volume-hiring',
+    'https://unstop.com/blog/building-a-winning-talent-assessment-strategy-for-campus-hiring',
+    'https://unstop.com/blog/10-common-talent-assessment-mistakes-to-avoid',
+    'https://unstop.com/blog/unstop-talent-assessments-for-modern-hiring',
+    'https://unstop.com/blog/what-is-online-assessment-platform',
+    'https://unstop.com/blog/online-assessment-platform-features',
+    'https://unstop.com/blog/how-to-choose-right-online-assessment-platform',
+    'https://unstop.com/blog/online-assessment-versus-traditional-screening',
+    'https://unstop.com/blog/unstop-online-assessment-platform',
+    'https://unstop.com/blog/features-of-unstop-assessment-platform',
+    'https://unstop.com/blog/top-online-assessment-platforms-list',
+    'https://unstop.com/blog/technical-assessment-platforms',
+    'https://unstop.com/blog/aptitude-test-platform',
+    'https://unstop.com/blog/aptitude-test-vs-traditional-screening',
+    'https://unstop.com/blog/aptitude-test-platform-features',
+    'https://unstop.com/blog/unstop-aptitude-test-platform',
+    'https://unstop.com/blog/what-is-ai-proctoring',
+    'https://unstop.com/blog/top-10-benefits-of-online-proctoring',
+    'https://unstop.com/blog/features-needed-in-proctoring-tool',
+    'https://unstop.com/blog/manual-proctoring-vs-ai-proctoring',
+    'https://unstop.com/blog/unstop-ai-proctoring',
+    'https://unstop.com/blog/top-online-proctoring-platforms',
+    'https://unstop.com/blog/what-is-a-virtual-interview-platform',
+    'https://unstop.com/blog/live-vs-recorded-interviews',
+    'https://unstop.com/blog/features-of-virtual-interview-platforms',
+    'https://unstop.com/blog/ai-driven-interview-vs-human-led-feedback',
+    'https://unstop.com/blog/unstop-virtual-interview-platform',
+    'https://unstop.com/blog/top-virtual-interview-platforms',
+    'https://unstop.com/blog/top-ai-interview-platforms',
+    'https://unstop.com/blog/what-is-applicant-tracking-system',
+    'https://unstop.com/blog/benefits-of-ats',
+    'https://unstop.com/blog/how-to-choose-applicant-tracking-system',
+    'https://unstop.com/blog/unstop-applicant-tracking-system',
+    'https://unstop.com/blog/top-ats-platforms',
+    'https://unstop.com/blog/recruiting-automation',
+    'https://unstop.com/blog/recruitment-automation-vs-traditional-hiring',
+    'https://unstop.com/blog/recruiting-automation-examples',
+    'https://unstop.com/blog/how-unstop-can-help-in-recruitment-automation',
+    'https://unstop.com/blog/top-hiring-automation-platforms',
+    'https://unstop.com/blog/best-ways-to-automate-your-hiring-process',
+    'https://unstop.com/blog/unstop-campus-hiring-platform',
+    'https://unstop.com/blog/top-campus-hiring-platforms',
+    'https://unstop.com/blog/top-campus-engagement-platforms',
+    'https://unstop.com/blog/hiring-platform',
+    'https://unstop.com/blog/ai-powered-hiring-platform',
+    'https://unstop.com/blog/choose-the-right-hiring-platform',
+    'https://unstop.com/blog/screening-in-recruitment',
+    'https://unstop.com/blog/what-is-a-coding-interview-platform',
+    'https://unstop.com/blog/benefits-of-coding-interview-platforms',
+    'https://unstop.com/blog/online-coding-assessment-platform-features',
+    'https://unstop.com/blog/how-to-decide-the-best-coding-assessment-platform',
+    'https://unstop.com/blog/unstop-online-coding-test-platform',
+    'https://unstop.com/blog/top-coding-assessment-platforms',
+    'https://unstop.com/blog/what-is-an-sql-test-platform',
+    'https://unstop.com/blog/choose-the-right-sql-assessment-tool',
+    'https://unstop.com/blog/unstop-sql-test-platform',
+    'https://unstop.com/blog/what-are-technical-tests',
+    'https://unstop.com/blog/unstop-technical-tests',
+    'https://unstop.com/blog/choose-right-technical-test-tool',
+    'https://unstop.com/blog/features-in-a-technical-test-platform-for-recruiters',
+    'https://unstop.com/blog/what-is-a-communication-assessment-platform',
+    'https://unstop.com/blog/communication-assessment-platform-features',
+    'https://unstop.com/blog/communication-assessment-vs-live-interview',
+    'https://unstop.com/blog/unstops-communication-assessment-platform',
+    'https://unstop.com/blog/what-is-a-competency-assessment',
+    'https://unstop.com/blog/key-features-to-consider-while-choosing-the-best-competency-assessment-platform',
+    'https://unstop.com/blog/competency-assessment-versus-traditional-screening',
+    'https://unstop.com/blog/why-choose-unstop-for-conducting-competency-assessments',
+    'https://unstop.com/blog/choose-right-data-science-assessment-platform',
+    'https://unstop.com/blog/top-data-science-assessment-platforms',
+    'https://unstop.com/blog/organizing-a-hackathon-on-unstop',
+    'https://unstop.com/blog/top-hackathon-platforms',
+    'https://unstop.com/blog/top-employer-branding-platforms',
+    'https://unstop.com/blog/top-quiz-assessment-platforms',
+    'https://unstop.com/blog/types-of-sourcing-in-recruitment',
+    'https://unstop.com/blog/sources-of-recruitment',
+    'https://unstop.com/blog/top-job-posting-sites',
+  ];
+  document.getElementById('blog-url-input').value=b2bList.join('\n');
+}
+
+// ── BLOG PERFORMANCE ───────────────────────────────────────────────────────────
+function renderBlogs(){
+  var el=document.getElementById('t-blogs');
+  if(el._rendered)return; el._rendered=true;
+  if(!BLOGS.length){
+    el.innerHTML='<div class="notice notice-blue"><div class="notice-title">Setup required</div><div class="notice-body">Go to "Setup Blog URLs" tab and add your B2B blog URLs first.</div></div>';
+    return;
+  }
+  var maxC=BLOGS[0].clicks||1;
+  var html='<div class="card"><div class="card-hdr">B2B Blog Performance <span class="card-sub">'+BLOGS.length+' blogs · matched from GSC</span></div>';
+  html+='<div class="url-bars">';
+  BLOGS.slice(0,30).forEach(function(p){
+    var pct2=Math.round(p.clicks/maxC*100)||1;
+    var col=p.ctr>5?'#34d399':p.ctr>2?'#4f8ef7':p.ctr>1?'#fbbf24':'#f87171';
+    html+='<div class="url-row">';
+    html+='<div class="url-path" title="'+p.url+'">'+shortPath(p.url).replace('/blog/','').slice(0,40)+'</div>';
+    html+='<div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:'+pct2+'%;background:'+col+'"></div></div></div>';
+    html+='<div class="url-stats"><div class="us"><div class="us-v" style="color:'+col+'">'+fmt(p.clicks)+'</div><div class="us-l">Clicks</div></div>';
+    html+='<div class="us"><div class="us-v">'+fmt(p.impr)+'</div><div class="us-l">Impr</div></div>';
+    html+='<div class="us"><div class="us-v">'+p.ctr.toFixed(1)+'%</div><div class="us-l">CTR</div></div>';
+    html+='<div class="us"><div class="us-v">'+p.pos.toFixed(1)+'</div><div class="us-l">Pos</div></div></div>';
+    html+='</div>';
+  });
+  html+='</div></div>';
+  html+='<div class="card"><div class="card-hdr">Full blog data table</div>';
+  html+='<div class="twrap"><table><thead><tr><th>#</th><th>Blog URL</th><th>Clicks</th><th>Impr.</th><th>CTR</th><th>Pos.</th><th>Est. extra clicks</th></tr></thead><tbody>';
+  BLOGS.forEach(function(p,i){
+    var g=Math.max(0,Math.round(p.impr*0.05-p.clicks));
+    html+='<tr><td style="color:var(--muted);font-size:10px;">'+(i+1)+'</td>';
+    html+='<td class="link-cell" style="max-width:300px;"><a href="'+p.url+'" target="_blank" title="'+p.url+'">'+shortPath(p.url)+'</a></td>';
+    html+='<td style="font-weight:600;color:var(--blue);">'+fmt(p.clicks)+'</td>';
+    html+='<td>'+fmt(p.impr)+'</td>';
+    html+='<td>'+ctrTag(p.ctr)+'</td>';
+    html+='<td>'+posTag(p.pos)+'</td>';
+    html+='<td style="color:var(--green);font-weight:600;">'+(g>0?'+'+fmt(g):'—')+'</td></tr>';
+  });
+  html+='</tbody></table></div></div>';
+  el.innerHTML=html;
+}
+
+// ── BLOG WINS ──────────────────────────────────────────────────────────────────
+function renderBlogWins(){
+  var el=document.getElementById('t-blog-wins');
+  if(el._rendered)return; el._rendered=true;
+  if(!BLOGS.length){
+    el.innerHTML='<div class="notice notice-blue"><div class="notice-title">Setup required</div><div class="notice-body">Add B2B blog URLs in the Setup tab first.</div></div>';
+    return;
+  }
+  var wins=BLOGS.filter(function(p){return p.pos>=5&&p.pos<=20;}).sort(function(a,b){return b.impr-a.impr;});
+  var hp=BLOGS.filter(function(p){return p.impr>300&&p.ctr<2&&p.pos<30;}).sort(function(a,b){return b.impr-a.impr;});
+  var html='<div class="two-col">';
+  // Quick wins
+  html+='<div class="card" style="margin-bottom:0;"><div class="card-hdr">⚡ Quick wins (pos 5-20)<span class="card-sub">'+wins.length+' blogs</span></div>';
+  html+='<div class="twrap"><table><thead><tr><th>#</th><th>Blog</th><th>Pos.</th><th>Impr.</th><th>Est. gain</th></tr></thead><tbody>';
+  wins.slice(0,15).forEach(function(p,i){
+    var g=Math.max(0,Math.round(p.impr*0.08-p.clicks));
+    html+='<tr><td style="color:var(--muted);font-size:10px;">'+(i+1)+'</td>';
+    html+='<td class="link-cell"><a href="'+p.url+'" target="_blank" title="'+p.url+'">'+shortPath(p.url).replace('/blog/','').slice(0,30)+'</a></td>';
+    html+='<td>'+posTag(p.pos)+'</td>';
+    html+='<td>'+fmt(p.impr)+'</td>';
+    html+='<td style="color:var(--green);font-weight:600;">+'+fmt(g)+'</td></tr>';
+  });
+  html+='</tbody></table></div></div>';
+  // High potential
+  html+='<div class="card" style="margin-bottom:0;"><div class="card-hdr">📈 Low CTR blogs<span class="card-sub">'+hp.length+' blogs</span></div>';
+  html+='<div class="twrap"><table><thead><tr><th>#</th><th>Blog</th><th>Impr.</th><th>CTR</th><th>Extra clicks</th></tr></thead><tbody>';
+  hp.slice(0,15).forEach(function(p,i){
+    var g=Math.max(0,Math.round(p.impr*0.04-p.clicks));
+    html+='<tr><td style="color:var(--muted);font-size:10px;">'+(i+1)+'</td>';
+    html+='<td class="link-cell"><a href="'+p.url+'" target="_blank" title="'+p.url+'">'+shortPath(p.url).replace('/blog/','').slice(0,30)+'</a></td>';
+    html+='<td>'+fmt(p.impr)+'</td>';
+    html+='<td>'+ctrTag(p.ctr)+'</td>';
+    html+='<td style="color:var(--green);font-weight:600;">+'+fmt(g)+'</td></tr>';
+  });
+  html+='</tbody></table></div></div>';
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+// ── COMBINED VIEW ──────────────────────────────────────────────────────────────
+function renderCombined(){
+  var el=document.getElementById('t-combined');
+  if(el._rendered)return; el._rendered=true;
+  var all=[].concat(
+    EMP.map(function(p){return Object.assign({},p,{type:'employers'});}),
+    BLOGS.map(function(p){return Object.assign({},p,{type:'blog'});})
+  ).sort(function(a,b){return b.clicks-a.clicks;});
+
+  var empTC=EMP.reduce(function(s,p){return s+p.clicks;},0);
+  var blogTC=BLOGS.reduce(function(s,p){return s+p.clicks;},0);
+  var total=empTC+blogTC;
+
+  var html='<div class="card"><div class="card-hdr">B2B Combined — All Employers + B2B Blogs<span class="card-sub">'+all.length+' total pages</span></div>';
+  if(total>0){
+    html+='<div style="display:flex;gap:10px;margin-bottom:14px;">';
+    html+='<div style="flex:1;background:var(--surface2);border-radius:8px;padding:12px 14px;">';
+    html+='<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Employers Section</div>';
+    html+='<div style="font-size:20px;font-weight:700;color:var(--blue);">'+fmt(empTC)+'<span style="font-size:12px;font-weight:400;color:var(--muted);margin-left:4px;">clicks ('+Math.round(empTC/total*100)+'%)</span></div></div>';
+    html+='<div style="flex:1;background:var(--surface2);border-radius:8px;padding:12px 14px;">';
+    html+='<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">B2B Blog Section</div>';
+    html+='<div style="font-size:20px;font-weight:700;color:var(--purple);">'+fmt(blogTC)+'<span style="font-size:12px;font-weight:400;color:var(--muted);margin-left:4px;">clicks ('+Math.round(blogTC/total*100)+'%)</span></div></div>';
+    html+='</div>';
+  }
+  html+='<div class="twrap"><table><thead><tr><th>#</th><th>Type</th><th>URL</th><th>Clicks</th><th>Impr.</th><th>CTR</th><th>Pos.</th></tr></thead><tbody>';
+  all.slice(0,100).forEach(function(p,i){
+    var isEmp=p.type==='employers';
+    html+='<tr><td style="color:var(--muted);font-size:10px;">'+(i+1)+'</td>';
+    html+='<td><span class="badge '+(isEmp?'badge-blue':'badge-purple')+'">'+(isEmp?'/employers':'/blog')+'</span></td>';
+    html+='<td class="link-cell" style="max-width:260px;"><a href="'+p.url+'" target="_blank" title="'+p.url+'">'+shortPath(p.url).slice(0,42)+'</a></td>';
+    html+='<td style="font-weight:600;color:var(--blue);">'+fmt(p.clicks)+'</td>';
+    html+='<td>'+fmt(p.impr)+'</td>';
+    html+='<td>'+ctrTag(p.ctr)+'</td>';
+    html+='<td>'+posTag(p.pos)+'</td></tr>';
+  });
+  html+='</tbody></table></div>';
+  if(all.length>100)html+='<div style="padding:8px;font-size:11px;color:var(--muted);">Showing 100 of '+all.length+'</div>';
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+// ── ACTIONS ────────────────────────────────────────────────────────────────────
+function renderActions(){
+  var el=document.getElementById('t-actions');
+  if(el._rendered)return; el._rendered=true;
+
+  var empHP=EMP.filter(function(p){return p.impr>500&&p.ctr<2&&p.pos<30;}).sort(function(a,b){return b.impr-a.impr;});
+  var empQW=EMP.filter(function(p){return p.pos>=5&&p.pos<=20;}).sort(function(a,b){return b.impr-a.impr;});
+  var blogLow=BLOGS.filter(function(p){return p.impr>300&&p.ctr<1.5;}).sort(function(a,b){return b.impr-a.impr;});
+  var zeroCTR=EMP.filter(function(p){return p.impr>1000&&p.ctr<0.5&&p.pos<15;}).sort(function(a,b){return b.impr-a.impr;});
+
+  var actions=[];
+  if(zeroCTR.length){
+    var g=zeroCTR.slice(0,3).reduce(function(s,p){return s+Math.round(p.impr*0.04);},0);
+    actions.push({n:1,col:'#f87171',bg:'#2d1515',t:'Fix zero-CTR employers pages — '+zeroCTR.length+' critical',s:'Pages ranking pos 1-15 with <0.5% CTR. Rewrite title tags to include benefit + number + year. Est. gain: +'+fmt(g)+' clicks.',imp:'🔴 Critical'});
+  }
+  if(empHP.length){
+    var g2=Math.max(0,Math.round(empHP[0].impr*0.05-empHP[0].clicks));
+    actions.push({n:actions.length+1,col:'#fbbf24',bg:'#2d1e05',t:'"'+shortPath(empHP[0].url).slice(0,45)+'" — '+fmt(empHP[0].impr)+' impr at '+empHP[0].ctr.toFixed(1)+'% CTR',s:'Rewrite title tag to be compelling: add numbers, benefit, year. Estimated gain at 5% CTR: +'+fmt(g2)+' clicks with zero ranking change.',imp:'🟡 High'});
+  }
+  if(empQW.length){
+    actions.push({n:actions.length+1,col:'#4f8ef7',bg:'#0e1e3a',t:empQW.length+' employers pages at pos 5-20 — push to page 1',s:'Add 3-5 internal links from high-traffic pages. Add FAQPage schema. Top: "'+shortPath(empQW[0].url).slice(0,40)+'" at pos '+empQW[0].pos.toFixed(1)+'.',imp:'🟡 High'});
+  }
+  if(blogLow.length){
+    actions.push({n:actions.length+1,col:'#a78bfa',bg:'#1a1040',t:'Fix '+blogLow.length+' B2B blogs with low CTR',s:'B2B blogs are your product page support system. Low CTR means low internal link authority flowing to /employers/ pages. Rewrite title tags and add > Also read CTA blocks.',imp:'🟡 High'});
+  }
+  actions.push({n:actions.length+1,col:'#34d399',bg:'#041f15',t:'Add internal links from top B2B blogs to /employers/ product pages',s:'Every B2B blog should have at least 2 internal links pointing to the relevant /employers/ product page. This is the strongest signal you can send without any new content.',imp:'🟢 Medium'});
+  actions.push({n:actions.length+1,col:'#34d399',bg:'#041f15',t:'Request FAQPage schema implementation on all /employers/ pages',s:'Dev task: add FAQPage schema to every /employers/ product page and all B2B blogs. This feeds Google AI Overviews and PAA boxes directly — no ranking needed.',imp:'🟢 Medium'});
+
+  var html='<div class="card"><div class="card-hdr">B2B Action Items <span class="card-sub">sorted by priority</span></div>';
+  html+='<div class="action-list">';
+  actions.forEach(function(a){
+    html+='<div class="action-row">';
+    html+='<div class="action-num" style="background:'+a.bg+';color:'+a.col+';">'+a.n+'</div>';
+    html+='<div><div class="action-title">'+a.t+'</div>';
+    html+='<div class="action-sub">'+a.s+'</div>';
+    html+='<div class="action-impact" style="background:'+a.bg+';color:'+a.col+';">'+a.imp+'</div></div>';
+    html+='</div>';
+  });
+  html+='</div></div>';
+  el.innerHTML=html;
+}
+</script>
+</body>
+</html>
