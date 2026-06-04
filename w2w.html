@@ -27,11 +27,12 @@
   --tel:#09281e;--ted:#8cecd3;
   --rel:#441313;
   --aml:#442b0a;
-  --bll:#092644;
-  --col:#471d0e;
+  --bl:#185FA5;--bll:#092644;
+  --co:#D85A30;--col:#471d0e;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--t);min-height:100vh;transition:background 0.3s, color 0.3s}
 
+/* NAV */
 .nav{background:var(--s);border-bottom:1px solid var(--b);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:300;transition:background 0.3s}
 .nav-logo{font-size:14px;font-weight:700;color:var(--pu)}
 .nav-logo small{font-weight:400;color:var(--t3);font-size:11px;margin-left:6px}
@@ -103,12 +104,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   background-position:calc(100% - 8px) 50%;
 }
 .wi select:focus{border-color:var(--pu);background-color:var(--s)}
+
+/* FILE NAME GUIDE CARD */
+.fname-guide{background:var(--s);border:1px solid var(--b2);border-radius:var(--r);padding:14px 16px;margin-bottom:14px;transition:background 0.3s}
+.fg-title{font-size:11px;font-weight:700;color:var(--t2);margin-bottom:10px}
+.fg-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.fg-row{display:flex;align-items:center;gap:10px;font-size:12px}
+.fg-num{width:18px;height:18px;border-radius:50%;background:var(--s3);color:var(--t2);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fg-num.gsc-num{background:var(--pul);color:var(--pu)}
+.fg-num.ga-num{background:var(--tel);color:var(--te)}
+.fg-name{font-family:'SF Mono',monospace;font-size:11px;font-weight:700;color:var(--pu);background:var(--pul);padding:2px 8px;border-radius:4px;min-width:170px;text-align:left}
+.fg-desc{color:var(--t3);font-size:11px}
+.fg-note{font-size:11px;color:var(--t3);margin-top:6px;padding-top:6px;border-top:1px solid var(--b2)}
+
 .gen-btn{width:100%;padding:13px;background:var(--pu);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;transition:background .12s;margin-top:4px}
 .gen-btn:hover{background:var(--pud)}
 .gen-btn:disabled{background:var(--t3);cursor:not-allowed}
 .parse-log{font-size:11px;color:var(--t3);margin-top:8px;min-height:16px;text-align:left}
 .parse-log.ok{color:var(--te)}.parse-log.err{color:var(--re)}
 
+/* REPORT COMPONENTS */
 .rh{margin-bottom:16px}
 .rh h1{font-size:20px;font-weight:700}
 .rh p{font-size:12px;color:var(--t2);margin-top:3px}
@@ -388,8 +403,6 @@ td:first-child,th:first-child{padding-left:13px}
 <div id="toast-container"></div>
 
 <script>
-// ════════════════════════════════════════
-// ════════════════════════════════════════
 let D = {} 
 let charts = {}, cIdx = 0
 
@@ -492,6 +505,12 @@ const dc = (v,inv=false) => v==null?'df':(inv?(v>0?'dd':'du'):(v>0?'du':'dd'))
 const mc_ = (v,inv=false) => v==null?'n':(inv?(v>0?'r':'g'):(v>0?'g':'r'))
 const sh = t => `<div class="sh">${t}</div>`
 const ins_ = (t,tp='n') => `<div class="ins ${tp}">${t}</div>`
+const sig_ = (tp,tt,b) => `<div class="sig ${tp}"><div class="sig-d"></div><div class="sig-b"><strong>${tt}</strong>${b}</div></div>`
+const bdg_ = (v,inv=false) => {
+  if(v==null) return '<span class="bdg bdg-f">—</span>'
+  const cls = inv?(v>0?'bdg-r':'bdg-g'):(v>0?'bdg-g':'bdg-r')
+  return `<span class="bdg ${cls}">${fp(v)}</span>`
+}
 
 function MC(lbl,cc,pc,inv=false,suf=''){
   const d=pct(cc,pc); const diff=cc!=null&&pc!=null?Math.abs(cc-pc):null
@@ -535,7 +554,22 @@ function progTable(data, color, maxV=null){
 }
 
 // ════════════════════════════════════════
+// FILE HANDLING — SINGLE DROP ZONE + AUTO DETECT
 // ════════════════════════════════════════
+let fileMap = {}
+
+const SLOTS = ['xlsx','ai_pages','int_skills','int_locs','job_skills','job_locs']
+
+const SLOT_META = {
+  xlsx:       { icon:'📊', label:'GSC Export'           },
+  ai_pages:   { icon:'🤖', label:'AI Traffic & Pages'   },
+  int_skills: { icon:'💼', label:'Internship Skills'    },
+  int_locs:   { icon:'📍', label:'Internship Locations' },
+  job_skills: { icon:'🏢', label:'Job Skills'            },
+  job_locs:   { icon:'📍', label:'Job Locations'        },
+  unknown:    { icon:'❓', label:'Unknown — not used'   },
+}
+
 function handleDragOver(e){ e.preventDefault(); document.getElementById('drop-zone').classList.add('drag') }
 function handleDragLeave(){ document.getElementById('drop-zone').classList.remove('drag') }
 function handleDrop(e){ e.preventDefault(); handleDragLeave(); handleFiles(e.dataTransfer.files) }
@@ -621,8 +655,6 @@ function updateStatus(){
   document.getElementById('gen-btn').disabled=false
 }
 
-// ════════════════════════════════════════
-// ════════════════════════════════════════
 function parseAIPagesCSV(content){
   const lines = content.split('\n')
   const moNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
@@ -630,7 +662,7 @@ function parseAIPagesCSV(content){
   let dateC='', dateP=''
   for(const l of lines.slice(0,10)){
     const m = l.match(/(\d{8})/g)
-    if(m && m.length>=4){ dateC=m[0]; dateP=m[2]; break }
+    if(m && m.length>=4){ dateC=m[0]; dateP=m[2]; break } 
     else if(m && m.length>=2){ dateC=m[0]; dateP=m[1]; break }
   }
 
@@ -770,8 +802,6 @@ function parseGA4CSV(content, slotKey){
   return rows
 }
 
-// ════════════════════════════════════════
-// ════════════════════════════════════════
 function parseGSCText(text){
   const sections = text.split(/##\s*Sheet:\s*/i)
   const result = {}
@@ -786,7 +816,7 @@ function parseGSCText(text){
       try{
         rows.push({
           k: p[0], 
-          cc:parseFloat(p[1])||0, pc:parseFloat(p[2])||0, // Correct active and prev indices
+          cc:parseFloat(p[1])||0, pc:parseFloat(p[2])||0, // index correction
           ci:parseFloat(p[3])||0, pi:parseFloat(p[4])||0, 
           cctr:Math.round((parseFloat(p[5])||0)*10000)/100, 
           pctr:Math.round((parseFloat(p[6])||0)*10000)/100, 
@@ -799,7 +829,6 @@ function parseGSCText(text){
   return result
 }
 
-// Parse XLSX with SheetJS (corrected comparative column indices)
 async function parseXLSX(arrayBuffer){
   if(!window.XLSX){
     await new Promise((res,rej)=>{
@@ -828,7 +857,7 @@ async function parseXLSX(arrayBuffer){
       try{
         rows.push({
           k:String(p[0]),
-          cc:parseFloat(p[1])||0, pc:parseFloat(p[2])||0, // Correct comparative columns index
+          cc:parseFloat(p[1])||0, pc:parseFloat(p[2])||0, // Index correction
           ci:parseFloat(p[3])||0, pi:parseFloat(p[4])||0, 
           cctr:Math.round((parseFloat(p[5])||0)*10000)/100, 
           pctr:Math.round((parseFloat(p[6])||0)*10000)/100, 
@@ -841,8 +870,6 @@ async function parseXLSX(arrayBuffer){
   return result
 }
 
-// ════════════════════════════════════════
-// ════════════════════════════════════════
 async function generate(){
   const btn = document.getElementById('gen-btn')
   btn.disabled=true; btn.textContent='⏳ Parsing files...'
@@ -946,17 +973,13 @@ function ST(id,el){
   }
 }
 
-// ════════════════════════════════════════
-// ════════════════════════════════════════
 function copySummaryAsEmail() {
   const container = document.getElementById('tab-summary');
   if(!container) return;
 
-  // Grab the structured element content
   const wrap = container.querySelector('.em-wrap');
   if(!wrap) return;
 
-  // Use styled HTML block transfer through Clipboard selections
   const range = document.createRange();
   range.selectNode(wrap);
   window.getSelection().removeAllRanges();
@@ -976,7 +999,6 @@ function renderSummary(){
   const g=D.gsc_total||{}
   const gd=pct(g.cc,g.pc), id_=pct(g.ci,g.pi)
 
-  // Internship GSC data
   const intClicks = D.pages?.find(r=>r.k==='/internship')
   const intAll = D.pages?.filter(r=>r.k.startsWith('/internship'))
   const intTotalClicks = intAll?.reduce((a,r)=>a+r.cc,0)||0
@@ -987,7 +1009,6 @@ function renderSummary(){
   const intImpD = pct(intTotalImp, intTotalImpP)
   const topIntPages = D.pages?.filter(r=>r.k.startsWith('/internship')).sort((a,b)=>b.cc-a.cc).slice(0,3)||[]
 
-  // Jobs GSC data
   const jobAll = D.pages?.filter(r=>r.k.startsWith('/job')||r.k.startsWith('/jobs'))
   const jobTotalClicks = jobAll?.reduce((a,r)=>a+r.cc,0)||0
   const jobTotalClicksP = jobAll?.reduce((a,r)=>a+r.pc,0)||0
@@ -997,7 +1018,6 @@ function renderSummary(){
   const jobImpD = pct(jobTotalImp, jobTotalImpP)
   const topJobCTR = D.pages?.filter(r=>r.k.startsWith('/job')&&r.ci>50&&r.cctr>20).sort((a,b)=>b.cctr-a.cctr).slice(0,3)||[]
 
-  // AI
   const chatgpt = D.ai?.find(r=>r.k.includes('chatgpt'))
   const gemini = D.ai?.find(r=>r.k.includes('gemini'))
   const perplexity = D.ai?.find(r=>r.k.includes('perplexity'))
@@ -1009,19 +1029,16 @@ function renderSummary(){
   const topGainer = D.pages?.filter(r=>r.pc>100).sort((a,b)=>(b.cc-b.pc)-(a.cc-a.pc))[0]
   const topLoser = D.pages?.filter(r=>r.pc>100).sort((a,b)=>(a.cc-a.pc)-(b.cc-b.pc))[0]
 
-  // GA4 Skills
   const intSkD = pct(D.int_sk_total?.c, D.int_sk_total?.p)
   const jobSkD = pct(D.job_sk_total?.c, D.job_sk_total?.p)
   const topIntSk = D.int_sk?.slice(0,3)||[]
   const topJobSk = D.job_sk?.slice(0,3)||[]
 
-  // Branded / non-branded
   const branded = D.queries?.filter(r=>['unstop','upstop'].some(w=>r.k.toLowerCase().includes(w)))||[]
   const nonBrand = D.queries?.filter(r=>!['unstop','upstop'].some(w=>r.k.toLowerCase().includes(w)))||[]
   const bClicks = branded.reduce((a,r)=>a+r.cc,0)
   const nbClicks = nonBrand.reduce((a,r)=>a+r.cc,0)
 
-  // Overall status
   const wins = [], concerns = [], actions = []
   if(intImpD>10) wins.push(`Internship impressions ${fp(intImpD)} — strong organic visibility growth`)
   if(intClickD>0) wins.push(`Internship clicks up ${fp(intClickD)} — higher engagement`)
@@ -1052,14 +1069,12 @@ function renderSummary(){
     <button class="nbtn p" onclick="copySummaryAsEmail()">📋 Copy for Email</button>
   </div>
 
-  <!-- EMAIL HEADER -->
   <div class="em-wrap" style="background:var(--s); border-radius:12px; padding: 4px; box-shadow:0 1px 3px rgba(0,0,0,0.05)">
     <div class="em-header" style="background:#534AB7; color:#fff; border-radius:12px; padding:20px 24px; margin-bottom:16px">
       <div class="em-subject" style="font-size:18px; font-weight:700; margin-bottom:4px">📊 Weekly SEO Performance Report — ${wc}</div>
       <div class="em-meta" style="font-size:12px; opacity:0.85">Compared against: ${wp} &nbsp;·&nbsp; unstop.com</div>
     </div>
 
-    <!-- NUMBERS AT A GLANCE -->
     <div class="em-section" style="background:var(--s); border:1px solid var(--b2); border-radius:12px; padding:16px; margin-bottom:12px">
       <div style="font-size:12px; font-weight:700; color:var(--t); margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--b2)">Key Metrics At A Glance</div>
       <div class="mg" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
@@ -1072,74 +1087,33 @@ function renderSummary(){
       </div>
     </div>
 
-    <!-- EXECUTIVE SUMMARY -->
     <div class="em-section" style="background:var(--s); border:1px solid var(--b2); border-radius:12px; padding:16px; margin-bottom:12px">
       <div class="em-sec-title" style="font-size:13px; font-weight:700; color:var(--t); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--b2)">Executive Summary: Key Highlights</div>
       ${wins.length?winsHTML:''}
       ${concerns.length?concernsHTML:''}
     </div>
 
-    <!-- SECTION 1: INTERNSHIPS -->
     ${(intTotalClicks||D.int_sk_total) ? `
     <div class="em-section" style="background:var(--s); border:1px solid var(--b2); border-radius:12px; padding:16px; margin-bottom:12px">
-      <div class="em-sec-title" style="font-size:13px; font-weight:700; color:var(--t); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--b2)">1. Internships Segment ${intImpD>5?'🟢 Major Growth':intImpD<-5?'🔴 Declining':'🟡 Stable'}</div>
+      <div class="em-sec-title" style="font-size:13px; font-weight:700; color:var(--t); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--b2)">1. Internships Segment</div>
       ${intTotalImp?`<div class="em-stat-row">
         <div class="em-stat" style="background:var(--s2); border-radius:8px; padding:10px; border:1px solid var(--b2)"><div class="em-stat-label" style="font-size:10px; color:var(--t3)">Weekly Impressions</div><div class="em-stat-val" style="font-size:18px; font-weight:700">${fmt(intTotalImp)}</div><div class="em-stat-d ${intImpD>=0?'du':'dd'}" style="font-size:10px">${fp(intImpD)||''} vs ${fmt(intTotalImpP)} prev</div></div>
         <div class="em-stat" style="background:var(--s2); border-radius:8px; padding:10px; border:1px solid var(--b2)"><div class="em-stat-label" style="font-size:10px; color:var(--t3)">Weekly Clicks</div><div class="em-stat-val" style="font-size:18px; font-weight:700">${fmt(intTotalClicks)}</div><div class="em-stat-d ${intClickD>=0?'du':'dd'}" style="font-size:10px">${fp(intClickD)||''} vs ${fmt(intTotalClicksP)} prev</div></div>
         ${D.int_sk_total?.c?`<div class="em-stat" style="background:var(--s2); border-radius:8px; padding:10px; border:1px solid var(--b2)"><div class="em-stat-label" style="font-size:10px; color:var(--t3)">GA4 Skill Sessions</div><div class="em-stat-val" style="font-size:18px; font-weight:700">${fmt(D.int_sk_total.c)}</div><div class="em-stat-d ${intSkD>=0?'du':'dd'}" style="font-size:10px">${fp(intSkD)||''}</div></div>`:''}
-        ${D.int_lo_total?.c?`<div class="em-stat" style="background:var(--s2); border-radius:8px; padding:10px; border:1px solid var(--b2)"><div class="em-stat-label" style="font-size:10px; color:var(--t3)">GA4 Location Sessions</div><div class="em-stat-val" style="font-size:18px; font-weight:700">${fmt(D.int_lo_total.c)}</div><div class="em-stat-d ${pct(D.int_lo_total.c,D.int_lo_total.p)>=0?'du':'dd'}" style="font-size:10px">${fp(pct(D.int_lo_total.c,D.int_lo_total.p))||''}</div></div>`:''}
       </div>`:''}
       ${topIntSk.length?`<div class="em-context" style="font-size:12px; color:var(--t2); margin-top:8px"><b>Top Skill Pages (GA4):</b> ${topIntSk.map(r=>`${r.k.replace(/-/g,' ')} (${fmt(r.c)} sessions, ${fp(pct(r.c,r.p))})`).join(' · ')}</div>`:''}
-      ${topIntPages.length?`<div class="em-context" style="font-size:12px; color:var(--t2); margin-top:8px"><b>Top GSC Pages:</b> ${topIntPages.map(r=>`${r.k} (${fmt(r.cc)} clicks, CTR ${r.cctr}%)`).join(' · ')}</div>`:''}
     </div>` : ''}
 
-    <!-- SECTION 2: JOBS -->
-    ${jobTotalClicks ? `
-    <div class="em-section" style="background:var(--s); border:1px solid var(--b2); border-radius:12px; padding:16px; margin-bottom:12px">
-      <div class="em-sec-title" style="font-size:13px; font-weight:700; color:var(--t); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--b2)">2. Jobs Segment ${jobClickD>0?'🟢 Intent Optimisation':jobClickD<-5?'🔴 Declining':'🟡 Stable'}</div>
-      <div class="em-stat-row">
-        <div class="em-stat" style="background:var(--s2); border-radius:8px; padding:10px; border:1px solid var(--b2)"><div class="em-stat-label" style="font-size:10px; color:var(--t3)">Weekly Impressions</div><div class="em-stat-val" style="font-size:18px; font-weight:700">${fmt(jobTotalImp)}</div><div class="em-stat-d ${jobImpD>=0?'du':'dd'}" style="font-size:10px">${fp(jobImpD)||''} vs ${fmt(jobTotalImpP)} prev</div></div>
-        <div class="em-stat" style="background:var(--s2); border-radius:8px; padding:10px; border:1px solid var(--b2)"><div class="em-stat-label" style="font-size:10px; color:var(--t3)">Weekly Clicks</div><div class="em-stat-val" style="font-size:18px; font-weight:700">${fmt(jobTotalClicks)}</div><div class="em-stat-d ${jobClickD>=0?'du':'dd'}" style="font-size:10px">${fp(jobClickD)||''} vs ${fmt(jobTotalClicksP)} prev</div></div>
-        ${D.job_sk_total?.c?`<div class="em-stat" style="background:var(--s2); border-radius:8px; padding:10px; border:1px solid var(--b2)"><div class="em-stat-label" style="font-size:10px; color:var(--t3)">GA4 Skill Sessions</div><div class="em-stat-val" style="font-size:18px; font-weight:700">${fmt(D.job_sk_total.c)}</div><div class="em-stat-d ${jobSkD>=0?'du':'dd'}" style="font-size:10px">${fp(jobSkD)||''}</div></div>`:''}
-      </div>
-      ${topJobCTR.length?`<div class="em-context" style="font-size:12px; color:var(--t2); margin-top:8px"><b>High-CTR Job Pages:</b> ${topJobCTR.map(r=>`${r.k.split('/').pop().replace(/-/g,' ')} (CTR ${r.cctr}%)`).join(' · ')} — high intent niche traffic.</div>`:''}
-      ${topJobSk.length?`<div class="em-context" style="font-size:12px; color:var(--t2); margin-top:8px"><b>Top Job Skill Sessions:</b> ${topJobSk.map(r=>`${r.k.replace(/-jobs$/,'').replace(/-/g,' ')} (${fmt(r.c)}, ${fp(pct(r.c,r.p))})`).join(' · ')}</div>`:''}
-    </div>` : ''}
-
-    <!-- SECTION 3: AI TRAFFIC -->
-    ${aiTotal.c ? `
-    <div class="em-section" style="background:var(--s); border:1px solid var(--b2); border-radius:12px; padding:16px; margin-bottom:12px">
-      <div class="em-sec-title" style="font-size:13px; font-weight:700; color:var(--t); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--b2)">3. AI Search Visibility ${aiD>10?'🟢 Growing':aiD<-10?'🔴 Declining':'🟡 Stable'}</div>
-      <div class="em-stat-row">
-        ${chatgpt?`<div class="em-stat" style="background:var(--s2); border-radius:8px; padding:10px; border:1px solid var(--b2)"><div class="em-stat-label" style="font-size:10px; color:var(--t3)">ChatGPT</div><div class="em-stat-val" style="font-size:18px; font-weight:700">${fmt(chatgpt.c)}</div><div class="em-stat-d ${pct(chatgpt.c,chatgpt.p)>=0?'du':'dd'}" style="font-size:10px">${fp(pct(chatgpt.c,chatgpt.p))||''}</div></div>`:''}
-        ${gemini?`<div class="em-stat" style="background:var(--s2); border-radius:8px; padding:10px; border:1px solid var(--b2)"><div class="em-stat-label" style="font-size:10px; color:var(--t3)">Gemini</div><div class="em-stat-val" style="font-size:18px; font-weight:700">${fmt(gemini.c)}</div><div class="em-stat-d ${pct(gemini.c,gemini.p)>=0?'du':'dd'}" style="font-size:10px">${fp(pct(gemini.c,gemini.p))||''}</div></div>`:''}
-        ${perplexity?`<div class="em-stat" style="background:var(--s2); border-radius:8px; padding:10px; border:1px solid var(--b2)"><div class="em-stat-label" style="font-size:10px; color:var(--t3)">Perplexity</div><div class="em-stat-val" style="font-size:18px; font-weight:700">${fmt(perplexity.c)}</div><div class="em-stat-d ${pct(perplexity.c,perplexity.p)>=0?'du':'dd'}" style="font-size:10px">${fp(pct(perplexity.c,perplexity.p))||''}</div></div>`:''}
-        ${claude_?`<div class="em-stat" style="background:var(--s2); border-radius:8px; padding:10px; border:1px solid var(--b2)"><div class="em-stat-label" style="font-size:10px; color:var(--t3)">Claude.ai</div><div class="em-stat-val" style="font-size:18px; font-weight:700">${fmt(claude_.c)}</div><div class="em-stat-d ${pct(claude_.c,claude_.p)>=0?'du':'dd'}" style="font-size:10px">${fp(pct(claude_.c,claude_.p))||''}</div></div>`:''}
-      </div>
-      ${topAIPages.length?`<div class="em-context" style="font-size:12px; color:var(--t2); margin-top:8px"><b>Top Pages Getting AI Traffic:</b><br>${topAIPages.map(r=>`${r.k} — ${fmt(r.c)} sessions`).join('<br>')}</div>`:''}
-    </div>` : ''}
-
-    <!-- PRIORITY ACTIONS -->
-    <div class="em-section" style="background:var(--s); border:1px solid var(--b2); border-radius:12px; padding:16px; margin-bottom:12px">
+    ${actions.length?`<div class="em-section" style="background:var(--s); border:1px solid var(--b2); border-radius:12px; padding:16px; margin-bottom:12px">
       <div class="em-sec-title" style="font-size:13px; font-weight:700; color:var(--t); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--b2)">🎯 Priority Actions This Week</div>
       ${actionsHTML}
-    </div>
+    </div>`:''}
   </div>`;
 }
 
 // ════════════════════════════════════════
+// ── GOALS ──
 // ════════════════════════════════════════
-const GOAL_KEYS = [
-  {id:'g-int-clk',  icon:'💼', label:'Internship Clicks / week',  def:8000,  getData:()=>D.pages?.filter(r=>r.k.startsWith('/internship')).reduce((a,r)=>a+r.cc,0)||0, getPrev:()=>D.pages?.filter(r=>r.k.startsWith('/internship')).reduce((a,r)=>a+r.pc,0)||0},
-  {id:'g-job-clk',  icon:'🏢', label:'Jobs Clicks / week',         def:5000,  getData:()=>D.pages?.filter(r=>r.k.startsWith('/job')).reduce((a,r)=>a+r.cc,0)||0, getPrev:()=>D.pages?.filter(r=>r.k.startsWith('/job')).reduce((a,r)=>a+r.pc,0)||0},
-  {id:'g-blog-clk', icon:'✍️', label:'Blog Clicks / week',         def:20000, getData:()=>D.pages?.filter(r=>r.k.startsWith('/blog')).reduce((a,r)=>a+r.cc,0)||0, getPrev:()=>D.pages?.filter(r=>r.k.startsWith('/blog')).reduce((a,r)=>a+r.pc,0)||0},
-  {id:'g-gsc-clk',  icon:'🔍', label:'Total GSC Clicks / week',     def:150000,getData:()=>D.gsc_total?.cc||0, getPrev:()=>D.gsc_total?.pc||0},
-  {id:'g-gsc-imp',  icon:'📊', label:'GSC Impressions / week',     def:5000000,getData:()=>D.gsc_total?.ci||0, getPrev:()=>D.gsc_total?.pi||0},
-  {id:'g-ai-sess',  icon:'🤖', label:'AI Sessions / week',         def:10000, getData:()=>D.ai_total?.c||0, getPrev:()=>D.ai_total?.p||0},
-  {id:'g-int-sk',   icon:'📍', label:'Int. Skill Sessions / week', def:4000,  getData:()=>D.int_sk_total?.c||0, getPrev:()=>D.int_sk_total?.p||0},
-  {id:'g-job-sk',   icon:'📍', label:'Job Skill Sessions / week',  def:1500,  getData:()=>D.job_sk_total?.c||0, getPrev:()=>D.job_sk_total?.p||0},
-]
-
 function loadGoals(){ try{ return JSON.parse(localStorage.getItem('unstop_goals')||'{}') }catch(e){ return {} } }
 function saveGoals(g){ try{ localStorage.setItem('unstop_goals',JSON.stringify(g)) }catch(e){} }
 
@@ -1193,6 +1167,7 @@ function saveGoalsAndRefresh(){
 }
 
 // ════════════════════════════════════════
+// ── ACTIONS ──
 // ════════════════════════════════════════
 let actions_ = []
 function loadActions(){ try{ actions_=JSON.parse(localStorage.getItem('unstop_actions')||'[]') }catch(e){ actions_=[] } }
@@ -1266,6 +1241,7 @@ function exportActions(){
 }
 
 // ════════════════════════════════════════
+// ── WINS ──
 // ════════════════════════════════════════
 function renderWins(){
   const g=D.gsc_total||{}, wc=D.wc||'Current Week', wp=D.wp||'Previous Week'
@@ -1361,6 +1337,7 @@ function renderWins(){
 }
 
 // ════════════════════════════════════════
+// ── MOM ──
 // ════════════════════════════════════════
 function renderMoM(){
   const el = document.getElementById('tab-mom')
@@ -1444,6 +1421,7 @@ function saveMoMAndRefresh(){
 function fmtPct(v){ return v!=null?(v>=0?'↑ +':'↓ ')+Math.abs(v).toFixed(1)+'%':'' }
 
 // ════════════════════════════════════════
+// ── CLUSTERS ──
 // ════════════════════════════════════════
 const CLUSTER_DEFS = [
   { name:'Blog',                icon:'✍️',  color:'#534AB7', match: u => u.startsWith('/blog/') },
@@ -1577,8 +1555,6 @@ function selectCluster(name){
   setTimeout(()=>document.getElementById('cl-detail-wrap')?.scrollIntoView({behavior:'smooth',block:'start'}),50)
 }
 
-// ════════════════════════════════════════
-// ════════════════════════════════════════
 function showClusterDetail(name){
   const pages = clusterData.pages[name]||[]
   const queries = clusterData.queries[name]||[]
@@ -1662,9 +1638,9 @@ function showClusterDetail(name){
       </div>
 
       <div class="cl-pane on" id="cl-all" style="padding:12px">${urlTable(sorted,'All URLs','cl-all')}</div>
-      <div class="cl-pane" id="cl-gain" style="padding:12px">${gainers.length?urlTable(gainers,'Top Gainers','cl-gain'):ins_('No gainers this week.','n')}</div>
+      <div class="cl-pane" id="cl-gain" style="padding:12px">${gainers.length?urlTable(gainers,'Top Gainers','cl-gain'):ins_('No gainer this week.','n')}</div>
       <div class="cl-pane" id="cl-lose" style="padding:12px">${losers.length?urlTable(losers,'Top Losers','cl-lose'):ins_('No losers this week.','n')}</div>
-      <div class="cl-pane" id="cl-ctr" style="padding:12px">${ctrOpp.length?urlTable(ctrOpp,'Fix CTR — High impressions, Low CTR (<5%)','cl-ctr'):''}</div>
+      <div class="cl-pane" id="cl-ctr" style="padding:12px">${urlTable(ctrOpp,'Fix CTR — High impressions, Low CTR (<5%)','cl-ctr')}</div>
       <div class="cl-pane" id="cl-queries" style="padding:12px">${qTable}</div>
     </div>`
 }
@@ -1685,8 +1661,6 @@ function filterPaneRows(paneId, query) {
   });
 }
 
-// ════════════════════════════════════════
-// ════════════════════════════════════════
 function renderOverview(){
   if(!D.gsc_total) { document.getElementById('tab-overview').innerHTML = ins_('No GSC data found — please upload the xlsx file.','a'); return }
   const g=D.gsc_total, cid1='c'+(++cIdx), cid2='c'+(++cIdx)
@@ -1701,8 +1675,8 @@ function renderOverview(){
     ${dev[1]?MC('Desktop',dev[1].cc,dev[1].pc):''}
   </div>
   ${dev.length?`<div class="two">
-    <div class="cc"><div class="ct">Clicks by Device</div><div style="position:relative;height:170px"><canvas id="${cid1}" role="img" aria-label="Device clicks">Device data.</canvas></div></div>
-    <div class="cc"><div class="ct">Device Share (Current)</div><div style="position:relative;height:170px"><canvas id="${cid2}" role="img" aria-label="Device share">Device share.</canvas></div></div>
+    <div class="cc"><div class="ct">Clicks by Device</div><div style="position:relative;height:170px"><canvas id="${cid1}">Device data.</canvas></div></div>
+    <div class="cc"><div class="ct">Device Share (Current)</div><div style="position:relative;height:170px"><canvas id="${cid2}">Device share.</canvas></div></div>
   </div>`:''}
   ${D.pages?.length?sh('Top 15 Pages by Clicks (Current Week)')+'<div class="tw"><div class="th"><h3>Pages</h3></div><table><thead><tr><th>#</th><th>Page</th><th>Clicks</th><th>vs Prev</th><th>CTR</th><th>Pos</th></tr></thead><tbody>'+[...D.pages].sort((a,b)=>b.cc-a.cc).slice(0,15).map((r,i)=>{const d=pct(r.cc,r.pc);return`<tr><td>${i+1}</td><td style="font-size:11px"><a href="https://unstop.com${r.k}" target="_blank" style="color:var(--pu);text-decoration:none;font-weight:500" title="https://unstop.com${r.k}">${r.k}</a></td><td><b>${fmt(r.cc)}</b></td><td>${bdg_(d)}</td><td>${r.cctr}%</td><td>${r.cpos}</td></tr>`}).join('')+'</tbody></table></div>':''}`
 
@@ -1712,11 +1686,9 @@ function renderOverview(){
   }
 }
 
-// ════════════════════════════════════════
-// ════════════════════════════════════════
 function filterGSCTable(paneId, query) {
   const lowercaseQuery = query.toLowerCase();
-  const rows = document.querySelectorAll(`#${paneId}-tbody .filterable-row`);
+  const rows = document.querySelectorAll(`#tab-gsc .filterable-row`);
   rows.forEach(row => {
     const term = row.getAttribute('data-search-term') || '';
     row.style.display = term.includes(lowercaseQuery) ? '' : 'none';
@@ -1745,8 +1717,6 @@ function renderGSC(){
   <div class="tw"><div class="th"><h3>${pages.length} pages</h3></div><table><thead><tr><th>#</th><th>Page</th><th>Curr</th><th>Prev</th><th>Change</th><th>CTR</th><th>Pos</th></tr></thead><tbody id="gsc-pages-tbody">${pages.slice(0,60).map((r,idx)=>row(r,idx)).join('')}</tbody></table></div>`
 }
 
-// ════════════════════════════════════════
-// ════════════════════════════════════════
 function filterQueriesTable(query) {
   const lowercaseQuery = query.toLowerCase();
   const rows = document.querySelectorAll(`.queries-filterable-row`);
@@ -1766,9 +1736,7 @@ function renderQueries(){
   const rising=nonBrand.filter(r=>r.pc>0).sort((a,b)=>(b.cc-b.pc)-(a.cc-a.pc)).slice(0,10)
   const falling=nonBrand.filter(r=>r.pc>0).sort((a,b)=>(a.cc-a.pc)-(b.cc-b.pc)).slice(0,10)
   
-  // Surface easy target Page 2 keywords (Striking Distance: Position 11 to 20 with good impression numbers)
   const strikingDistance = nonBrand.filter(r => r.cpos >= 11 && r.cpos <= 20 && r.ci > 1000).sort((a,b)=>b.ci-a.ci).slice(0,12)
-  
   const cid1='c'+(++cIdx), cid2='c'+(++cIdx)
 
   document.getElementById('tab-queries').innerHTML = `
@@ -1779,8 +1747,8 @@ function renderQueries(){
   ${sh('Branded vs Non-Branded')}
   <div class="mg">${MC('Branded Clicks',bC,bP)}${MC('Non-Branded Clicks',nbC,nbP)}<div class="mc n"><div class="ml">Brand Share</div><div class="mv">${Math.round(bC/(bC+nbC)*100)}%</div></div></div>
   <div class="two">
-    <div class="cc"><div class="ct">Clicks Comparison</div><div style="position:relative;height:150px"><canvas id="${cid1}" role="img" aria-label="Branded clicks">Branded comparison.</canvas></div></div>
-    <div class="cc"><div class="ct">Top Non-Branded (current week)</div><div style="position:relative;height:150px"><canvas id="${cid2}" role="img" aria-label="Non-branded queries">Non-branded queries.</canvas></div></div>
+    <div class="cc"><div class="ct">Clicks Comparison</div><div style="position:relative;height:150px"><canvas id="${cid1}">Branded comparison.</canvas></div></div>
+    <div class="cc"><div class="ct">Top Non-Branded (current week)</div><div style="position:relative;height:150px"><canvas id="${cid2}">Non-branded queries.</canvas></div></div>
   </div>
 
   ${strikingDistance.length ? `
@@ -1819,8 +1787,6 @@ function renderQueries(){
   mkChart(cid2,'bar',top6nb.map(r=>r.k.slice(0,14)+'…'),[{label:D.wc,data:top6nb.map(r=>r.cc),backgroundColor:'#0F6E56',borderRadius:4},{label:D.wp,data:top6nb.map(r=>r.pc),backgroundColor:'#c0e8dc',borderRadius:4}],{legend:true})
 }
 
-// ════════════════════════════════════════
-// ════════════════════════════════════════
 function filterGA4Table(containerId, query) {
   const lowercaseQuery = query.toLowerCase();
   const rows = document.querySelectorAll(`#${containerId} .filterable-row`);
@@ -1846,7 +1812,7 @@ function renderIntSkills(){
     ${sh('💼 Internship Skills — GA4 Sessions')}
     <div class="mg">${MC('Total Sessions',total.c,total.p)}<div class="mc g"><div class="ml">Top Skill</div><div class="mv" style="font-size:14px">${data[0]?.k?.replace(/-/g,' ')||'—'}</div><div class="md du">${fmt(data[0]?.c)} sessions</div></div></div>
     <div class="two">
-      <div class="cc"><div class="ct">Top Skills — ${D.wc} vs ${D.wp}</div><div style="position:relative;height:220px"><canvas id="${cid1}" role="img" aria-label="Skills">Skills data.</canvas></div></div>
+      <div class="cc"><div class="ct">Top Skills — ${D.wc} vs ${D.wp}</div><div style="position:relative;height:220px"><canvas id="${cid1}">Skills data.</canvas></div></div>
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--te);margin-bottom:8px;text-transform:uppercase">Top Gainers</div>
         ${gainers.map(r=>`<div class="pr"><div class="pn"><a href="https://unstop.com${r.k}" target="_blank" style="color:var(--pu);text-decoration:none">${r.k.replace(/-internships?/,'').replace(/-/g,' ')}</a></div><div class="pb"><div class="pf" style="width:${Math.round(r.c/maxC*100)}%;background:var(--te)"></div></div><div class="pv">${fmt(r.c)}</div><div class="pd du">${fp(pct(r.c,r.p))}</div></div>`).join('')}
@@ -1862,8 +1828,6 @@ function renderIntSkills(){
   mkChart(cid1,'bar',t8.map(r=>r.k.replace(/-internships?/,'').replace(/-/g,' ').slice(0,13)+'…'),[{label:D.wc,data:t8.map(r=>r.c),backgroundColor:'#534AB7',borderRadius:3},{label:D.wp,data:t8.map(r=>r.p),backgroundColor:'#e0ddf8',borderRadius:3}],{legend:true})
 }
 
-// ════════════════════════════════════════
-// ════════════════════════════════════════
 function renderIntLocs(){
   if(!D.int_lo?.length){ document.getElementById('tab-int-locs').innerHTML=ins_('No internship location data found.','a'); return }
   const data=D.int_lo, total=D.int_lo_total||{c:0,p:0}
@@ -1880,7 +1844,7 @@ function renderIntLocs(){
     <div class="mg">${MC('Total Sessions',total.c,total.p)}${gap?`<div class="mc a"><div class="ml">Skills vs Loc gap</div><div class="mv">${gap}x</div><div class="md dd">Big opportunity!</div></div>`:''}</div>
     ${gap&&gap>5?ins_(`<b>⚠ ${gap}x gap:</b> Internship skill pages are getting ${fmt(D.int_sk_total?.c)} sessions, while location pages get only ${fmt(total.c)}. Add more listings and location-specific content for Bangalore, Delhi, Mumbai and Pune.`,'a'):''}
     <div class="two">
-      <div class="cc"><div class="ct">Sessions by City</div><div style="position:relative;height:200px"><canvas id="${cid1}" role="img" aria-label="Locations">Location data.</canvas></div></div>
+      <div class="cc"><div class="ct">Sessions by City</div><div style="position:relative;height:200px"><canvas id="${cid1}">Location data.</canvas></div></div>
       <div class="tw" style="margin-bottom:0"><div class="th"><h3>All Cities</h3></div><div style="padding:8px 12px">${data.map(r => `<div class="filterable-row" data-search-term="${r.k.toLowerCase()}">${progTable([r], '#D85A30', maxC)}</div>`).join('')}</div></div>
     </div>
   </div>`
@@ -1888,8 +1852,6 @@ function renderIntLocs(){
   mkChart(cid1,'bar',data.map(r=>r.k.replace('internship-in-','').replace(/-/g,' ')),[{label:D.wc,data:data.map(r=>r.c),backgroundColor:'#D85A30',borderRadius:3},{label:D.wp,data:data.map(r=>r.p),backgroundColor:'#f8ddd4',borderRadius:3}],{legend:true})
 }
 
-// ════════════════════════════════════════
-// ════════════════════════════════════════
 function renderJobSkills(){
   if(!D.job_sk?.length){ document.getElementById('tab-job-skills').innerHTML=ins_('No job skills data found.','a'); return }
   const data=D.job_sk, total=D.job_sk_total||{c:0,p:0}
@@ -1906,7 +1868,7 @@ function renderJobSkills(){
     ${sh('🏢 Job Skills — GA4 Sessions')}
     <div class="mg">${MC('Total Sessions',total.c,total.p)}<div class="mc g"><div class="ml">Top Skill</div><div class="mv" style="font-size:14px">${data[0]?.k?.replace(/-jobs$/,'').replace(/-/g,' ')||'—'}</div><div class="md du">${fmt(data[0]?.c)} sessions</div></div></div>
     <div class="two">
-      <div class="cc"><div class="ct">Top Job Skills</div><div style="position:relative;height:220px"><canvas id="${cid1}" role="img" aria-label="Job skills">Job skills data.</canvas></div></div>
+      <div class="cc"><div class="ct">Top Job Skills</div><div style="position:relative;height:220px"><canvas id="${cid1}">Job skills data.</canvas></div></div>
       <div>
         <div style="font-size:10px;font-weight:700;color:var(--te);margin-bottom:8px;text-transform:uppercase">Top Gainers</div>
         ${gainers.map(r=>`<div class="pr"><div class="pn"><a href="https://unstop.com${r.k}" target="_blank" style="color:var(--pu);text-decoration:none">${r.k.replace(/-jobs$/,'').replace(/-/g,' ')}</a></div><div class="pb"><div class="pf" style="width:${Math.round(r.c/maxC*100)}%;background:var(--te)"></div></div><div class="pv">${fmt(r.c)}</div><div class="pd du">${fp(pct(r.c,r.p))}</div></div>`).join('')}
@@ -1922,8 +1884,6 @@ function renderJobSkills(){
   mkChart(cid1,'bar',t8.map(r=>r.k.replace(/-jobs$/,'').replace(/-/g,' ').slice(0,13)+'…'),[{label:D.wc,data:t8.map(r=>r.c),backgroundColor:'#0F6E56',borderRadius:3},{label:D.wp,data:t8.map(r=>r.p),backgroundColor:'#c0e8dc',borderRadius:3}],{legend:true})
 }
 
-// ════════════════════════════════════════
-// ════════════════════════════════════════
 function renderJobLocs(){
   if(!D.job_lo?.length){ document.getElementById('tab-job-locs').innerHTML=ins_('No job location data found.','a'); return }
   const data=D.job_lo, total=D.job_lo_total||{c:0,p:0}
@@ -1940,7 +1900,7 @@ function renderJobLocs(){
     <div class="mg">${MC('Total Sessions',total.c,total.p)}${gap?`<div class="mc a"><div class="ml">Skills vs Loc gap</div><div class="mv">${gap}x</div></div>`:''}</div>
     ${gap&&gap>5?ins_(`<b>${gap}x gap</b> between job skills and location pages. Increase city-specific job content and listings.`,'a'):''}
     <div class="two">
-      <div class="cc"><div class="ct">Sessions by City</div><div style="position:relative;height:200px"><canvas id="${cid1}" role="img" aria-label="Job locations">Job location data.</canvas></div></div>
+      <div class="cc"><div class="ct">Sessions by City</div><div style="position:relative;height:200px"><canvas id="${cid1}">Job location data.</canvas></div></div>
       <div class="tw" style="margin-bottom:0"><div class="th"><h3>All Cities</h3></div><div style="padding:8px 12px">${data.map(r => `<div class="filterable-row" data-search-term="${r.k.toLowerCase()}">${progTable([r], '#BA7517', maxC)}</div>`).join('')}</div></div>
     </div>
   </div>`
@@ -1948,8 +1908,6 @@ function renderJobLocs(){
   mkChart(cid1,'bar',data.map(r=>r.k.replace('jobs-in-','').replace(/-/g,' ').slice(0,12)),[{label:D.wc,data:data.map(r=>r.c),backgroundColor:'#BA7517',borderRadius:3},{label:D.wp,data:data.map(r=>r.p),backgroundColor:'#f8e8c8',borderRadius:3}],{legend:true})
 }
 
-// ════════════════════════════════════════
-// ════════════════════════════════════════
 function filterAITable(query) {
   const lowercaseQuery = query.toLowerCase();
   const rows = document.querySelectorAll(`.ai-filterable-row`);
@@ -2008,8 +1966,8 @@ function renderAI(){
   </div>
 
   <div class="two" style="margin-bottom:12px">
-    <div class="cc"><div class="ct">${D.wc} vs ${D.wp}</div><div style="position:relative;height:200px"><canvas id="${cid1}" role="img" aria-label="AI sources">AI sources comparison.</canvas></div></div>
-    <div class="cc"><div class="ct">Share — Current Week</div><div style="position:relative;height:200px"><canvas id="${cid2}" role="img" aria-label="AI share">AI share.</canvas></div></div>
+    <div class="cc"><div class="ct">${D.wc} vs ${D.wp}</div><div style="position:relative;height:200px"><canvas id="${cid1}">AI sources comparison.</canvas></div></div>
+    <div class="cc"><div class="ct">Share — Current Week</div><div style="position:relative;height:200px"><canvas id="${cid2}">AI share.</canvas></div></div>
   </div>
 
   ${sh('📊 Source Breakdown — Full Detail')}
