@@ -10,6 +10,8 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Inter',sans-serif;background:#f5f6fa;color:#111827;font-size:14px;-webkit-font-smoothing:antialiased;}
+
+/* UPLOAD & API SCREEN */
 #upload-screen, #gsc-selector-screen {min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f5f6fa;padding:2rem;}
 .up-card{background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);padding:2.5rem;max-width:500px;width:100%;}
 .up-logo{display:flex;align-items:center;gap:10px;margin-bottom:2rem;}
@@ -30,9 +32,15 @@ body{font-family:'Inter',sans-serif;background:#f5f6fa;color:#111827;font-size:1
 .api-section{margin-top:20px; border-top: 1px solid #e5e7eb; padding-top: 20px;}
 .api-btn{width:100%;padding:12px;background:#fff;color:#374151;border:1.5px solid #d1d5db;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;transition:background 0.2s;}
 .api-btn:hover{background:#f9fafb;}
+
+/* LAYOUT */
 #dashboard{display:none;}
 .sidebar{width:224px;background:#fff;border-right:1px solid #e5e7eb;height:100vh;position:fixed;left:0;top:0;display:flex;flex-direction:column;z-index:50;overflow:hidden;}
 .sb-logo{padding:12px 16px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.sb-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.sb-logo-icon svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.sb-logo-text{font-size:15px;font-weight:700;color:#111827;}
+.sb-logo-text span{color:#2563eb;}
 .sb-nav{padding:4px 8px;flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#e5e7eb transparent;}
 .sb-nav::-webkit-scrollbar{width:3px;}.sb-nav::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px;}
 .sb-section{font-size:9px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;margin:5px 0 2px;}
@@ -43,6 +51,7 @@ body{font-family:'Inter',sans-serif;background:#f5f6fa;color:#111827;font-size:1
 .sb-bottom{padding:8px;border-top:1px solid #e5e7eb;flex-shrink:0;}
 .sb-new-btn{width:100%;padding:9px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;}
 .sb-new-btn:hover{opacity:.88;}
+
 .content{margin-left:224px;min-height:100vh;display:flex;flex-direction:column;}
 .topbar{background:#fff;border-bottom:1px solid #e5e7eb;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;flex-shrink:0;}
 .tb-left{display:flex;align-items:center;gap:10px;}
@@ -54,6 +63,8 @@ body{font-family:'Inter',sans-serif;background:#f5f6fa;color:#111827;font-size:1
 .tb-btn{padding:6px 14px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:#4b5563;font-family:'Inter',sans-serif;transition:background .15s;}
 .tb-btn:hover{background:#f3f4f6;}
 .main{padding:24px;flex:1;}
+
+/* COLORED METRIC BARS */
 .metric-bars{display:grid;grid-template-columns:repeat(4,1fr);border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.1);margin-bottom:20px;}
 .mb{padding:20px 24px;position:relative;}
 .mb-blue{background:#2563eb;}
@@ -65,6 +76,8 @@ body{font-family:'Inter',sans-serif;background:#f5f6fa;color:#111827;font-size:1
 .mb-sub{font-size:12px;color:rgba(255,255,255,0.6);}
 .mb-ico{position:absolute;top:16px;right:16px;width:32px;height:32px;background:rgba(255,255,255,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;}
 .mb-ico svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* SIGNALS */
 .signals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;}
 .sig{border-radius:10px;padding:14px 16px;border:1px solid;}
 .sg{background:#f0fdf4;border-color:#bbf7d0;}
@@ -77,12 +90,16 @@ body{font-family:'Inter',sans-serif;background:#f5f6fa;color:#111827;font-size:1
 .si-l{color:#374151;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .si-v{font-weight:600;font-size:11px;white-space:nowrap;}
 .sg .si-v{color:#059669;}.sb2 .si-v{color:#dc2626;}.so .si-v{color:#d97706;}
+
+/* CARDS */
 .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px 20px;margin-bottom:14px;}
 .card-hdr{font-size:13px;font-weight:700;color:#111827;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
 .card-hdr-sub{font-size:11px;color:#9ca3af;font-weight:400;}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
 .cw{position:relative;width:100%;height:200px;}
 .cw-lg{height:220px;}
+
+/* CLUSTER GRID */
 .clusters{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}.cl.sub-cl{border-style:dashed;}
 .cl{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;transition:all .2s;}
 .cl:hover{border-color:#2563eb;box-shadow:0 4px 12px rgba(37,99,235,0.08);}
@@ -94,6 +111,8 @@ body{font-family:'Inter',sans-serif;background:#f5f6fa;color:#111827;font-size:1
 .cl-meta{font-size:10px;color:#9ca3af;}
 .cl-bar{height:3px;background:#f3f4f6;border-radius:2px;margin-top:8px;overflow:hidden;}
 .cl-bar-fill{height:100%;border-radius:2px;}
+
+/* TABLE */
 table{width:100%;border-collapse:collapse;}
 th{text-align:left;font-size:10px;font-weight:700;color:#6b7280;padding:8px 12px;border-bottom:1px solid #e5e7eb;white-space:nowrap;background:#f9fafb;letter-spacing:.04em;text-transform:uppercase;}
 td{padding:9px 12px;border-bottom:1px solid #f3f4f6;color:#111827;font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -102,12 +121,16 @@ tr:hover td{background:#f9fafb;}
 .twrap{overflow-x:auto;}
 .mono{font-family:monospace;font-size:11px;color:#6b7280;}
 .rk{width:20px;height:20px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#6b7280;}
+
+/* BADGES */
 .b{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;}
 .bg{background:#d1fae5;color:#059669;}
 .bb{background:#dbeafe;color:#1d4ed8;}
 .ba{background:#fef3c7;color:#d97706;}
 .br{background:#fee2e2;color:#dc2626;}
 .by{background:#f3f4f6;color:#6b7280;}
+
+/* URL BARS */
 .url-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;}
 .url-row:last-child{border-bottom:none;}
 .url-path{font-family:monospace;font-size:11px;color:#6b7280;min-width:150px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -118,14 +141,20 @@ tr:hover td{background:#f9fafb;}
 .us{text-align:right;}
 .us-v{font-size:12px;font-weight:700;color:#111827;}
 .us-l{font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+
+/* ACTIONS */
 .action{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f3f4f6;}
 .action:last-child{border-bottom:none;}
 .act-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;}
 .act-title{font-size:13px;font-weight:600;color:#111827;margin-bottom:4px;}
 .act-sub{font-size:12px;color:#6b7280;line-height:1.6;}
 .act-impact{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;margin-top:5px;display:inline-block;text-transform:uppercase;letter-spacing:.04em;}
+
+/* TAB SECTIONS */
 .tab-sec{display:none;}
 .tab-sec.active{display:block;}
+
+/* NOTICE BARS */
 .notice{border-radius:10px;padding:12px 16px;margin-bottom:12px;}
 .notice-amber{background:#fffbeb;border:1px solid #fde68a;}
 .notice-blue{background:#eff6ff;border:1px solid #bfdbfe;}
@@ -138,6 +167,7 @@ tr:hover td{background:#f9fafb;}
 .notice-amber .notice-body{color:#92400e;}
 .notice-blue .notice-body{color:#1e40af;}
 .notice-green .notice-body{color:#065f46;}
+
 @media(max-width:1024px){.sidebar{display:none}.content{margin-left:0}.clusters{grid-template-columns:repeat(2,1fr)}.signals{grid-template-columns:1fr}.two{grid-template-columns:1fr}.metric-bars{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.metric-bars{grid-template-columns:1fr}.clusters{grid-template-columns:1fr}.main{padding:14px}}
 </style>
@@ -258,7 +288,6 @@ tr:hover td{background:#f9fafb;}
     </div>
   </div>
 
-  <!-- MAIN CONTENT WRAPPER -->
   <div class="content">
     <div class="topbar">
       <div class="tb-left">
@@ -289,6 +318,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const sDate = new Date(); sDate.setDate(sDate.getDate() - 93);
     if(document.getElementById('gsc-api-start')) document.getElementById('gsc-api-start').value = sDate.toISOString().split('T')[0];
     if(document.getElementById('gsc-api-end')) document.getElementById('gsc-api-end').value = eDate.toISOString().split('T')[0];
+    
     const dz=document.getElementById('dropZone'),fi=document.getElementById('fileInput');
     if(dz && fi) {
         dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
@@ -296,7 +326,8 @@ window.addEventListener('DOMContentLoaded', () => {
         dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');if(e.dataTransfer.files[0])process(e.dataTransfer.files[0]);});
         fi.addEventListener('change',e=>{if(e.target.files[0])process(e.target.files[0]);});
     }
-    ga4CheckRedirectToken();
+
+    if(typeof ga4CheckRedirectToken === 'function') ga4CheckRedirectToken();
 });
 
 function filterQW(){
@@ -578,7 +609,8 @@ function build(){
   const{Q,P,C,Dev,App,site}=D;
   _Q=Q;_P=P;_C=C;_Dev=Dev;_App=App;
   document.getElementById('upload-screen').style.display='none';
-  document.getElementById('gsc-selector-screen').style.display='none';
+  const selScreen = document.getElementById('gsc-selector-screen');
+  if (selScreen) selScreen.style.display='none';
   document.getElementById('dashboard').style.display='block';
   document.getElementById('tb-site').textContent=site;
   if(C.length>1)document.getElementById('tb-date').textContent=C[0].d+' → '+C[C.length-1].d;
@@ -640,6 +672,14 @@ function build(){
   opp.push({l:qw.length+' non-brand quick wins',v:'Pos 5-20 — push to page 1'});
   opp.push({l:hp.length+' high potential queries',v:'Fix titles → unlock clicks'});
 
+  const acts=[];
+  if(hp[0]){const g=Math.max(0,Math.round(hp[0].impr*0.05-hp[0].impr*hp[0].ctr/100));acts.push({n:1,col:'#dc2626',bg:'#fee2e2',t:`Fix "${hp[0].q.slice(0,35)}" — ${fmt(hp[0].impr)} impressions at ${hp[0].ctr.toFixed(1)}% CTR`,s:`Rewrite the title tag to be specific and compelling. Add FAQ schema. Estimated gain: +${fmt(g)} clicks/month with zero ranking change needed.`,i:`+${fmt(g)} potential clicks`});}
+  if(qw.length)acts.push({n:2,col:'#d97706',bg:'#fef3c7',t:`${qw.length} queries at positions 5-20 — push to page 1`,s:`Top: "${qw[0]?.q.slice(0,30)}" with ${fmt(qw[0]?.impr)} impressions at position ${qw[0]?.pos.toFixed(1)}. Optimise title tags, add internal links, improve content depth with FAQ sections.`,i:`${qw.length} quick win opportunities`});
+  if(blogC&&blogC.ctr<2){const g=Math.max(0,Math.round(blogC.impr*0.03-blogC.clicks));acts.push({n:3,col:'#7c3aed',bg:'#ede9fe',t:`Blog CTR only ${blogC.ctr.toFixed(2)}% on ${fmt(blogC.impr)} impressions`,s:`Your blog appears massively in search but gets minimal clicks. Rewrite title tags to be benefit-driven with numbers and specifics. Highest leverage fix — no ranking needed.`,i:`+${fmt(g)} potential clicks`});}
+  if(topC)acts.push({n:acts.length+1,col:'#059669',bg:'#d1fae5',t:`Double down on ${topC.l} — your proven content moat`,s:`${topC.l} drives ${fmt(topC.clicks)} clicks at ${topC.ctr.toFixed(1)}% CTR — your strongest cluster by far. Produce more: guides, comparison pages, event-specific pages. Every page here performs.`,i:'Compound growth — already proven'});
+  const thin=CL.filter(c=>c.pages<5&&c.pos<8);
+  if(thin.length)acts.push({n:acts.length+1,col:'#2563eb',bg:'#dbeafe',t:`Expand thin clusters: ${thin.map(c=>c.l).join(', ')}`,s:`These clusters have great positions but few pages. Topical authority exists — add 10-20 pages per cluster to capture full search demand.`,i:'Long-term growth opportunity'});
+
   const html=`
 <!-- OVERVIEW -->
 <div id="t-overview" class="tab-sec active">
@@ -653,307 +693,4 @@ function build(){
     <div class="mb mb-amber"><div class="mb-ico"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
       <div class="mb-label">Average CTR</div><div class="mb-val">${ac.toFixed(2)}%</div>${acDeltaHtml}
       <div class="mb-sub" style="${acDeltaHtml ? 'display:none;' : ''}">Industry avg ~3.2%</div></div>
-    <div class="mb mb-red"><div class="mb-ico"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
-      <div class="mb-label">Average Position</div><div class="mb-val">${ap.toFixed(1)}</div>${apDeltaHtml}
-      <div class="mb-sub" style="${apDeltaHtml ? 'display:none;' : ''}">${ap<5?'Excellent — top 5':ap<10?'Solid — top 10':'Needs improvement'}</div></div>
-  </div>
-
-  <div class="signals">
-    <div class="sig sg"><div class="sig-title">✅ What's going well</div>${good.map(s=>`<div class="sig-item"><span class="si-l">${s.l}</span><span class="si-v">${s.v}</span></div>`).join('')}</div>
-    <div class="sig sb2"><div class="sig-title">⚠️ Needs attention</div>${bad.map(s=>`<div class="sig-item"><span class="si-l">${s.l}</span><span class="si-v">${s.v}</span></div>`).join('')}</div>
-    <div class="sig so"><div class="sig-title">🚀 Opportunities</div>${opp.map(s=>`<div class="sig-item"><span class="si-l">${s.l}</span><span class="si-v">${s.v}</span></div>`).join('')}</div>
-  </div>
-
-  ${C.length>3?`<div class="card"><div class="card-hdr">Traffic trend <span class="card-hdr-sub">daily clicks & impressions</span></div><div class="cw cw-lg"><canvas id="trendChart" role="img"></canvas></div></div>`:''}
-
-  <div class="two">
-    <div class="card" style="margin-bottom:0;"><div class="card-hdr">Top non-brand queries</div>
-      <div class="twrap"><table><thead><tr><th>#</th><th>Query</th><th>Clicks</th><th>CTR</th><th>Position</th></tr></thead><tbody>
-        ${NBQ.slice(0,8).map((q,i)=>`<tr><td><div class="rk">${i+1}</div></td><td title="${q.q}">${q.q.slice(0,30)}</td><td style="font-weight:700;color:#2563eb;">${fmt(q.clicks)}</td><td><span class="b ${ctrc(q.ctr)}">${q.ctr.toFixed(1)}%</span></td><td><span class="b ${pc(q.pos)}">${q.pos.toFixed(1)}</span></td></tr>`).join('')}
-      </tbody></table></div></div>
-    <div class="card" style="margin-bottom:0;"><div class="card-hdr">Top non-brand pages</div>
-      <div class="twrap"><table><thead><tr><th>#</th><th>Page</th><th>Clicks</th><th>CTR</th><th>Position</th></tr></thead><tbody>
-        ${P.slice(0,8).map((p,i)=>{const path=p.p.replace(/https?:\/\/[^/]+/,'').slice(0,28)||'/';return`<tr><td><div class="rk">${i+1}</div></td><td class="mono" title="${p.p}">${path}</td><td style="font-weight:700;color:#2563eb;">${fmt(p.clicks)}</td><td><span class="b ${ctrc(p.ctr)}">${p.ctr.toFixed(1)}%</span></td><td><span class="b ${pc(p.pos)}">${p.pos.toFixed(1)}</span></td></tr>`;}).join('')}
-      </tbody></table></div></div>
-  </div>
-  ${Dev.length?`<div class="two">
-    <div class="card" style="margin-bottom:0;"><div class="card-hdr">Traffic by device</div><div class="cw" style="height:180px;"><canvas id="devChart" role="img"></canvas></div></div>
-    ${App.length?`<div class="card" style="margin-bottom:0;"><div class="card-hdr">Search appearance</div><div class="twrap"><table><thead><tr><th>Type</th><th>Clicks</th><th>Impressions</th><th>CTR</th><th>Avg Pos.</th></tr></thead><tbody>
-        ${App.slice(0,6).map(a=>`<tr><td>${a.t.slice(0,28)}</td><td style="font-weight:700;color:#2563eb;">${fmt(a.clicks)}</td><td>${fmt(a.impr)}</td><td><span class="b ${ctrc(a.ctr)}">${a.ctr.toFixed(2)}%</span></td><td>${a.pos.toFixed(1)}</td></tr>`).join('')}
-      </tbody></table></div></div>`:''}
-  </div>`:''}
-</div>
-
-<!-- QUERIES -->
-<div id="t-queries" class="tab-sec">
-  <div class="two" style="margin-bottom:14px;">
-    <div class="card" style="margin-bottom:0;background:#eff6ff;border-color:#bfdbfe;"><div class="card-hdr" style="color:#1d4ed8;">🏷️ Brand queries <span class="card-hdr-sub">${BQ.length} queries</span></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-        <div><div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;">Clicks</div><div style="font-size:20px;font-weight:700;color:#2563eb;">${fmt(btc)}</div></div>
-        <div><div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;">Impressions</div><div style="font-size:20px;font-weight:700;color:#2563eb;">${fmt(bti)}</div></div>
-        <div><div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;">Avg CTR</div><div style="font-size:20px;font-weight:700;color:#2563eb;">${bac.toFixed(1)}%</div></div></div></div>
-    <div class="card" style="margin-bottom:0;background:#f0fdf4;border-color:#bbf7d0;"><div class="card-hdr" style="color:#059669;">🌐 Non-brand queries <span class="card-hdr-sub">${NBQ.length} queries</span></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-        <div><div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;">Clicks</div><div style="font-size:20px;font-weight:700;color:#059669;">${fmt(tc)}</div></div>
-        <div><div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;">Impressions</div><div style="font-size:20px;font-weight:700;color:#059669;">${fmt(ti)}</div></div>
-        <div><div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;">Avg CTR</div><div style="font-size:20px;font-weight:700;color:#059669;">${ac.toFixed(1)}%</div></div></div></div>
-  </div>
-  <div class="card"><div class="card-hdr">🌐 Non-brand queries</div><div class="twrap"><table><thead><tr><th>#</th><th>Query</th><th>Clicks</th><th>Impressions</th><th>CTR</th><th>Position</th></tr></thead><tbody>
-      ${NBQ.slice(0,100).map((q,i)=>`<tr><td style="color:#9ca3af;font-size:10px;">${i+1}</td><td title="${q.q}">${q.q.slice(0,42)}</td><td style="font-weight:700;color:#059669;">${fmt(q.clicks)}</td><td>${fmt(q.impr)}</td><td><span class="b ${ctrc(q.ctr)}">${q.ctr.toFixed(1)}%</span></td><td><span class="b ${pc(q.pos)}">${q.pos.toFixed(1)}</span></td></tr>`).join('')}
-    </tbody></table></div></div>
-</div>
-
-<!-- PAGES -->
-<div id="t-pages" class="tab-sec">
-  <div class="card"><div class="card-hdr">URL performance <span class="card-hdr-sub">visual click bars — top pages</span></div>
-    ${topP.map(p=>{const path=p.p.replace(/https?:\/\/[^/]+/,'').slice(0,38)||'/';const pct=Math.round(p.clicks/maxPC*100);const col=barcol(p.ctr);return`<div class="url-row"><div class="url-path" title="${p.p}">${path}</div><div class="url-bw"><div class="url-bar"><div class="url-bf" style="width:${pct}%;background:${col};"></div></div></div><div class="url-stats"><div class="us"><div class="us-v" style="color:${col};">${fmt(p.clicks)}</div><div class="us-l">Clicks</div></div><div class="us"><div class="us-v">${fmt(p.impr)}</div><div class="us-l">Impr.</div></div><div class="us"><div class="us-v">${p.ctr.toFixed(1)}%</div><div class="us-l">CTR</div></div><div class="us"><div class="us-v">${p.pos.toFixed(1)}</div><div class="us-l">Pos.</div></div></div></div>`;}).join('')}
-  </div>
-  <div class="card"><div class="card-hdr">All pages <span class="card-hdr-sub">${P.length} total</span></div><div class="twrap"><table><thead><tr><th>#</th><th>Page</th><th>Clicks</th><th>Impressions</th><th>CTR</th><th>Position</th></tr></thead><tbody>
-      ${P.slice(0,100).map((p,i)=>{const path=p.p.replace(/https?:\/\/[^/]+/,'').slice(0,48)||'/';return`<tr><td style="color:#9ca3af;font-size:10px;">${i+1}</td><td class="mono" title="${p.p}">${path}</td><td style="font-weight:700;color:#2563eb;">${fmt(p.clicks)}</td><td>${fmt(p.impr)}</td><td><span class="b ${ctrc(p.ctr)}">${p.ctr.toFixed(1)}%</span></td><td><span class="b ${pc(p.pos)}">${p.pos.toFixed(1)}</span></td></tr>`;}).join('')}
-    </tbody></table></div></div>
-</div>
-
-<!-- CLUSTERS -->
-<div id="t-clusters" class="tab-sec"><div class="clusters">
-    ${CL.map((c,ci)=>{const pct=Math.round(c.clicks/maxCC*100);const s=c.ctr>8?{l:'Top',bg:'#d1fae5',tc:'#059669'}:c.ctr>4?{l:'Growing',bg:'#dbeafe',tc:'#1d4ed8'}:c.ctr>2?{l:'Fix CTR',bg:'#fef3c7',tc:'#d97706'}:{l:'Needs work',bg:'#fee2e2',tc:'#dc2626'};const isSub=c.sub;return`<div class="cl" style="padding:${isSub?'10px 12px':'12px 14px'};${isSub?'border-style:dashed;border-left:3px solid '+c.col+';':''}cursor:pointer;" onclick="drillCluster(${ci})"><div class="cl-top"><div class="cl-icon" style="background:${c.col}18;">${c.e}</div><span class="cl-badge" style="background:${s.bg};color:${s.tc};">${isSub?'↳ ':''} ${s.l}</span></div><div class="cl-name">${c.l}</div><div class="cl-val" style="color:${c.col};">${fmt(c.clicks)}</div><div class="cl-meta">CTR ${c.ctr.toFixed(1)}% · ${c.pages} pages</div><div class="cl-bar"><div class="cl-bar-fill" style="width:${pct}%;background:${c.col};"></div></div></div>`;}).join('')}
-  </div></div>
-
-<!-- QUICK WINS -->
-<div id="t-quickwins" class="tab-sec">
-  <div class="card"><div class="card-hdr" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-      <span>Quick wins — positions 5 to 20</span>
-      <div style="display:flex;gap:8px;align-items:center;"><input id="qw-search" type="text" placeholder="Search queries..." oninput="filterQW()" style="padding:5px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;width:180px;outline:none;" /><button onclick="exportQW()" style="padding:5px 12px;background:#059669;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">⬇ Export</button></div>
-    </div><div class="twrap"><table id="qw-table"><thead><tr><th>#</th><th>Query</th><th>Position</th><th>Impressions</th><th>Est. extra clicks</th></tr></thead><tbody>
-      ${qw.map((q,i)=>{const g=Math.max(0,Math.round(q.impr*0.08-q.impr*q.ctr/100));return`<tr><td style="color:#9ca3af;font-size:10px;">${i+1}</td><td style="font-weight:500;" title="${q.q}">${q.q}</td><td><span class="b ba">${q.pos.toFixed(1)}</span></td><td>${fmt(q.impr)}</td><td style="font-weight:700;color:#059669;">+${fmt(g)}</td></tr>`;}).join('')}
-    </tbody></table></div></div>
-</div>
-
-<!-- HIGH POTENTIAL -->
-<div id="t-potential" class="tab-sec">
-  <div class="card"><div class="card-hdr" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-      <span>High potential — high impressions, low CTR</span>
-      <div style="display:flex;gap:8px;align-items:center;"><input id="hp-search" type="text" placeholder="Search queries..." oninput="filterHP()" style="padding:5px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;width:180px;outline:none;" /><button onclick="exportHP()" style="padding:5px 12px;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">⬇ Export</button></div>
-    </div><div class="twrap"><table id="hp-table"><thead><tr><th>#</th><th>Query</th><th>Impressions</th><th>Current CTR</th><th>Position</th><th>Extra clicks at 5% CTR</th></tr></thead><tbody>
-      ${hp.map((q,i)=>{const g=Math.max(0,Math.round(q.impr*0.05-q.impr*q.ctr/100));return`<tr><td style="color:#9ca3af;font-size:10px;">${i+1}</td><td style="font-weight:500;" title="${q.q}">${q.q}</td><td>${fmt(q.impr)}</td><td><span class="b br">${q.ctr.toFixed(2)}%</span></td><td><span class="b ${pc(q.pos)}">${q.pos.toFixed(1)}</span></td><td style="font-weight:700;color:#059669;">+${fmt(g)}</td></tr>`;}).join('')}
-    </tbody></table></div></div>
-</div>
-
-<!-- INTELLIGENCE MODULES -->
-<div id="t-jobsinternships" class="tab-sec"><div id="ji-content"></div></div>
-<div id="t-blog" class="tab-sec"><div id="blog-content"></div></div>
-<div id="t-hackathon" class="tab-sec"><div id="hack-content"></div></div>
-<div id="t-urlclass" class="tab-sec"><div id="urlclass-content"></div></div>
-<div id="t-intent" class="tab-sec"><div id="intent-content"></div></div>
-<div id="t-cannibalization" class="tab-sec"><div id="cannibalization-content"></div></div>
-<div id="t-regexlib" class="tab-sec"><div id="regexlib-content"></div></div>
-<div id="t-aeo" class="tab-sec"><div id="aeo-content"></div></div>
-<div id="t-clusterdrilldown" class="tab-sec"><div id="clusterdrilldown-content"></div></div>
-<div id="t-fanout" class="tab-sec"><div id="fanout-content"></div></div>
-<div id="t-decay" class="tab-sec"><div id="decay-content"></div></div>
-<div id="t-ga4" class="tab-sec"><div id="ga4-content"></div></div>
-<div id="t-coreupdate" class="tab-sec"><div id="coreupdate-content"></div></div>
-<div id="t-bi" class="tab-sec"><div id="bi-content"></div></div>
-<div id="t-recs" class="tab-sec"><div style="padding:40px;text-align:center;">Return to Overview for top stats.</div></div>`;
-
-  document.getElementById('main-content').innerHTML=html;
-  document.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('active'));
-  document.querySelectorAll('.sb-item')[0].classList.add('active');
-  document.querySelectorAll('.tab-sec').forEach(e=>e.classList.remove('active'));
-  document.getElementById('t-overview').classList.add('active');
-
-  // Trigger all complex builders
-  buildJobsInternships();
-  buildBlog();
-  buildHackathon();
-  buildUrlClass();
-  buildCannibalization();
-  buildRegexLib();
-  buildAEO();
-  buildFanOut();
-  buildDecay();
-  buildGA4();
-  buildBI();
-  buildCoreUpdate();
-  buildIntent();
-
-  requestAnimationFrame(()=>{
-    if(_C.length>3){
-      const ctx=document.getElementById('trendChart');
-      if(ctx){const ch=new Chart(ctx,{type:'line',data:{labels:_C.map(r=>r.d.slice(5)),datasets:[{label:'Clicks',data:_C.map(r=>r.clicks),borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.06)',borderWidth:2,pointRadius:0,tension:0.4,fill:true,yAxisID:'y'},{label:'Impr÷50',data:_C.map(r=>Math.round(r.impr/50)),borderColor:'#059669',borderWidth:1.5,pointRadius:0,tension:0.4,fill:false,yAxisID:'y',borderDash:[4,2]}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#6b7280',font:{size:11,family:'Inter'},boxWidth:10,padding:12}}},scales:{x:{ticks:{color:'#9ca3af',font:{size:10},maxTicksLimit:12,maxRotation:0},grid:{color:'#f3f4f6'}},y:{ticks:{color:'#9ca3af',font:{size:10},callback:v=>fmt(v)},grid:{color:'#f3f4f6'}}}}});CHARTS.push(ch);}
-    }
-    if(_Dev.length){
-      const ctx=document.getElementById('devChart');
-      if(ctx){const ch=new Chart(ctx,{type:'doughnut',data:{labels:_Dev.map(d=>d.d),datasets:[{data:_Dev.map(d=>d.clicks),backgroundColor:['#2563eb','#059669','#d97706','#dc2626'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#6b7280',font:{size:11,family:'Inter'},padding:10,boxWidth:10}}}}});CHARTS.push(ch);}
-    }
-    if(_CL.length){
-      const ctx=document.getElementById('clusterChart');
-      if(ctx){const ch=new Chart(ctx,{type:'bar',data:{labels:_CL.map(c=>c.l),datasets:[{label:'Clicks',data:_CL.map(c=>c.clicks),backgroundColor:_CL.map(c=>c.col+'cc'),borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#9ca3af',font:{size:11,family:'Inter'},maxRotation:30}},y:{ticks:{color:'#9ca3af',font:{size:10},callback:v=>fmt(v)},grid:{color:'#f3f4f6'}}}}});CHARTS.push(ch);}
-    }
-  });
-}
-
-// ============ INTELLIGENCE TAB BUILDERS ============
-
-function buildJobsInternships(){
-  const jobPages=NBP.filter(p=>p.p.toLowerCase().includes('/job')), intPages=NBP.filter(p=>p.p.toLowerCase().includes('/internship')||p.p.toLowerCase().includes('-internships'));
-  const jobQ=NBQ.filter(q=>q.q.toLowerCase().includes('job')||q.q.toLowerCase().includes('jobs')), intQ=NBQ.filter(q=>q.q.toLowerCase().includes('internship')||q.q.toLowerCase().includes('intern'));
-  const jtc=jobPages.reduce((s,p)=>s+p.clicks,0), jti=jobPages.reduce((s,p)=>s+p.impr,0), jap=jobPages.length?jobPages.reduce((s,p)=>s+p.pos,0)/jobPages.length:0;
-  const itc=intPages.reduce((s,p)=>s+p.clicks,0), iti=intPages.reduce((s,p)=>s+p.impr,0), iap=intPages.length?intPages.reduce((s,p)=>s+p.pos,0)/intPages.length:0;
-  const jqtc=jobQ.reduce((s,q)=>s+q.clicks,0), jqti=jobQ.reduce((s,q)=>s+q.impr,0);
-  const iqtc=intQ.reduce((s,q)=>s+q.clicks,0), iqti=intQ.reduce((s,q)=>s+q.impr,0);
-  document.getElementById('ji-content').innerHTML = `<div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">Jobs & Internships Intelligence</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
-    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px 20px;">
-      <div style="font-size:11px;font-weight:700;color:#1d4ed8;text-transform:uppercase;margin-bottom:10px;">🏢 Jobs cluster</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Clicks</div><div style="font-size:18px;font-weight:700;color:#2563eb;">${fmt(jtc)}</div></div>
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Impressions</div><div style="font-size:18px;font-weight:700;color:#2563eb;">${fmt(jti)}</div></div>
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">CTR</div><div style="font-size:18px;font-weight:700;color:#2563eb;">${jti?((jtc/jti)*100).toFixed(1):'0'}%</div></div>
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Avg pos</div><div style="font-size:18px;font-weight:700;color:#2563eb;">${jap.toFixed(1)}</div></div>
-      </div>
-    </div>
-    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px 20px;">
-      <div style="font-size:11px;font-weight:700;color:#059669;text-transform:uppercase;margin-bottom:10px;">💼 Internships cluster</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Clicks</div><div style="font-size:18px;font-weight:700;color:#059669;">${fmt(itc)}</div></div>
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Impressions</div><div style="font-size:18px;font-weight:700;color:#059669;">${fmt(iti)}</div></div>
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">CTR</div><div style="font-size:18px;font-weight:700;color:#059669;">${iti?((itc/iti)*100).toFixed(1):'0'}%</div></div>
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Avg pos</div><div style="font-size:18px;font-weight:700;color:#059669;">${iap.toFixed(1)}</div></div>
-      </div>
-    </div>
-  </div>`;
-}
-
-function buildBlog(){
-  const blogPages=NBP.filter(p=>p.p.toLowerCase().includes('/blog'));
-  const btc=blogPages.reduce((s,p)=>s+p.clicks,0), bti=blogPages.reduce((s,p)=>s+p.impr,0), bac=bti?btc/bti*100:0;
-  document.getElementById('blog-content').innerHTML = `
-  <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">✍️ Blog Intelligence</div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.1);margin-bottom:14px;">
-    <div style="background:#6366f1;padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:5px;">Blog clicks</div><div style="font-size:28px;font-weight:700;color:#fff;">${fmt(btc)}</div></div>
-    <div style="background:#4f46e5;padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:5px;">Impressions</div><div style="font-size:28px;font-weight:700;color:#fff;">${fmt(bti)}</div></div>
-    <div style="background:${bac<2?'#dc2626':'#d97706'};padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:5px;">Avg. CTR</div><div style="font-size:28px;font-weight:700;color:#fff;">${bac.toFixed(2)}%</div></div>
-  </div>`;
-}
-
-function buildHackathon(){
-  const hackPages=NBP.filter(p=>p.p.toLowerCase().includes('/hackathon'));
-  const htc=hackPages.reduce((s,p)=>s+p.clicks,0),hti=hackPages.reduce((s,p)=>s+p.impr,0);
-  document.getElementById('hack-content').innerHTML = `
-  <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">🏆 Hackathon Intelligence</div>
-  <div style="display:grid;grid-template-columns:repeat(2,1fr);border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.1);margin-bottom:14px;">
-    <div style="background:#059669;padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:5px;">Page clicks</div><div style="font-size:28px;font-weight:700;color:#fff;">${fmt(htc)}</div></div>
-    <div style="background:#047857;padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:5px;">Impressions</div><div style="font-size:28px;font-weight:700;color:#fff;">${fmt(hti)}</div></div>
-  </div>`;
-}
-
-function drillCluster(ci){
-  const c=_CL[ci]; if(!c)return;
-  const pages=NBP.filter(p=>matchCluster(p.p,c)).sort((a,b)=>b.clicks-a.clicks); const maxC=pages.length?pages[0].clicks:1;
-  document.getElementById('clusterdrilldown-content').innerHTML=`
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-      <button onclick="showTab('clusters',document.querySelectorAll('.sb-item')[3])" style="padding:6px 14px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;font-size:12px;font-weight:500;cursor:pointer;">← Back to Clusters</button>
-      <div style="font-size:18px;font-weight:700;color:#111827;">${c.e} ${c.l}</div>
-    </div>
-    <div class="card"><div class="card-hdr">All URLs in cluster</div><div class="twrap"><table><thead><tr><th>URL</th><th>Clicks</th><th>Impr</th><th>CTR</th><th>Pos</th></tr></thead><tbody>
-        ${pages.map((p)=>{const path=p.p.replace(/https?:\/\/[^/]+/,'').slice(0,55)||'/';return`<tr><td class="mono" title="${p.p}"><a href="${p.p}" target="_blank" style="color:#2563eb;text-decoration:none;">${path}</a></td><td style="font-weight:700;color:#2563eb;">${fmt(p.clicks)}</td><td>${fmt(p.impr)}</td><td>${p.ctr.toFixed(1)}%</td><td>${p.pos.toFixed(1)}</td></tr>`;}).join('')}
-      </tbody></table></div></div>`;
-  document.querySelectorAll('.tab-sec').forEach(e=>e.classList.remove('active'));
-  document.getElementById('t-clusterdrilldown').classList.add('active');
-}
-
-function buildUrlClass(){
-  if(_urlClassBuilt)return; _urlClassBuilt=true;
-  const pages=NBP, perf=pages.filter(p=>p.clicks>=50000), opp=pages.filter(p=>p.impr>=10000&&p.ctr<1), rising=pages.filter(p=>p.impr>=5000&&p.pos>=5&&p.pos<=20&&p.ctr<3);
-  document.getElementById('urlclass-content').innerHTML=`
-    <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">🏷️ URL Classification</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
-      <div class="card"><div class="card-hdr" style="color:#059669;">🚀 Performance (${perf.length})</div><div style="font-size:11px;color:#6b7280;">>50K clicks</div></div>
-      <div class="card"><div class="card-hdr" style="color:#0891b2;">💡 Opportunity (${opp.length})</div><div style="font-size:11px;color:#6b7280;">High Impr, Low CTR</div></div>
-      <div class="card"><div class="card-hdr" style="color:#f43f5e;">📈 Rising (${rising.length})</div><div style="font-size:11px;color:#6b7280;">Pos 5-20, building momentum</div></div>
-    </div>`;
-}
-
-function buildCannibalization(){
-  const roots={};
-  _Q.forEach(q=>{
-    const r=q.q.toLowerCase().replace(/[^a-z0-9\s]/g,'').split(/\s+/).filter(w=>!['for','and','to','in','of','the'].includes(w)).slice(0,3).join(' ');
-    if(r.length>4){if(!roots[r])roots[r]=[];roots[r].push(q);}
-  });
-  const canniGroups=Object.entries(roots).filter(([r,qs])=>qs.length>=2).map(([r,qs])=>{
-      const ti=qs.reduce((s,q)=>s+q.impr,0), tc=qs.reduce((s,q)=>s+q.clicks,0), posSpr=Math.max(...qs.map(q=>q.pos))-Math.min(...qs.map(q=>q.pos));
-      return {root:r,queries:qs,impr:ti,clicks:tc,spread:posSpr};
-    }).filter(g=>g.impr>200).sort((a,b)=>b.spread-a.spread).slice(0,20);
-  
-  document.getElementById('cannibalization-content').innerHTML=`
-    <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">⚠️ Cannibalization Detection</div>
-    <div class="card"><div class="card-hdr">Potential Cannibalization Groups</div>
-    <div class="twrap"><table><thead><tr><th>Topic Root</th><th>Queries</th><th>Impr</th><th>Clicks</th><th>Position Spread</th></tr></thead><tbody>
-      ${canniGroups.map(g=>`<tr><td><strong>${g.root}</strong></td><td>${g.queries.length}</td><td>${fmt(g.impr)}</td><td>${fmt(g.clicks)}</td><td style="color:#dc2626;font-weight:bold;">${g.spread.toFixed(1)}</td></tr>`).join('')}
-    </tbody></table></div></div>`;
-}
-
-function buildRegexLib(){
-  document.getElementById('regexlib-content').innerHTML=`<div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">🔍 Regex Library</div><div class="card"><div style="font-size:12px;color:#6b7280;">Regex segmentation enabled. (Full rules omitted for length constraints, basic intent loaded below).</div></div>`;
-}
-
-function buildIntent(){
-  const infoRx=/^(what|how|why|when|where|who|which|define|explain)/i, transRx=/(apply|register|join|sign up|login)/i;
-  const info=_Q.filter(q=>infoRx.test(q.q)), trans=_Q.filter(q=>transRx.test(q.q));
-  document.getElementById('intent-content').innerHTML=`
-    <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">🎯 Intent Segmentation</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-      <div class="card"><div class="card-hdr" style="color:#2563eb;">📚 Informational (${info.length} queries)</div><div style="font-size:18px;font-weight:bold;">${fmt(info.reduce((s,q)=>s+q.clicks,0))} Clicks</div></div>
-      <div class="card"><div class="card-hdr" style="color:#059669;">🛒 Transactional (${trans.length} queries)</div><div style="font-size:18px;font-weight:bold;">${fmt(trans.reduce((s,q)=>s+q.clicks,0))} Clicks</div></div>
-    </div>`;
-}
-
-function buildAEO(){
-  const aioQ=_Q.filter(q=>q.impr>=1000&&q.ctr<1&&q.pos<=5).sort((a,b)=>b.impr-a.impr).slice(0,10);
-  document.getElementById('aeo-content').innerHTML=`
-    <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">🤖 AEO & GEO Signals</div>
-    <div class="card"><div class="card-hdr">AI Overview Candidates (Low CTR, Top 5)</div>
-    <div class="twrap"><table><thead><tr><th>Query</th><th>Impr</th><th>CTR</th><th>Pos</th></tr></thead><tbody>
-      ${aioQ.map(q=>`<tr><td>${q.q}</td><td>${fmt(q.impr)}</td><td style="color:#dc2626;">${q.ctr.toFixed(1)}%</td><td>${q.pos.toFixed(1)}</td></tr>`).join('')}
-    </tbody></table></div></div>`;
-}
-
-function buildFanOut(){
-  document.getElementById('fanout-content').innerHTML=`
-    <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">🌿 Fan-Out & Answer Gen</div>
-    <div class="card"><div style="padding:20px;text-align:center;color:#6b7280;font-size:12px;">Anthropic API connection module loaded. Enter key to generate AI answers.</div></div>`;
-}
-
-function buildDecay(){
-  const fallen=_Q.filter(q=>q.impr>=500&&q.pos>10&&q.clicks<10).sort((a,b)=>b.impr-a.impr).slice(0,10);
-  document.getElementById('decay-content').innerHTML=`
-    <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">📉 Content Decay</div>
-    <div class="card"><div class="card-hdr">Fallen Queries</div>
-    <div class="twrap"><table><thead><tr><th>Query</th><th>Impr</th><th>Pos</th><th>Clicks</th></tr></thead><tbody>
-      ${fallen.map(q=>`<tr><td>${q.q}</td><td>${fmt(q.impr)}</td><td style="color:#dc2626;">${q.pos.toFixed(1)}</td><td>${q.clicks}</td></tr>`).join('')}
-    </tbody></table></div></div>`;
-}
-
-function buildGA4(){
-  document.getElementById('ga4-content').innerHTML=`
-    <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">📊 GA4 Connect</div>
-    <div class="card"><div style="padding:20px;text-align:center;color:#6b7280;font-size:12px;">GA4 API Module Ready. Authenticate to sync session and conversion data.</div></div>`;
-}
-
-function buildBI(){
-  document.getElementById('bi-content').innerHTML=`
-    <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">💼 Business Intelligence</div>
-    <div class="card"><div style="padding:20px;text-align:center;color:#6b7280;font-size:12px;">BI Dashboard Ready. Connect GA4 to map organic clicks to revenue.</div></div>`;
-}
-
-function buildCoreUpdate(){
-  document.getElementById('coreupdate-content').innerHTML=`
-    <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">🚨 Core Update Action Plan</div>
-    <div class="card"><div style="padding:20px;text-align:center;color:#6b7280;font-size:12px;">May 2026 Core Update protocol loaded. Run Compare mode in API to analyze delta.</div></div>`;
-}
-
-function ga4CheckRedirectToken(){}
-
-</script>
-</body>
-</html>
+    <div class="mb mb-red"><div class="mb-ico"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22
