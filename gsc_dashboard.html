@@ -460,13 +460,13 @@ let GSC_TOKEN = '';
 const GSC_SCOPE = 'https://www.googleapis.com/auth/webmasters.readonly';
 
 function gscAuth() {
-    if(!APP_CLIENT_ID || APP_CLIENT_ID.includes('YOUR_GOOGLE_CLIENT_ID_HERE')) {
+    if(!APP_CLIENT_ID || APP_CLIENT_ID.includes('264413618546-1b661s027t9gi80mkv0d8l3i026okp1t.apps.googleusercontent.com')) {
         showErr("Developer: Please set APP_CLIENT_ID at the top of the code (Line 383).");
         return;
     }
 
     const redirect = window.location.href.split('?')[0].split('#')[0];
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(APP_CLIENT_ID)}&redirect_uri=${encodeURIComponent(redirect)}&response_type=token&scope=${encodeURIComponent(GSC_SCOPE)}&prompt=consent`;
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(264413618546-1b661s027t9gi80mkv0d8l3i026okp1t.apps.googleusercontent.com)}&redirect_uri=${encodeURIComponent(redirect)}&response_type=token&scope=${encodeURIComponent(GSC_SCOPE)}&prompt=consent`;
 
     // Try popup first
     const popup = window.open(authUrl, 'gscauth', 'width=600,height=650');
