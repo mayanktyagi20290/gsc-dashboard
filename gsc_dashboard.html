@@ -210,7 +210,6 @@ tr:hover td{background:#f9fafb;}
 
 <!-- DASHBOARD -->
 <div id="dashboard">
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sb-logo">
       <div class="sb-logo-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
@@ -258,7 +257,6 @@ tr:hover td{background:#f9fafb;}
     </div>
   </div>
 
-  <!-- MAIN CONTENT WRAPPER -->
   <div class="content">
     <div class="topbar">
       <div class="tb-left">
@@ -292,7 +290,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const dz=document.getElementById('dropZone'),fi=document.getElementById('fileInput');
     if(dz && fi) {
         dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
-        dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+        dz.addEventListener('dragleave',()=>dz.classList.remove('over');});
         dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');if(e.dataTransfer.files[0])process(e.dataTransfer.files[0]);});
         fi.addEventListener('change',e=>{if(e.target.files[0])process(e.target.files[0]);});
     }
@@ -761,20 +759,7 @@ function build(){
   document.querySelectorAll('.tab-sec').forEach(e=>e.classList.remove('active'));
   document.getElementById('t-overview').classList.add('active');
 
-  // Trigger all complex builders
-  buildJobsInternships();
-  buildBlog();
-  buildHackathon();
-  buildUrlClass();
-  buildCannibalization();
-  buildRegexLib();
-  buildAEO();
-  buildFanOut();
-  buildDecay();
-  buildGA4();
-  buildBI();
-  buildCoreUpdate();
-  buildIntent();
+  buildJobsInternships(); buildBlog(); buildHackathon(); buildUrlClass(); buildCannibalization(); buildRegexLib(); buildAEO(); buildFanOut(); buildDecay(); buildGA4(); buildBI(); buildCoreUpdate(); buildIntent();
 
   requestAnimationFrame(()=>{
     if(_C.length>3){
@@ -792,35 +777,14 @@ function build(){
   });
 }
 
-// ============ INTELLIGENCE TAB BUILDERS ============
-
 function buildJobsInternships(){
   const jobPages=NBP.filter(p=>p.p.toLowerCase().includes('/job')), intPages=NBP.filter(p=>p.p.toLowerCase().includes('/internship')||p.p.toLowerCase().includes('-internships'));
-  const jobQ=NBQ.filter(q=>q.q.toLowerCase().includes('job')||q.q.toLowerCase().includes('jobs')), intQ=NBQ.filter(q=>q.q.toLowerCase().includes('internship')||q.q.toLowerCase().includes('intern'));
   const jtc=jobPages.reduce((s,p)=>s+p.clicks,0), jti=jobPages.reduce((s,p)=>s+p.impr,0), jap=jobPages.length?jobPages.reduce((s,p)=>s+p.pos,0)/jobPages.length:0;
   const itc=intPages.reduce((s,p)=>s+p.clicks,0), iti=intPages.reduce((s,p)=>s+p.impr,0), iap=intPages.length?intPages.reduce((s,p)=>s+p.pos,0)/intPages.length:0;
-  const jqtc=jobQ.reduce((s,q)=>s+q.clicks,0), jqti=jobQ.reduce((s,q)=>s+q.impr,0);
-  const iqtc=intQ.reduce((s,q)=>s+q.clicks,0), iqti=intQ.reduce((s,q)=>s+q.impr,0);
   document.getElementById('ji-content').innerHTML = `<div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">Jobs & Internships Intelligence</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
-    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px 20px;">
-      <div style="font-size:11px;font-weight:700;color:#1d4ed8;text-transform:uppercase;margin-bottom:10px;">🏢 Jobs cluster</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Clicks</div><div style="font-size:18px;font-weight:700;color:#2563eb;">${fmt(jtc)}</div></div>
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Impressions</div><div style="font-size:18px;font-weight:700;color:#2563eb;">${fmt(jti)}</div></div>
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">CTR</div><div style="font-size:18px;font-weight:700;color:#2563eb;">${jti?((jtc/jti)*100).toFixed(1):'0'}%</div></div>
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Avg pos</div><div style="font-size:18px;font-weight:700;color:#2563eb;">${jap.toFixed(1)}</div></div>
-      </div>
-    </div>
-    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px 20px;">
-      <div style="font-size:11px;font-weight:700;color:#059669;text-transform:uppercase;margin-bottom:10px;">💼 Internships cluster</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Clicks</div><div style="font-size:18px;font-weight:700;color:#059669;">${fmt(itc)}</div></div>
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Impressions</div><div style="font-size:18px;font-weight:700;color:#059669;">${fmt(iti)}</div></div>
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">CTR</div><div style="font-size:18px;font-weight:700;color:#059669;">${iti?((itc/iti)*100).toFixed(1):'0'}%</div></div>
-        <div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Avg pos</div><div style="font-size:18px;font-weight:700;color:#059669;">${iap.toFixed(1)}</div></div>
-      </div>
-    </div>
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px 20px;"><div style="font-size:11px;font-weight:700;color:#1d4ed8;text-transform:uppercase;margin-bottom:10px;">🏢 Jobs cluster</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"><div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Clicks</div><div style="font-size:18px;font-weight:700;color:#2563eb;">${fmt(jtc)}</div></div><div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Impressions</div><div style="font-size:18px;font-weight:700;color:#2563eb;">${fmt(jti)}</div></div><div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">CTR</div><div style="font-size:18px;font-weight:700;color:#2563eb;">${jti?((jtc/jti)*100).toFixed(1):'0'}%</div></div><div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Avg pos</div><div style="font-size:18px;font-weight:700;color:#2563eb;">${jap.toFixed(1)}</div></div></div></div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px 20px;"><div style="font-size:11px;font-weight:700;color:#059669;text-transform:uppercase;margin-bottom:10px;">💼 Internships cluster</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"><div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Clicks</div><div style="font-size:18px;font-weight:700;color:#059669;">${fmt(itc)}</div></div><div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Impressions</div><div style="font-size:18px;font-weight:700;color:#059669;">${fmt(iti)}</div></div><div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">CTR</div><div style="font-size:18px;font-weight:700;color:#059669;">${iti?((itc/iti)*100).toFixed(1):'0'}%</div></div><div><div style="font-size:9px;color:#6b7280;text-transform:uppercase;">Avg pos</div><div style="font-size:18px;font-weight:700;color:#059669;">${iap.toFixed(1)}</div></div></div></div>
   </div>`;
 }
 
@@ -839,12 +803,32 @@ function buildBlog(){
 function buildHackathon(){
   const hackPages=NBP.filter(p=>p.p.toLowerCase().includes('/hackathon'));
   const htc=hackPages.reduce((s,p)=>s+p.clicks,0),hti=hackPages.reduce((s,p)=>s+p.impr,0);
+  
+  const hackCatDefs=[
+    {l:'Online hackathons',e:'💻',col:'#2563eb',kw:['online-hackathon','virtual-hackathon','remote-hackathon']},
+    {l:'Company hackathons',e:'🏢',col:'#7c3aed',kw:['tcs','microsoft','amazon','google','flipkart','walmart','adobe','infosys','wipro']},
+    {l:'College / student',e:'🎓',col:'#059669',kw:['college','student','university','iit','nit','bits','campus','engineering']},
+    {l:'AI/ML domain',e:'🤖',col:'#0891b2',kw:['ai','ml','machine-learning','data-science','artificial-intelligence']},
+    {l:'Web/App domain',e:'🌐',col:'#f59e0b',kw:['web','app','mobile','android','ios','frontend','fullstack']},
+    {l:'Finance domain',e:'💰',col:'#10b981',kw:['finance','fintech','banking','blockchain','crypto']},
+    {l:'Year specific',e:'📅',col:'#8b5cf6',kw:['2024','2025','2026','2027']},
+  ];
+
+  const catData=hackCatDefs.map(cat=>{
+    const m=hackPages.filter(p=>cat.kw.some(k=>p.p.toLowerCase().includes(k)));
+    const tc=m.reduce((s,p)=>s+p.clicks,0),ti=m.reduce((s,p)=>s+p.impr,0),ap=m.length?m.reduce((s,p)=>s+p.pos,0)/m.length:0;
+    return{...cat,clicks:tc,impr:ti,ctr:ti?tc/ti*100:0,pos:ap,pages:m.length};
+  }).filter(c=>c.pages>0).sort((a,b)=>b.clicks-a.clicks);
+
   document.getElementById('hack-content').innerHTML = `
   <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">🏆 Hackathon Intelligence</div>
   <div style="display:grid;grid-template-columns:repeat(2,1fr);border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.1);margin-bottom:14px;">
     <div style="background:#059669;padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:5px;">Page clicks</div><div style="font-size:28px;font-weight:700;color:#fff;">${fmt(htc)}</div></div>
     <div style="background:#047857;padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:5px;">Impressions</div><div style="font-size:28px;font-weight:700;color:#fff;">${fmt(hti)}</div></div>
-  </div>`;
+  </div>
+  ${catData.length?`<div class="card" style="margin-bottom:14px;"><div class="card-hdr">📂 Hackathon page categories</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+    ${catData.map(c=>`<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;border-left:3px solid ${c.col};"><div style="font-size:10px;font-weight:700;color:#6b7280;margin-bottom:3px;">${c.e} ${c.l}</div><div style="font-size:17px;font-weight:700;color:${c.col};margin-bottom:2px;">${fmt(c.clicks)}</div><div style="font-size:10px;color:#9ca3af;">CTR ${c.ctr.toFixed(1)}% · ${c.pages}p · ${fmt(c.impr)} impr.</div></div>`).join('')}
+  </div></div>`:''}`;
 }
 
 function drillCluster(ci){
@@ -865,13 +849,26 @@ function drillCluster(ci){
 function buildUrlClass(){
   if(_urlClassBuilt)return; _urlClassBuilt=true;
   const pages=NBP, perf=pages.filter(p=>p.clicks>=50000), opp=pages.filter(p=>p.impr>=10000&&p.ctr<1), rising=pages.filter(p=>p.impr>=5000&&p.pos>=5&&p.pos<=20&&p.ctr<3);
-  document.getElementById('urlclass-content').innerHTML=`
-    <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">🏷️ URL Classification</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
-      <div class="card"><div class="card-hdr" style="color:#059669;">🚀 Performance (${perf.length})</div><div style="font-size:11px;color:#6b7280;">>50K clicks</div></div>
-      <div class="card"><div class="card-hdr" style="color:#0891b2;">💡 Opportunity (${opp.length})</div><div style="font-size:11px;color:#6b7280;">High Impr, Low CTR</div></div>
-      <div class="card"><div class="card-hdr" style="color:#f43f5e;">📈 Rising (${rising.length})</div><div style="font-size:11px;color:#6b7280;">Pos 5-20, building momentum</div></div>
-    </div>`;
+  const classes=[
+    {key:'perf',label:'Performance URLs',icon:'🚀',color:'#059669',bg:'#f0fdf4',border:'#bbf7d0',desc:'50,000+ clicks',count:perf.length,urls:perf},
+    {key:'opp',label:'Opportunity URLs',icon:'💡',color:'#0891b2',bg:'#ecfeff',border:'#a5f3fc',desc:'10K+ impressions & CTR < 1%',count:opp.length,urls:opp},
+    {key:'rising',label:'Rising URLs',icon:'📈',color:'#f43f5e',bg:'#fff1f2',border:'#fecdd3',desc:'5K+ impr · pos 5–20 · CTR < 3%',count:rising.length,urls:rising},
+  ];
+  let html=`<div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">🏷️ URL Classification</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;">`;
+  classes.forEach(function(c){
+    html+=`<div onclick="toggleUrlClass('${c.key}')" style="background:${c.bg};border:1.5px solid ${c.border};border-radius:10px;padding:10px 14px;cursor:pointer;flex:1;min-width:170px;"><div style="font-size:24px;">${c.icon}</div><div><div style="font-size:22px;font-weight:700;color:${c.color};">${c.count}</div><div style="font-size:11px;font-weight:700;color:#111827;">${c.label}</div></div></div>`;
+  });
+  html+='</div>';
+  classes.forEach(function(c){
+    const rows=c.urls.slice(0,50).map((p,i)=>`<tr><td style="color:#9ca3af;font-size:10px;">${i+1}</td><td class="mono"><a href="${p.p}" target="_blank" style="color:#2563eb;text-decoration:none;">${p.p.replace(/https?:\/\/[^/]+/,'').slice(0,60)}</a></td><td style="font-weight:700;color:${c.color};">${fmt(p.clicks)}</td><td>${fmt(p.impr)}</td><td>${p.ctr.toFixed(1)}%</td><td>${p.pos.toFixed(1)}</td></tr>`).join('');
+    html+=`<div id="urlclass-${c.key}" style="display:none;margin-bottom:14px;"><div class="card" style="border-color:${c.border};"><div style="font-size:13px;font-weight:700;color:${c.color};margin-bottom:10px;">${c.icon} ${c.label}</div><div class="twrap"><table><thead><tr><th>#</th><th>URL</th><th>Clicks</th><th>Impr</th><th>CTR</th><th>Pos</th></tr></thead><tbody>${rows}</tbody></table></div></div></div>`;
+  });
+  document.getElementById('urlclass-content').innerHTML=html;
+}
+
+function toggleUrlClass(key){
+  var panel=document.getElementById('urlclass-'+key);
+  if(panel) panel.style.display=panel.style.display==='block'?'none':'block';
 }
 
 function buildCannibalization(){
@@ -884,7 +881,6 @@ function buildCannibalization(){
       const ti=qs.reduce((s,q)=>s+q.impr,0), tc=qs.reduce((s,q)=>s+q.clicks,0), posSpr=Math.max(...qs.map(q=>q.pos))-Math.min(...qs.map(q=>q.pos));
       return {root:r,queries:qs,impr:ti,clicks:tc,spread:posSpr};
     }).filter(g=>g.impr>200).sort((a,b)=>b.spread-a.spread).slice(0,20);
-  
   document.getElementById('cannibalization-content').innerHTML=`
     <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">⚠️ Cannibalization Detection</div>
     <div class="card"><div class="card-hdr">Potential Cannibalization Groups</div>
@@ -894,7 +890,27 @@ function buildCannibalization(){
 }
 
 function buildRegexLib(){
-  document.getElementById('regexlib-content').innerHTML=`<div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">🔍 Regex Library</div><div class="card"><div style="font-size:12px;color:#6b7280;">Regex segmentation enabled. (Full rules omitted for length constraints, basic intent loaded below).</div></div>`;
+  const patterns=[
+    {n:1,cat:'growing',title:'Question Keywords',desc:'who/what/when/where/why/how/is/are',rx:'^(who|what|when|where|why|how|which|is|are|can|could|should|would|will|do|does|did|was|were|if)\\s',src:'query'},
+    {n:2,cat:'growing',title:'How-To Queries',desc:'Tutorial intent',rx:'^how (to|do|does|can|should|would|is|are|much|many|long|often)\\s',src:'query'},
+    {n:3,cat:'growing',title:'Comparison',desc:'vs/versus/compare/alternative',rx:'.*(vs|versus|compare|comparison|alternative|alternatives|similar to|instead of).*',src:'query'},
+    {n:4,cat:'intent',title:'Informational',desc:'explain/guide/tutorial',rx:'^(what|how|why|when|where|who|which|explain|guide|tutorial|learn|understand|definition|meaning)\\s',src:'query'},
+    {n:5,cat:'money',title:'Buyer Intent',desc:'apply/register/join/enroll/hire/free',rx:'.*(apply|register|join|enroll|enrol|participate|submit|hire|post|free|paid).*',src:'query'}
+  ];
+  patterns.forEach(p=>{
+    let rx=new RegExp(p.rx,'i');
+    p.matches=_Q.filter(r=>rx.test(r.q)).sort((a,b)=>b.clicks-a.clicks);
+    p.totalClicks=p.matches.reduce((s,r)=>s+r.clicks,0); p.totalImpr=p.matches.reduce((s,r)=>s+r.impr,0);
+  });
+  let html=`<div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">🔍 Regex Library</div>`;
+  patterns.forEach(p=>{
+    const hasData=p.matches.length>0;
+    html+=`<div class="card" style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;align-items:center;">
+      <div><div style="font-size:13px;font-weight:700;">#${p.n} ${p.title}</div><div style="font-size:11px;color:#6b7280;margin-top:2px;"><code>${p.rx}</code></div></div>
+      <div style="text-align:right;"><div style="font-size:14px;font-weight:700;color:#2563eb;">${fmt(p.totalClicks)} Clicks</div><div style="font-size:11px;color:#6b7280;">${p.matches.length} queries</div></div>
+    </div></div>`;
+  });
+  document.getElementById('regexlib-content').innerHTML=html;
 }
 
 function buildIntent(){
@@ -921,7 +937,7 @@ function buildAEO(){
 function buildFanOut(){
   document.getElementById('fanout-content').innerHTML=`
     <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">🌿 Fan-Out & Answer Gen</div>
-    <div class="card"><div style="padding:20px;text-align:center;color:#6b7280;font-size:12px;">Anthropic API connection module loaded. Enter key to generate AI answers.</div></div>`;
+    <div class="card"><div style="padding:20px;text-align:center;color:#6b7280;font-size:12px;">Anthropic API connection module loaded. To use AI generation, a server-side proxy is recommended for security. Currently displaying placeholder.</div></div>`;
 }
 
 function buildDecay(){
@@ -937,7 +953,7 @@ function buildDecay(){
 function buildGA4(){
   document.getElementById('ga4-content').innerHTML=`
     <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">📊 GA4 Connect</div>
-    <div class="card"><div style="padding:20px;text-align:center;color:#6b7280;font-size:12px;">GA4 API Module Ready. Authenticate to sync session and conversion data.</div></div>`;
+    <div class="card"><div style="padding:20px;text-align:center;color:#6b7280;font-size:12px;">GA4 API Module Ready. Awaiting authentication flow logic expansion.</div></div>`;
 }
 
 function buildBI(){
