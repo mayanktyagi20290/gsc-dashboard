@@ -660,15 +660,18 @@ function rEmployers(){
 function rClusters(){
   var el=document.getElementById('t-clusters');
   var defs=[
-    {name:'Assessment',seg:'/online-assessment',icon:'📝',col:'#4f8ef7',border:'#1e3a6e'},
-    {name:'Proctoring',seg:'/360-degree',icon:'🎥',col:'#a78bfa',border:'#3b1d8a'},
-    {name:'AI Interview',seg:'/virtual-interview',icon:'🤖',col:'#34d399',border:'#064e3b'},
-    {name:'ATS / Campus',seg:'/hiring-automation',icon:'🏫',col:'#fbbf24',border:'#78350f'},
-    {name:'AI Screening',seg:'/screen-candidates',icon:'🔍',col:'#f87171',border:'#7f1d1d'},
-    {name:'Sourcing',seg:'/source-candidates',icon:'🎯',col:'#fb923c',border:'#7c2d12'},
+    {name:'AI Sourcing Agent',seg:'/ai-sourcing-agent',icon:'🎯',col:'#fb923c',border:'#7c2d12'},
+    {name:'AI Screening Agent',seg:'/ai-screening-agent',icon:'🔍',col:'#f87171',border:'#7f1d1d'},
+    {name:'AI Assessment Agent',seg:'/ai-assessment-agent',icon:'📝',col:'#4f8ef7',border:'#1e3a6e'},
+    {name:'AI Interview Agent',seg:'/ai-interview-agent',icon:'🤖',col:'#34d399',border:'#064e3b'},
+    {name:'AI Proctoring Agent',seg:'/ai-proctoring-agent',icon:'🎥',col:'#a78bfa',border:'#3b1d8a'},
     {name:'Employer Branding',seg:'/employer-branding',icon:'🏆',col:'#e879f9',border:'#701a75'},
-    {name:'Hire Developers',seg:'/hire-',icon:'💻',col:'#2dd4bf',border:'#134e4a'},
-    {name:'Resources',seg:'/case-studies',icon:'📋',col:'#7a7f9a',border:'#2a2d3e'},
+    {name:'ATS Software',seg:'/ats-software',icon:'⚙️',col:'#2dd4bf',border:'#134e4a'},
+    {name:'Virtual Hiring',seg:'/virtual-hiring',icon:'💻',col:'#fbbf24',border:'#78350f'},
+    {name:'Campus Hiring',seg:'/campus-hiring',icon:'🏫',col:'#7a7f9a',border:'#2a2d3e'},
+    {name:'Lateral Hiring',seg:'/lateral-hiring',icon:'💼',col:'#2dd4bf',border:'#134e4a'},
+    {name:'Hiring Platform',seg:'/hiring-talent-platform',icon:'🌐',col:'#4f8ef7',border:'#1e3a6e'},
+    {name:'Brand & Advertise',seg:'/brand-and-advertise',icon:'📢',col:'#e879f9',border:'#701a75'},
   ];
   var clusters=defs.map(function(d){
     var pages=EMP.filter(function(p){return p.url.toLowerCase().includes(d.seg);});
@@ -707,7 +710,180 @@ function rWins(){
   var wins=EMP.filter(function(p){return p.pos>=5&&p.pos<=20;}).sort(function(a,b){return b.impr-a.impr;});
   var g=wins.reduce(function(s,p){return s+Math.max(0,Math.round(p.impr*0.08-p.clicks));},0);
   var h='<div class="notice na"><div class="n-t">⚡ '+wins.length+' quick wins — est. +'+fmt(g)+' clicks/month</div><div class="n-b">Already ranking pos 5-20. Add 3-5 internal links + FAQPage schema → push to top 3.</div></div>';
-  h+='<div class="card"><div class="card-h">Quick wins</div><div class="tw"><table><thead><tr><th>#</th><th>URL</th><th>Position</th><th>Impressions</th><th>CTR</th><th>Est. gain</th><th>Action</th><th>Queries</th></tr></thead><tbody>';
+  h+='<div class="card"><div class="card-h">Quick wins</div><div class="tw"><table><thead><tr><th>#</th><th>URL</th><th>Position</th><th>Impressions</th><th>CTR</th><th>Est. gain</th><th>Queries</th></tr></thead><tbody>';
   wins.forEach(function(p,i){
     var gain=Math.max(0,Math.round(p.impr*0.08-p.clicks));
-    h+='<tr><td style="color:var(--mut);font-size:10px;">'+(i+1)+'</td>'+urlTd(p.url)+'<td>'+posT(p.pos)+'</td><td>'+fmt(p.impr)+'</td><td>'+ctrT(p.ctr)+'</td><td style="font-weight:600;color:var(--green);">+'+fmt(gain)+'</td><td style="font-size:10px;color:var
+    h+='<tr><td style="color:var(--mut);font-size:10px;">'+(i+1)+'</td>'+urlTd(p.url)+'<td>'+posT(p.pos)+'</td><td>'+fmt(p.impr)+'</td><td>'+ctrT(p.ctr)+'</td><td style="font-weight:600;color:var(--green);">+'+fmt(gain)+'</td><td><button onclick="showPageQueries(\''+esc(p.url.replace(/'/g,"\\'"))+'\')" style="padding:3px 7px;background:var(--bdim);color:var(--blue);border:none;border-radius:5px;cursor:pointer;font-size:10px;">🔍 View</button></td></tr>';
+  });
+  if(!wins.length)h+='<tr><td colspan="7" style="text-align:center;color:var(--mut);padding:2rem;">No pages currently in position 5-20 range</td></tr>';
+  h+='</tbody></table></div></div>';
+  el.innerHTML=h;
+}
+
+// ── HIGH POTENTIAL ─────────────────────────────────────────────────────────────
+function rHP(){
+  var el=document.getElementById('t-emp-hp');
+  var hp=EMP.filter(function(p){return p.impr>500&&p.ctr<2&&p.pos<30;}).sort(function(a,b){return b.impr-a.impr;});
+  var g=hp.reduce(function(s,p){return s+Math.max(0,Math.round(p.impr*0.03));},0);
+  var h='<div class="notice nb"><div class="n-t">🎯 '+hp.length+' high-potential pages — high impressions, low CTR</div><div class="n-b">Good visibility but weak titles/meta. Est. +'+fmt(g)+' clicks/month if CTR improves to category average.</div></div>';
+  h+='<div class="card"><div class="card-h">High potential (impr &gt; 500, CTR &lt; 2%, pos &lt; 30)</div><div class="tw"><table><thead><tr><th>#</th><th>URL</th><th>Impressions</th><th>CTR</th><th>Position</th><th>Action</th><th>Queries</th></tr></thead><tbody>';
+  hp.forEach(function(p,i){
+    h+='<tr><td style="color:var(--mut);font-size:10px;">'+(i+1)+'</td>'+urlTd(p.url)+'<td>'+fmt(p.impr)+'</td><td>'+ctrT(p.ctr)+'</td><td>'+posT(p.pos)+'</td><td style="font-size:10px;color:var(--mut);">Rewrite title + meta</td><td><button onclick="showPageQueries(\''+esc(p.url.replace(/'/g,"\\'"))+'\')" style="padding:3px 7px;background:var(--bdim);color:var(--blue);border:none;border-radius:5px;cursor:pointer;font-size:10px;">🔍 View</button></td></tr>';
+  });
+  if(!hp.length)h+='<tr><td colspan="7" style="text-align:center;color:var(--mut);padding:2rem;">No high-potential pages found with current thresholds</td></tr>';
+  h+='</tbody></table></div></div>';
+  el.innerHTML=h;
+}
+
+// ── BLOG SETUP ─────────────────────────────────────────────────────────────────
+function rBlogSetup(){
+  var el=document.getElementById('t-blog-setup');
+  var h='<div class="card"><div class="card-h">Setup B2B Blog URLs<span class="card-sub">'+B2B_URLS.length+' URLs saved · stored locally in this browser</span></div>';
+  h+='<div style="font-size:11px;color:var(--mut);margin-bottom:8px;line-height:1.6;">Paste your B2B blog URLs below, one per line. Pages from your GSC upload matching these URLs will be tracked separately under "Blog Performance".</div>';
+  h+='<textarea class="ta" id="blogUrlsTa" placeholder="https://unstop.com/blog/salary-guide-2026'+'\n'+'https://unstop.com/blog/campus-hiring-trends'+'\n'+'...">'+esc(B2B_URLS.join('\n'))+'</textarea>';
+  h+='<div class="btn-row"><button class="btn btn-p" onclick="saveBlogUrls()">💾 Save URLs</button><button class="btn btn-g" onclick="clearBlogUrls()">🗑 Clear all</button></div>';
+  h+='</div>';
+  el.innerHTML=h;
+}
+function saveBlogUrls(){
+  var raw=document.getElementById('blogUrlsTa').value;
+  var list=raw.split('\n').map(function(s){return s.trim();}).filter(function(s){return s.length>0;});
+  saveURLs(list);
+  buildBlogs();
+  rerender('overview');rerender('blogs');
+  rBlogSetup();
+}
+function clearBlogUrls(){
+  saveURLs([]);
+  buildBlogs();
+  rerender('overview');rerender('blogs');
+  rBlogSetup();
+}
+
+// ── BLOG PERFORMANCE ───────────────────────────────────────────────────────────
+function rBlogs(){
+  var el=document.getElementById('t-blogs');
+  if(!BLOGS.length){
+    el.innerHTML='<div class="card"><div style="padding:2rem;text-align:center;color:var(--mut);"><div style="font-size:24px;margin-bottom:8px;">✍️</div><div style="font-size:12px;margin-bottom:10px;">No B2B blogs tracked yet — add URLs in Setup tab</div><button class="btn btn-p" onclick="ST(\'blog-setup\',null)">→ Setup Now</button></div></div>';
+    return;
+  }
+  var tc=BLOGS.reduce(function(s,p){return s+p.clicks;},0);
+  var ti=BLOGS.reduce(function(s,p){return s+p.impr;},0);
+  var h='<div class="stat-grid">';
+  h+='<div class="stat blue"><div class="stat-lbl">Total Clicks</div><div class="stat-val">'+fmt(tc)+'</div><div class="stat-sub">'+BLOGS.length+' blogs</div></div>';
+  h+='<div class="stat green"><div class="stat-lbl">Impressions</div><div class="stat-val">'+fmt(ti)+'</div><div class="stat-sub">Search appearances</div></div>';
+  h+='<div class="stat amber"><div class="stat-lbl">Avg CTR</div><div class="stat-val">'+(ti?(tc/ti*100).toFixed(1):'0.0')+'%</div><div class="stat-sub">Blog average</div></div>';
+  h+='<div class="stat purple"><div class="stat-lbl">Avg Position</div><div class="stat-val">'+(BLOGS.reduce(function(s,p){return s+p.pos;},0)/BLOGS.length).toFixed(1)+'</div><div class="stat-sub">Blog average</div></div>';
+  h+='</div>';
+  h+='<div class="card"><div class="card-h">All tracked blogs<span class="card-sub">'+BLOGS.length+' · sorted by clicks</span></div><div class="tw"><table><thead><tr><th>#</th><th>URL</th><th>Clicks</th><th>Impressions</th><th>CTR</th><th>Position</th><th>Queries</th></tr></thead><tbody>';
+  BLOGS.forEach(function(p,i){
+    h+='<tr><td style="color:var(--mut);font-size:10px;">'+(i+1)+'</td>'+urlTd(p.url)+'<td style="font-weight:600;color:var(--blue);">'+fmt(p.clicks)+'</td><td>'+fmt(p.impr)+'</td><td>'+ctrT(p.ctr)+'</td><td>'+posT(p.pos)+'</td><td><button onclick="showPageQueries(\''+esc(p.url.replace(/'/g,"\\'"))+'\')" style="padding:3px 7px;background:var(--bdim);color:var(--blue);border:none;border-radius:5px;cursor:pointer;font-size:10px;">🔍 View</button></td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+  el.innerHTML=h;
+}
+
+// ── B2B REGEX LIBRARY ──────────────────────────────────────────────────────────
+function toggleRx(id){var b=document.getElementById(id);if(b)b.style.display=b.style.display==='block'?'none':'block';}
+function rRegex(){
+  var el=document.getElementById('t-regex');
+  var lib=[
+    {t:'All /employers/ pages',d:'Match every B2B employer-facing URL',c:'#4f8ef7',rx:'/employers(/.*)?$',tip:'Use in GSC "Page" filter (Custom → Regex) or in Sheets REGEXMATCH() to isolate all B2B rows from a full-site export.'},
+    {t:'AI Agent hub pages',d:'The 5 core AI agent product pages',c:'#34d399',rx:'/employers/ai-(sourcing|screening|assessment|interview|proctoring)-agent/?$',tip:'Matches only the top-level agent hub pages, excluding their sub-pages (e.g. excludes /aptitude-test).'},
+    {t:'Assessment sub-pages',d:'All test-type pages under AI Assessment Agent',c:'#a78bfa',rx:'/employers/ai-assessment-agent/[a-z-]+',tip:'Use to isolate the 6 assessment-type landing pages (aptitude, coding, SQL, technical, simulation, communication) for a focused content audit.'},
+    {t:'Employer Branding + sub-products',d:'Branding hub and all its product pages',c:'#e879f9',rx:'/employers/employer-branding(/.*)?$',tip:'Rolls up quizzes, hackathons, business simulations, talent community, data-science hackathons, ideathons, and brand-presence pages together.'},
+    {t:'Hiring-type pages',d:'Campus, lateral, virtual, ATS, platform',c:'#fbbf24',rx:'/employers/(campus|lateral|virtual)-hiring|ats-software|hiring-talent-platform',tip:'Groups the standalone hiring-model pages that don\'t belong to an AI agent or employer-branding cluster.'},
+    {t:'B2B blog posts',d:'Blog content aimed at HR/employer audience',c:'#2dd4bf',rx:'/blog/(hiring|recruit|campus|employer|talent)',tip:'A starting filter for employer-facing blog content — refine against your actual URL slugs since not all B2B posts may use these keywords.'},
+  ];
+  var h='<div style="font-size:11px;color:var(--mut);margin-bottom:12px;">Reusable regex patterns for filtering GSC exports, Sheets formulas, or Chartink-style URL matching. Click a card to expand.</div>';
+  lib.forEach(function(r,i){
+    var id='rx-'+i;
+    h+='<div class="rx-card" style="border-left-color:'+r.c+'"><div class="rx-head" onclick="toggleRx(\''+id+'\')"><div class="rx-badge" style="background:'+r.c+'">'+(i+1)+'</div><div><div class="rx-title">'+esc(r.t)+'</div><div class="rx-desc">'+esc(r.d)+'</div></div></div>';
+    h+='<div class="rx-body" id="'+id+'"><div class="rx-code"><span>'+esc(r.rx)+'</span><button onclick="event.stopPropagation();navigator.clipboard.writeText(\''+esc(r.rx.replace(/'/g,"\\'"))+'\')" style="background:none;border:none;color:var(--mut);cursor:pointer;font-size:10px;">📋 Copy</button></div><div class="rx-tip">'+esc(r.tip)+'</div></div></div>';
+  });
+  el.innerHTML=h;
+}
+
+// ── AEO / GEO SIGNALS ──────────────────────────────────────────────────────────
+function toggleAeo(id){var b=document.getElementById(id);if(b)b.style.display=b.style.display==='block'?'none':'block';}
+function rAEO(){
+  var el=document.getElementById('t-aeo');
+  var secs=[
+    {t:'Structured Data / Schema',ico:'🏷️',items:['SoftwareApplication schema on all 5 AI agent pages (sourcing, screening, assessment, interview, proctoring)','Service schema on Employer Branding and hiring-model pages (campus/lateral/virtual hiring, ATS)','FAQPage schema wherever an FAQ block exists — directly citable by answer engines','BreadcrumbList schema across the full /employers/ hierarchy for clear entity relationships']},
+    {t:'Answer-Ready Content',ico:'💬',items:['Lead each product page with a direct, quotable 2-3 line definition of what the tool does','Use explicit H2s phrased as questions ("How does AI screening work?") that mirror likely LLM prompts','Include concrete numbers/stats (candidates screened, time saved, accuracy %) — LLMs favor citable specifics over vague marketing copy']},
+    {t:'E-E-A-T Signals',ico:'✅',items:['Author/reviewer bylines on blog and product pages where possible','Case studies and client logos linked from relevant agent pages','Consistent NAP/brand entity signals so LLMs correctly resolve "Unstop" as the entity behind these products']},
+    {t:'Citation Monitoring',ico:'📡',items:['Track brand + product mentions in ChatGPT, Perplexity, Gemini responses for queries like "best AI screening tool for campus hiring"','Compare against competitor citations (Naukri, Internshala, HackerEarth, Careers360)','Log which specific page/paragraph gets cited to reinforce that pattern elsewhere']},
+  ];
+  var h='<div style="font-size:11px;color:var(--mut);margin-bottom:12px;">AEO/GEO checklist for the /employers/ section — click a section to expand.</div>';
+  secs.forEach(function(s,i){
+    var id='aeo-'+i;
+    h+='<div class="aeo-sec"><div class="aeo-hdr" onclick="toggleAeo(\''+id+'\')"><span class="aeo-ico">'+s.ico+'</span><span class="aeo-htitle">'+esc(s.t)+'</span><span class="aeo-cnt">'+s.items.length+'</span><span class="aeo-arr">▼</span></div>';
+    h+='<div class="aeo-body" id="'+id+'"><div style="padding:0 16px 12px;">';
+    s.items.forEach(function(it){h+='<div class="sig-row" style="border-bottom:1px solid var(--bdr);"><span class="sig-l" style="white-space:normal;">'+esc(it)+'</span></div>';});
+    h+='</div></div></div>';
+  });
+  el.innerHTML=h;
+}
+
+// ── ACTION ITEMS ───────────────────────────────────────────────────────────────
+function rActions(){
+  var el=document.getElementById('t-actions');
+  var qw=EMP.filter(function(p){return p.pos>=5&&p.pos<=20;});
+  var hp=EMP.filter(function(p){return p.impr>500&&p.ctr<2&&p.pos<30;});
+  var zero=EMP.filter(function(p){return p.impr>500&&p.ctr<0.5&&p.pos<15;});
+  var actions=[];
+  if(zero.length)actions.push({t:'Fix '+zero.length+' page(s) with high impressions but near-zero CTR',s:'Rewrite title tags and meta descriptions — these pages are visible in search but not compelling enough to click.',imp:'red',impL:'Critical'});
+  if(qw.length)actions.push({t:'Push '+qw.length+' quick-win page(s) from page 2 to page 1',s:'Add 3-5 internal links from high-authority pages, add FAQPage schema, refresh content freshness signals.',imp:'amber',impL:'High'});
+  if(hp.length)actions.push({t:'Improve CTR on '+hp.length+' high-potential page(s)',s:'These pages already get strong impressions — a better title/meta or rich snippet (FAQ, rating) can convert that into clicks.',imp:'blue',impL:'Medium'});
+  if(BLOGS.length){var bh=BLOGS.filter(function(p){return p.impr>300&&p.ctr<2;});if(bh.length)actions.push({t:'Optimize '+bh.length+' underperforming B2B blog post(s)',s:'Low CTR on blog content usually means the title doesn\'t match search intent — A/B test alternate titles.',imp:'blue',impL:'Medium'});}
+  actions.push({t:'Run an AEO citation check every 2-4 weeks',s:'Ask ChatGPT/Perplexity your top B2B queries and log whether Unstop pages get cited — feed findings back into the AEO/GEO Signals tab.',imp:'purple',impL:'Ongoing'});
+  var colMap={red:'var(--rdim)',amber:'var(--adim)',blue:'var(--bdim)',purple:'var(--pdim)'};
+  var txtMap={red:'var(--red)',amber:'var(--amber)',blue:'var(--blue)',purple:'var(--purple)'};
+  var h='<div class="card"><div class="card-h">Prioritized action items<span class="card-sub">generated from current data</span></div>';
+  actions.forEach(function(a,i){
+    h+='<div class="act-row"><div class="act-n" style="background:'+colMap[a.imp]+';color:'+txtMap[a.imp]+'">'+(i+1)+'</div><div><div class="act-title">'+esc(a.t)+'</div><div class="act-sub">'+esc(a.s)+'</div><span class="act-imp" style="background:'+colMap[a.imp]+';color:'+txtMap[a.imp]+'">'+a.impL+'</span></div></div>';
+  });
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+// ── MASTER ROADMAP ─────────────────────────────────────────────────────────────
+function rRoadmap(){
+  var el=document.getElementById('t-roadmap');
+  var phases=[
+    {q:'Now',t:'Foundation fixes',items:['Ship FAQPage + SoftwareApplication schema across all 5 AI agent pages','Fix zero-CTR pages with title/meta rewrites','Set up B2B blog URL tracking (Setup tab)']},
+    {q:'Next 30 days',t:'Quick wins → Page 1',items:['Internal linking pass across quick-win pages (pos 5-20)','Publish 2-3 FAQ-style content blocks answering top B2B queries','First AEO citation check baseline']},
+    {q:'60-90 days',t:'Cluster depth + AEO',items:['Expand thin AI-agent sub-pages with more E-E-A-T signals (case studies, stats)','Competitor gap content for clusters where competitors outrank Unstop','Re-run AEO citation check, compare to baseline']},
+    {q:'Ongoing',t:'Compounding',items:['Monthly regex-based B2B segment audit (Regex Library tab)','Quarterly full re-cluster review as new /employers/ pages launch','Continuous blog CTR optimization based on Blog Performance data']},
+  ];
+  var h='<div style="font-size:11px;color:var(--mut);margin-bottom:14px;">High-level roadmap for the /employers/ B2B SEO program — update phase items as priorities shift.</div>';
+  phases.forEach(function(p){
+    h+='<div class="card"><div class="card-h"><span>'+esc(p.t)+'</span><span class="card-sub" style="text-transform:uppercase;letter-spacing:.06em;">'+esc(p.q)+'</span></div>';
+    p.items.forEach(function(it){h+='<div class="sig-row" style="border-bottom:1px solid var(--bdr);"><span class="sig-l" style="white-space:normal;">• '+esc(it)+'</span></div>';});
+    h+='</div>';
+  });
+  el.innerHTML=h;
+}
+
+// ── COMPETITORS ────────────────────────────────────────────────────────────────
+function rCompetitors(){
+  var el=document.getElementById('t-competitors');
+  var comps=[
+    {n:'Naukri (hiring/employer side)',f:'Largest scale, broad job-board SEO, weaker on AI-agent-specific content',c:'#4f8ef7'},
+    {n:'Internshala',f:'Strong on internship/campus hiring content, less AI-agent depth',c:'#34d399'},
+    {n:'HackerEarth',f:'Strong technical assessment + hackathon SEO, direct overlap with AI Assessment + Employer Branding clusters',c:'#a78bfa'},
+    {n:'Careers360',f:'Broad early-talent content, strong on informational/guide-style pages',c:'#fbbf24'},
+    {n:'GeeksforGeeks (hiring side)',f:'Strong technical-assessment and coding-test content overlap',c:'#f87171'},
+  ];
+  var h='<div class="notice nb"><div class="n-t">📊 Competitor tracking</div><div class="n-b">Based on your Blog Intel tracker — connect its output here for live content-gap comparison per cluster.</div></div>';
+  h+='<div class="card"><div class="card-h">Tracked B2B / HR-tech competitors</div>';
+  comps.forEach(function(c){
+    h+='<div class="sig-row" style="border-bottom:1px solid var(--bdr);"><span class="sig-l" style="white-space:normal;"><strong style="color:'+c.c+'">'+esc(c.n)+'</strong> — '+esc(c.f)+'</span></div>';
+  });
+  h+='</div>';
+  h+='<div class="card"><div class="card-h">Per-cluster competitive gap</div><div style="font-size:11px;color:var(--mut);padding:1rem 0;text-align:center;">Upload competitor page data or connect your Blog Intel scraper output to populate this section with head-to-head cluster comparisons.</div></div>';
+  el.innerHTML=h;
+}
+</script>
+</body>
+</html>
