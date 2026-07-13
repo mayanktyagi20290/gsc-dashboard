@@ -189,6 +189,7 @@
   <div class="tabbar">
     <button class="tabbtn active" onclick="switchTab('journey')" id="btn-tab-journey">🗺️ Journey Map</button>
     <button class="tabbtn" onclick="switchTab('keywords')" id="btn-tab-keywords">🔑 Keyword &amp; Competitor Intel</button>
+    <button class="tabbtn" onclick="switchTab('pagecomp')" id="btn-tab-pagecomp">📄 Page-wise Competitors</button>
   </div>
 </header>
 
@@ -322,6 +323,23 @@
     <table>
       <thead><tr><th>Page</th><th>Top Real Keyword</th><th class="num">Impr.</th><th class="num">Pos.</th><th>Key Competitors</th></tr></thead>
       <tbody id="fullTableBody"></tbody>
+    </table>
+  </div>
+</section>
+</div>
+
+<div id="tab-pagecomp" class="tabpanel">
+<section id="pageCompSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M3.5 9.5 L20.5 9.5 M9 3.5 L9 20.5"/></svg>Page-wise Competitors</h2>
+  <p class="section-sub">Every one of the 31 pages with its own specific competitors — not just the funnel-stage group. E.g. the Online Coding Test page competes with HackerRank/Codility specifically, not the general Assessment competitor list.</p>
+  <div class="matrix-toolbar">
+    <input type="text" id="pageCompSearch" placeholder="Filter by page name or URL…" oninput="renderPageCompetitors()" style="min-width:280px;">
+    <button onclick="downloadPageCompCSV()">⬇ Download CSV</button>
+  </div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th style="width:20%;">Page</th><th style="width:20%;">URL</th><th>Competitors</th></tr></thead>
+      <tbody id="pageCompBody"></tbody>
     </table>
   </div>
 </section>
@@ -697,8 +715,42 @@ const DEFAULT_ACTIONS = [
   {p:'low', t:'Proctoring page has almost no query volume', d:'ai-proctoring-agent gets only 7 impressions. Worth checking if it\'s properly indexed and linked from the assessment + interview pages.'},
 ];
 
+const DEFAULT_PAGE_COMPETITORS = {
+  'hub': [{name:'Naukri', url:'https://www.naukri.com'},{name:'LinkedIn Talent Solutions', url:'https://business.linkedin.com/talent-solutions'},{name:'HackerEarth', url:'https://www.hackerearth.com'},{name:'Mercer Mettl', url:'https://mettl.com'}],
+  'sourcing': [{name:'Internshala', url:'https://internshala.com'},{name:'Naukri', url:'https://www.naukri.com'},{name:'LinkedIn Recruiter', url:'https://business.linkedin.com/talent-solutions/recruiter'},{name:'HireEZ', url:'https://hireez.com'},{name:'Superset', url:'https://www.joinsuperset.com'}],
+  'sourcing-jobboard': [{name:'Internshala', url:'https://internshala.com'},{name:'Naukri', url:'https://www.naukri.com'},{name:'Indeed', url:'https://www.indeed.com'}],
+  'sourcing-community': [{name:'Internshala', url:'https://internshala.com'},{name:'LinkedIn', url:'https://www.linkedin.com'},{name:'Wellfound', url:'https://wellfound.com'}],
+  'screening': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'iMocha', url:'https://www.imocha.io'},{name:'HireEZ', url:'https://hireez.com'},{name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'},{name:'Turing', url:'https://www.turing.com'}],
+  'assessment': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'HackerEarth', url:'https://www.hackerearth.com'},{name:'iMocha', url:'https://www.imocha.io'},{name:'TestGorilla', url:'https://www.testgorilla.com'},{name:'Xobin', url:'https://xobin.com'},{name:'Adaface', url:'https://www.adaface.com'},{name:'HireMee', url:'https://hiremee.co.in'},{name:'PMaps', url:'https://www.pmapstest.com'},{name:'CoCubes', url:'https://www.cocubes.com'}],
+  'assessment-aptitude': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'PMaps', url:'https://www.pmapstest.com'},{name:'IBM Kenexa', url:'https://www.ibm.com'}],
+  'assessment-coding': [{name:'HackerEarth', url:'https://www.hackerearth.com'},{name:'HackerRank', url:'https://www.hackerrank.com'},{name:'Codility', url:'https://www.codility.com'},{name:'CodeSignal', url:'https://codesignal.com'}],
+  'assessment-sql': [{name:'HackerEarth', url:'https://www.hackerearth.com'},{name:'Adaface', url:'https://www.adaface.com'},{name:'iMocha', url:'https://www.imocha.io'}],
+  'assessment-technical': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'iMocha', url:'https://www.imocha.io'},{name:'HackerEarth', url:'https://www.hackerearth.com'}],
+  'assessment-bizsim': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'Arctic Shores', url:'https://www.arcticshores.com'}],
+  'assessment-comm': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'PMaps', url:'https://www.pmapstest.com'},{name:'Versant (Pearson)', url:'https://www.versanttest.com'}],
+  'interview': [{name:'HireVue', url:'https://www.hirevue.com'},{name:'Talview', url:'https://www.talview.com'},{name:'Mercer Mettl', url:'https://mettl.com'},{name:'HackerEarth OnScreen', url:'https://www.hackerearth.com'},{name:'Spark Hire', url:'https://www.sparkhire.com'},{name:'Metaview', url:'https://www.metaview.ai'},{name:'TheHireHub.AI', url:'https://www.thehirehub.ai'}],
+  'interview-ai': [{name:'HireVue', url:'https://www.hirevue.com'},{name:'Talview', url:'https://www.talview.com'},{name:'Metaview', url:'https://www.metaview.ai'}],
+  'proctoring': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'HireMee', url:'https://hiremee.co.in'},{name:'Talview', url:'https://www.talview.com'}],
+  'calling': [{name:'Talkpush', url:'https://www.talkpush.com'},{name:'Sense', url:'https://www.sensehq.com'},{name:'Paradox (Olivia)', url:'https://www.paradox.ai'}],
+  'scheduling': [{name:'GoodTime', url:'https://www.goodtime.io'},{name:'Calendly', url:'https://calendly.com'},{name:'Paradox (Olivia)', url:'https://www.paradox.ai'}],
+  'branding': [{name:'Universum', url:'https://universumglobal.com'},{name:'Symphony Talent', url:'https://www.symphonytalent.com'},{name:'PeopleScout', url:'https://www.peoplescout.com'},{name:'Blu Ivy Group', url:'https://bluivygroup.com'}],
+  'branding-quizzes': [{name:'ProProfs Quiz Maker', url:'https://www.proprofs.com/quiz-school/'}],
+  'branding-hackathons': [{name:'Devfolio', url:'https://devfolio.co'},{name:'HackerEarth', url:'https://www.hackerearth.com'},{name:'MLH', url:'https://mlh.io'}],
+  'branding-bizsim': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'Arctic Shores', url:'https://www.arcticshores.com'}],
+  'branding-talentcommunity': [{name:'Phenom People', url:'https://www.phenom.com'},{name:'Beamery', url:'https://beamery.com'}],
+  'branding-dshackathons': [{name:'Kaggle', url:'https://www.kaggle.com'},{name:'HackerEarth', url:'https://www.hackerearth.com'},{name:'Devfolio', url:'https://devfolio.co'}],
+  'branding-ideathons': [{name:'Devfolio', url:'https://devfolio.co'},{name:'HackerEarth', url:'https://www.hackerearth.com'}],
+  'branding-brandpresence': [{name:'Glassdoor', url:'https://www.glassdoor.com'},{name:'LinkedIn', url:'https://www.linkedin.com'},{name:'Universum', url:'https://universumglobal.com'}],
+  'brand-advertise': [{name:'Universum', url:'https://universumglobal.com'},{name:'LinkedIn Talent Brand', url:'https://business.linkedin.com/talent-solutions'},{name:'Glassdoor', url:'https://www.glassdoor.com'}],
+  'ats': [{name:'Darwinbox', url:'https://www.darwinbox.com'},{name:'Keka', url:'https://www.keka.com'},{name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'},{name:'Greenhouse', url:'https://www.greenhouse.io'}],
+  'virtual-hiring': [{name:'HireVue', url:'https://www.hirevue.com'},{name:'Talview', url:'https://www.talview.com'},{name:'Mercer Mettl', url:'https://mettl.com'}],
+  'campus-hiring': [{name:'Superset', url:'https://www.joinsuperset.com'},{name:'CampusNext', url:''},{name:'HackerEarth', url:'https://www.hackerearth.com'}],
+  'lateral-hiring': [{name:'Naukri', url:'https://www.naukri.com'},{name:'LinkedIn Recruiter', url:'https://business.linkedin.com/talent-solutions/recruiter'},{name:'Instahyre', url:'https://www.instahyre.com'}],
+  'hiring-talent-platform': [{name:'Darwinbox', url:'https://www.darwinbox.com'},{name:'Keka', url:'https://www.keka.com'},{name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'}],
+};
+
 const clone = (o) => JSON.parse(JSON.stringify(o));
-let DATA = { migrations: clone(DEFAULT_MIGRATIONS), groups: clone(DEFAULT_GROUPS), actions: clone(DEFAULT_ACTIONS) };
+let DATA = { migrations: clone(DEFAULT_MIGRATIONS), groups: clone(DEFAULT_GROUPS), actions: clone(DEFAULT_ACTIONS), pageCompetitors: clone(DEFAULT_PAGE_COMPETITORS) };
 let fullRows = [];
 
 function verdict(m){
@@ -821,6 +873,8 @@ function normalizeData(){
     g.competitors = (g.competitors||[]).map(c=> typeof c === 'string' ? {name:c, url:''} : c);
     if(g.primaryPath === undefined) g.primaryPath = '';
   });
+  if(!DATA.pageCompetitors) DATA.pageCompetitors = clone(DEFAULT_PAGE_COMPETITORS);
+  PAGES.forEach(p=>{ if(!DATA.pageCompetitors[p.id]) DATA.pageCompetitors[p.id] = []; });
 }
 
 function renderAll(){
@@ -831,6 +885,56 @@ function renderAll(){
   renderFullTable();
   renderEditMigrations();
   renderEditGroups();
+  renderPageCompetitors();
+}
+
+// --- Page-wise competitors tab ---
+function renderPageCompetitors(){
+  const q = (document.getElementById('pageCompSearch').value||'').toLowerCase();
+  const rows = PAGES.filter(p=> p.label.toLowerCase().includes(q) || p.path.toLowerCase().includes(q));
+  document.getElementById('pageCompBody').innerHTML = rows.map(p=>{
+    const comps = DATA.pageCompetitors[p.id] || [];
+    return `<tr>
+      <td><strong>${p.label}</strong><div class="tiny">${catLabel[p.cat]||p.cat}</div></td>
+      <td class="url-cell mono"><a href="${BASE}${p.path}" target="_blank" rel="noopener">${p.path}</a></td>
+      <td>
+        ${comps.map((c,ci)=>`<span class="comp-pill">${c.url ? `<a href="${c.url}" target="_blank" rel="noopener" class="comp-link">${c.name}</a>` : c.name} <a href="#" class="del-link" onclick="editPageCompetitorUrl('${p.id}',${ci});return false;" title="Edit URL">✎</a><a href="#" class="del-link" onclick="deletePageCompetitor('${p.id}',${ci});return false;">✕</a></span>`).join(' ') || '<span class="tiny">No competitors yet</span>'}
+        <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
+          <input type="text" id="pc-text-${p.id}" placeholder="competitor name" style="min-width:110px;">
+          <input type="text" id="pc-url-${p.id}" placeholder="https://competitor.com" style="min-width:150px;">
+          <button onclick="addPageCompetitor('${p.id}')">+</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+function addPageCompetitor(pageId){
+  const text = document.getElementById(`pc-text-${pageId}`).value.trim();
+  const url = document.getElementById(`pc-url-${pageId}`).value.trim();
+  if(!text){ alert('Competitor name is required.'); return; }
+  if(!DATA.pageCompetitors[pageId]) DATA.pageCompetitors[pageId] = [];
+  DATA.pageCompetitors[pageId].push({name:text, url});
+  renderPageCompetitors();
+}
+function deletePageCompetitor(pageId, ci){ DATA.pageCompetitors[pageId].splice(ci,1); renderPageCompetitors(); }
+function editPageCompetitorUrl(pageId, ci){
+  const current = DATA.pageCompetitors[pageId][ci];
+  const url = prompt(`URL for "${current.name}":`, current.url || '');
+  if(url === null) return;
+  current.url = url.trim();
+  renderPageCompetitors();
+}
+function downloadPageCompCSV(){
+  let rows = [['Page','URL','Category','Competitors']];
+  PAGES.forEach(p=>{
+    const comps = (DATA.pageCompetitors[p.id]||[]);
+    rows.push([p.label, BASE+p.path, catLabel[p.cat]||p.cat, competitorsLabel(comps)]);
+  });
+  const csv = rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='unstop_page_wise_competitors.csv'; a.click();
+  URL.revokeObjectURL(url);
 }
 
 // --- Editor toggle ---
@@ -918,7 +1022,7 @@ function importData(event){
     try{
       const parsed = JSON.parse(e.target.result);
       if(!parsed.migrations || !parsed.groups){ throw new Error('Missing migrations/groups keys'); }
-      DATA = { migrations: parsed.migrations, groups: parsed.groups, actions: parsed.actions || clone(DEFAULT_ACTIONS) };
+      DATA = { migrations: parsed.migrations, groups: parsed.groups, actions: parsed.actions || clone(DEFAULT_ACTIONS), pageCompetitors: parsed.pageCompetitors || clone(DEFAULT_PAGE_COMPETITORS) };
       renderAll();
       alert('Data imported successfully.');
     }catch(err){
@@ -930,7 +1034,7 @@ function importData(event){
 }
 function resetData(){
   if(confirm('Reset all keywords, competitors, and migration pairs back to the original defaults? This discards any edits.')){
-    DATA = { migrations: clone(DEFAULT_MIGRATIONS), groups: clone(DEFAULT_GROUPS), actions: clone(DEFAULT_ACTIONS) };
+    DATA = { migrations: clone(DEFAULT_MIGRATIONS), groups: clone(DEFAULT_GROUPS), actions: clone(DEFAULT_ACTIONS), pageCompetitors: clone(DEFAULT_PAGE_COMPETITORS) };
     renderAll();
   }
 }
