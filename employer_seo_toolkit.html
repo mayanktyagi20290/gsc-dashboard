@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employer Pages SEO Toolkit | Unstop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --blue:#1c4ed8; --blue-dark:#1741b8; --teal:#10b981; --coral:#ff4b72; --amber:#f59e0b; --lavender:#818cf8;
+    --bg:#f7f9fc; --card:#ffffff; --border:#e2e8f0; --text:#0f172a; --muted:#64748b; --muted2:#94a3b8;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;}
+  code, .mono{font-family:'JetBrains Mono',monospace;}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 24px;}
+  header{padding:28px 0 8px;}
+  .headrow{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand .dot{width:10px;height:10px;border-radius:99px;background:var(--teal);box-shadow:0 0 0 4px rgba(16,185,129,.15);}
+  .brand h1{font-size:15px;margin:0;font-weight:800;letter-spacing:-.01em;}
+  .brand .sub{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+  .badge{font-size:11px;font-weight:700;padding:5px 10px;border-radius:99px;background:#eef2ff;color:var(--blue);border:1px solid #dbe4ff;}
+  h2.section-title{font-size:20px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em;}
+  p.section-sub{font-size:13px;color:var(--muted);margin:0 0 20px;max-width:720px;}
+  section{padding:36px 0;border-top:1px solid var(--border);}
+  section:first-of-type{border-top:none;}
+
+  /* stats strip */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px;}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;}
+  .stat b{font-size:24px;display:block;font-weight:800;}
+  .stat span{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
+
+  /* journey map */
+  .lane-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:22px 0 10px;display:flex;align-items:center;gap:8px;}
+  .lane-label .tag{padding:2px 8px;border-radius:6px;font-size:10px;}
+  .lane{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;}
+  .node{flex:0 0 200px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;position:relative;transition:box-shadow .15s, transform .15s;}
+  .node:hover{box-shadow:0 8px 24px rgba(15,23,42,.08);transform:translateY(-2px);}
+  .node .cat-chip{display:inline-block;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:5px;margin-bottom:8px;}
+  .node h4{font-size:13px;margin:0 0 4px;font-weight:700;line-height:1.3;}
+  .node .url{font-size:10px;color:var(--muted2);word-break:break-all;margin-bottom:8px;display:block;}
+  .children{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+  .chip{font-size:9.5px;font-weight:600;background:#f1f5f9;color:var(--muted);padding:3px 7px;border-radius:6px;}
+  .arrow{align-self:center;color:var(--muted2);font-size:20px;flex:0 0 auto;}
+  .hub-node{background:linear-gradient(135deg,var(--blue),#3b5fe0);color:#fff;flex:0 0 220px;}
+  .hub-node .url{color:rgba(255,255,255,.7);}
+  .exit-node{background:linear-gradient(135deg,var(--teal),#0d9668);color:#fff;flex:0 0 220px;}
+  .exit-node .url{color:rgba(255,255,255,.75);}
+  .cat-core{background:#eaf1ff;color:var(--blue);}
+  .cat-support{background:#eef0ff;color:var(--lavender);}
+  .cat-branding{background:#ffe9ee;color:var(--coral);}
+  .cat-platform{background:#fff6e0;color:#b8790a;}
+
+  /* simulator */
+  .sim-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:22px;}
+  select, input[type=text]{font-family:inherit;font-size:13px;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);}
+  select{min-width:320px;}
+  button{font-family:inherit;font-size:13px;font-weight:700;padding:10px 20px;border-radius:10px;border:none;background:var(--blue);color:#fff;cursor:pointer;transition:background .15s;}
+  button:hover{background:var(--blue-dark);}
+  button.ghost{background:#fff;color:var(--blue);border:1px solid #cddcff;}
+  #pathResult{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;}
+  .path-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;flex:1 1 190px;min-width:180px;}
+  .path-card .step-num{font-size:10px;font-weight:800;color:var(--muted2);text-transform:uppercase;}
+  .path-card h4{margin:4px 0 6px;font-size:13px;}
+  .path-card p{margin:0;font-size:11.5px;color:var(--muted);line-height:1.4;}
+  .path-arrow{align-self:center;color:var(--muted2);font-size:22px;}
+
+  /* matrix table */
+  .matrix-toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;font-size:12.5px;}
+  thead th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);background:#f8fafc;padding:10px 14px;border-bottom:1px solid var(--border);}
+  tbody td{padding:10px 14px;border-bottom:1px solid #eef1f5;vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  .link-pill{display:inline-block;font-size:10.5px;background:#f1f5f9;color:var(--text);padding:2px 8px;border-radius:6px;margin:2px 3px 2px 0;}
+  .link-pill .reason{color:var(--muted2);font-weight:500;}
+  .url-cell{font-size:11px;color:var(--muted);}
+  footer{padding:26px 0 40px;text-align:center;font-size:11px;color:var(--muted2);}
+  footer a{color:var(--blue);text-decoration:none;font-weight:600;}
+  @media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr);} select{min-width:0;width:100%;}}
+
+
+  :root{
+    --blue:#1c4ed8; --blue-dark:#1741b8; --teal:#10b981; --coral:#ff4b72; --amber:#f59e0b; --lavender:#818cf8;
+    --bg:#f7f9fc; --card:#ffffff; --border:#e2e8f0; --text:#0f172a; --muted:#64748b; --muted2:#94a3b8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;}
+  code,.mono{font-family:'JetBrains Mono',monospace;}
+  .wrap{max-width:1320px;margin:0 auto;padding:0 24px 60px;}
+  header{padding:28px 0 8px;}
+  .headrow{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand .dot{width:10px;height:10px;border-radius:99px;background:var(--teal);box-shadow:0 0 0 4px rgba(16,185,129,.15);}
+  .brand h1{font-size:15px;margin:0;font-weight:800;}
+  .brand .sub{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+  .badge{font-size:11px;font-weight:700;padding:5px 10px;border-radius:99px;background:#eef2ff;color:var(--blue);border:1px solid #dbe4ff;}
+  h2.section-title{font-size:20px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em;}
+  p.section-sub{font-size:13px;color:var(--muted);margin:0 0 18px;max-width:800px;}
+  section{padding:32px 0;border-top:1px solid var(--border);}
+  section:first-of-type{border-top:none;}
+
+  .alert{background:#fff4f4;border:1.5px solid #ffd1d1;border-radius:16px;padding:20px 22px;margin-bottom:20px;}
+  .alert h3{margin:0 0 6px;color:#c0392b;font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px;}
+  .alert p{margin:0;font-size:12.5px;color:#7a3a3a;line-height:1.6;}
+
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;font-size:12px;}
+  thead th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);background:#f8fafc;padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  tbody td{padding:9px 12px;border-bottom:1px solid #eef1f5;vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  .num{font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap;}
+  .arrow-cell{text-align:center;color:var(--muted2);font-weight:700;}
+  .tiny{font-size:10.5px;color:var(--muted2);}
+  .win{color:var(--teal);font-weight:700;}
+  .loss{color:#c0392b;font-weight:700;}
+
+  .kw-pill{display:inline-block;font-size:10.5px;background:#f1f5f9;padding:2px 8px;border-radius:6px;margin:2px 3px 2px 0;}
+  .pos-good{color:var(--teal);font-weight:700;}
+  .pos-bad{color:#c0392b;font-weight:700;}
+  .pos-mid{color:var(--amber);font-weight:700;}
+
+  .comp-pill{display:inline-block;font-size:11px;font-weight:600;background:#eef2ff;color:var(--blue);padding:3px 9px;border-radius:99px;margin:2px 4px 2px 0;border:1px solid #dbe4ff;}
+
+  .group-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:16px;}
+  .group-card h4{margin:0 0 4px;font-size:14px;font-weight:800;}
+  .group-card .path-note{font-size:11px;color:var(--muted2);margin-bottom:12px;}
+  .group-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;}
+  .group-grid h5{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 8px;}
+
+  .action-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;}
+  .action-list li{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:12.5px;display:flex;gap:10px;align-items:flex-start;}
+  .action-list .prio{font-size:9px;font-weight:800;text-transform:uppercase;padding:2px 7px;border-radius:5px;flex:0 0 auto;margin-top:1px;}
+  .prio-high{background:#ffe3e3;color:#c0392b;}
+  .prio-med{background:#fff3d6;color:#a9720d;}
+  .prio-low{background:#e3f6ec;color:#0d9668;}
+
+  .matrix-toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+  button{font-family:inherit;font-size:13px;font-weight:700;padding:9px 18px;border-radius:10px;border:1px solid #cddcff;background:#fff;color:var(--blue);cursor:pointer;}
+  button:hover{background:#eef2ff;}
+  footer{padding:26px 0 10px;text-align:center;font-size:11px;color:var(--muted2);}
+  footer a{color:var(--blue);text-decoration:none;font-weight:600;}
+  @media(max-width:800px){.group-grid{grid-template-columns:1fr;}}
+
+
+  .tabbar{display:flex;gap:6px;margin-top:16px;border-bottom:1px solid var(--border);}
+  .tabbtn{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;padding:10px 18px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+  .tabbtn.active{color:var(--blue);border-bottom-color:var(--blue);}
+  .tabpanel{display:none;}
+  .tabpanel.active{display:block;}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="headrow">
+    <div class="brand">
+      <span class="dot"></span>
+      <div>
+        <h1>Employer Pages SEO Toolkit</h1>
+        <div class="sub">Unstop &middot; Internal SEO Tool</div>
+      </div>
+    </div>
+    <span class="badge">v2 &middot; Journey Map + Keyword Intelligence</span>
+  </div>
+  <p class="section-sub" style="margin-top:14px;">Two views on the same 31 <code>/employers/*</code> pages: the entry-to-exit journey & internal linking plan, and real keyword/competitor data pulled from Search Console.</p>
+
+  <div class="tabbar">
+    <button class="tabbtn active" onclick="switchTab('journey')" id="btn-tab-journey">🗺 Journey Map</button>
+    <button class="tabbtn" onclick="switchTab('keywords')" id="btn-tab-keywords">🔑 Keyword &amp; Competitor Intel</button>
+  </div>
+</header>
+
+<div id="tab-journey" class="tabpanel active">
+  <div class="stats" id="statsRow"></div>
+<section id="journeyMapSection">
+  <h2 class="section-title">Journey Map</h2>
+  <p class="section-sub">Entry → Hub → Core Hiring Funnel (in sequence) → Supporting Agents → Trust Layer → Exit. Scroll each row horizontally.</p>
+
+  <div class="lane-label">Entry Signals</div>
+  <div class="lane" id="laneEntry"></div>
+
+  <div class="lane-label">Hub</div>
+  <div class="lane" id="laneHub"></div>
+
+  <div class="lane-label"><span class="tag cat-core">Core Hiring Funnel</span> — sequential, one stage feeds the next</div>
+  <div class="lane" id="laneCore"></div>
+
+  <div class="lane-label"><span class="tag cat-support">Supporting Agents</span> — plug into a specific funnel stage</div>
+  <div class="lane" id="laneSupport"></div>
+
+  <div class="lane-label"><span class="tag cat-branding">Trust &amp; Awareness Layer</span></div>
+  <div class="lane" id="laneBranding"></div>
+
+  <div class="lane-label"><span class="tag cat-platform">Channel / Platform Pages</span></div>
+  <div class="lane" id="lanePlatform"></div>
+
+  <div class="lane-label">Exit</div>
+  <div class="lane" id="laneExit"></div>
+</section>
+
+<section id="simSection">
+  <h2 class="section-title">Path Simulator</h2>
+  <p class="section-sub">Pick any page as the entry point (matches how an employer would actually land via organic search) and see the recommended forward path to conversion.</p>
+  <div class="sim-controls">
+    <select id="entrySelect"></select>
+    <button onclick="tracePath()">Trace Path →</button>
+  </div>
+  <div id="pathResult"></div>
+</section>
+
+<section id="matrixSection">
+  <h2 class="section-title">Internal Linking Matrix</h2>
+  <p class="section-sub">Auto-generated outbound link recommendations for every page, with the reason each link earns its place. Use this as the implementation checklist.</p>
+  <div class="matrix-toolbar">
+    <input type="text" id="matrixSearch" placeholder="Filter by page name or URL…" oninput="renderMatrix()" style="min-width:280px;">
+    <button class="ghost" onclick="downloadCSV()">⬇ Download CSV</button>
+  </div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th style="width:22%;">Page</th><th style="width:18%;">URL</th><th style="width:12%;">Category</th><th>Recommended Outbound Links</th></tr></thead>
+      <tbody id="matrixBody"></tbody>
+    </table>
+  </div>
+</section>
+</div>
+
+<div id="tab-keywords" class="tabpanel">
+<section id="alertSection">
+  <h2 class="section-title">🚨 Critical Finding: Old vs New URLs Are Splitting Traffic</h2>
+  <p class="section-sub">Your new AI-agent URLs (the ones you gave me) exist <strong>in parallel</strong> with older, still-live URLs for the same content. GSC shows almost all clicks and impressions are still going to the OLD urls — the new pages are essentially starting from zero, and Google may be treating them as duplicate/competing content.</p>
+  <div class="alert">
+    <h3>⚠ No redirect detected between equivalent pages</h3>
+    <p>Example: <strong>/employers/online-assessment-platform</strong> has 6,589 impressions and 140 clicks (90 days). Its new equivalent <strong>/employers/ai-assessment-agent</strong> has just 16 impressions and 4 clicks. Same pattern repeats across almost every pair below. If the new URL is meant to replace the old one, a 301 redirect + rel=canonical should have been in place — right now you're likely cannibalizing your own rankings.</p>
+  </div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th>Old URL (established)</th><th class="num">Impr.</th><th class="num">Clicks</th><th></th><th>New URL (yours)</th><th class="num">Impr.</th><th class="num">Clicks</th><th>Verdict</th></tr></thead>
+      <tbody id="migrationBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="keywordCompSection">
+  <h2 class="section-title">Real Keywords + Competitors by Funnel Stage</h2>
+  <p class="section-sub">Top non-branded queries your pages actually rank for (from GSC), plus the real players showing up in search for those terms.</p>
+  <div id="groupCards"></div>
+</section>
+
+<section id="actionSection">
+  <h2 class="section-title">Priority Actions</h2>
+  <ul class="action-list" id="actionList"></ul>
+</section>
+
+<section id="matrixSection">
+  <h2 class="section-title">Full Data Table</h2>
+  <p class="section-sub">Every page, its top keyword, position, and mapped competitors — for the CSV.</p>
+  <div class="matrix-toolbar">
+    <span class="tiny">31 pages mapped</span>
+    <button onclick="downloadCSVKeywords()">⬇ Download CSV</button>
+  </div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th>Page</th><th>Top Real Keyword</th><th class="num">Impr.</th><th class="num">Pos.</th><th>Key Competitors</th></tr></thead>
+      <tbody id="fullTableBody"></tbody>
+    </table>
+  </div>
+</section>
+</div>
+
+<footer>
+  Internal planning tool for SEO/AEO use &middot; generated for <a href="https://unstop.com/employers" target="_blank">unstop.com/employers</a> &middot; not for public deployment
+</footer>
+</div>
+
+<script>
+function switchTab(name){
+  document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('btn-tab-'+name).classList.add('active');
+}
+
+
+const BASE = 'https://unstop.com';
+const PAGES = [
+  {id:'hub', path:'/employers', layer:1, cat:'hub', label:'Employers Hub'},
+
+  {id:'sourcing', path:'/employers/ai-sourcing-agent', layer:2, cat:'agent-core', label:'AI Sourcing Agent', parent:'hub', funnel:1},
+  {id:'sourcing-jobboard', path:'/employers/ai-sourcing-agent/jobs-internships-listings-jobboard', layer:3, cat:'agent-core', label:'Jobs & Internships Listings', parent:'sourcing'},
+  {id:'sourcing-community', path:'/employers/ai-sourcing-agent/our-largest-early-talent-community', layer:3, cat:'agent-core', label:'Early Talent Community', parent:'sourcing'},
+
+  {id:'screening', path:'/employers/ai-screening-agent', layer:2, cat:'agent-core', label:'AI Screening Agent', parent:'hub', funnel:2},
+
+  {id:'assessment', path:'/employers/ai-assessment-agent', layer:2, cat:'agent-core', label:'AI Assessment Agent', parent:'hub', funnel:3},
+  {id:'assessment-aptitude', path:'/employers/ai-assessment-agent/aptitude-test', layer:3, cat:'agent-core', label:'Aptitude Test', parent:'assessment'},
+  {id:'assessment-coding', path:'/employers/ai-assessment-agent/online-coding-test', layer:3, cat:'agent-core', label:'Online Coding Test', parent:'assessment'},
+  {id:'assessment-sql', path:'/employers/ai-assessment-agent/sql-assessments', layer:3, cat:'agent-core', label:'SQL Assessments', parent:'assessment'},
+  {id:'assessment-technical', path:'/employers/ai-assessment-agent/technical-role-based-tests', layer:3, cat:'agent-core', label:'Technical Role-Based Tests', parent:'assessment'},
+  {id:'assessment-bizsim', path:'/employers/ai-assessment-agent/business-competency-simulation-games', layer:3, cat:'agent-core', label:'Business Competency Simulation Games', parent:'assessment'},
+  {id:'assessment-comm', path:'/employers/ai-assessment-agent/communication-assessment', layer:3, cat:'agent-core', label:'Communication Assessment', parent:'assessment'},
+
+  {id:'interview', path:'/employers/ai-interview-agent', layer:2, cat:'agent-core', label:'AI Interview Agent', parent:'hub', funnel:4},
+  {id:'interview-ai', path:'/employers/ai-interview-agent/ai-interview', layer:3, cat:'agent-core', label:'AI Interview', parent:'interview'},
+
+  {id:'proctoring', path:'/employers/ai-proctoring-agent', layer:2, cat:'agent-core', label:'AI Proctoring Agent', parent:'hub', funnel:5},
+
+  {id:'calling', path:'/employers/ai-calling-agent', layer:2, cat:'agent-support', label:'AI Calling Agent', parent:'hub', supports:'screening'},
+  {id:'scheduling', path:'/employers/ai-scheduling-agent', layer:2, cat:'agent-support', label:'AI Scheduling Agent', parent:'hub', supports:'interview'},
+
+  {id:'branding', path:'/employers/employer-branding', layer:2, cat:'branding', label:'Employer Branding', parent:'hub', supports:'sourcing'},
+  {id:'branding-quizzes', path:'/employers/employer-branding/quizzes', layer:3, cat:'branding', label:'Quizzes', parent:'branding'},
+  {id:'branding-hackathons', path:'/employers/employer-branding/hackathons', layer:3, cat:'branding', label:'Hackathons', parent:'branding'},
+  {id:'branding-bizsim', path:'/employers/employer-branding/business-simulations', layer:3, cat:'branding', label:'Business Simulations', parent:'branding'},
+  {id:'branding-talentcommunity', path:'/employers/employer-branding/build-your-talent-community', layer:3, cat:'branding', label:'Build Your Talent Community', parent:'branding'},
+  {id:'branding-dshackathons', path:'/employers/employer-branding/data-science-hackathons', layer:3, cat:'branding', label:'Data Science Hackathons', parent:'branding'},
+  {id:'branding-ideathons', path:'/employers/employer-branding/ideathons', layer:3, cat:'branding', label:'Ideathons', parent:'branding'},
+  {id:'branding-brandpresence', path:'/employers/employer-branding/build-your-brand-presence', layer:3, cat:'branding', label:'Build Your Brand Presence', parent:'branding'},
+  {id:'brand-advertise', path:'/employers/brand-and-advertise', layer:2, cat:'branding', label:'Brand & Advertise', parent:'hub', supports:'branding'},
+
+  {id:'ats', path:'/employers/ats-software', layer:2, cat:'platform', label:'ATS Software', parent:'hub', supports:'screening'},
+  {id:'virtual-hiring', path:'/employers/virtual-hiring', layer:2, cat:'platform', label:'Virtual Hiring', parent:'hub', supports:'interview'},
+  {id:'campus-hiring', path:'/employers/campus-hiring', layer:2, cat:'platform', label:'Campus Hiring', parent:'hub', supports:'sourcing'},
+  {id:'lateral-hiring', path:'/employers/lateral-hiring', layer:2, cat:'platform', label:'Lateral Hiring', parent:'hub', supports:'sourcing'},
+  {id:'hiring-talent-platform', path:'/employers/hiring-talent-platform', layer:2, cat:'platform', label:'Hiring Talent Platform', parent:'hub', supports:'hub'},
+];
+const FUNNEL_ORDER = ['sourcing','screening','assessment','interview','proctoring'];
+const byId = id => PAGES.find(p=>p.id===id);
+const childrenOf = id => PAGES.filter(p=>p.parent===id);
+const nextCore = id => { const i=FUNNEL_ORDER.indexOf(id); return i>=0 && i<FUNNEL_ORDER.length-1 ? byId(FUNNEL_ORDER[i+1]) : null; };
+const prevCore = id => { const i=FUNNEL_ORDER.indexOf(id); return i>0 ? byId(FUNNEL_ORDER[i-1]) : null; };
+const catLabel = {hub:'Hub','agent-core':'Core Agent','agent-support':'Support Agent',branding:'Branding',platform:'Platform',exit:'Exit'};
+const catClass = {hub:'cat-core','agent-core':'cat-core','agent-support':'cat-support',branding:'cat-branding',platform:'cat-platform'};
+
+function nodeCard(p, big){
+  const kids = childrenOf(p.id).slice(0,4);
+  return `<div class="node ${big?'':''}">
+    <span class="cat-chip ${catClass[p.cat]||''}">${catLabel[p.cat]||p.cat}</span>
+    <h4>${p.label}</h4>
+    <span class="url mono">${BASE}${p.path}</span>
+    ${kids.length? `<div class="children">${kids.map(k=>`<span class="chip">${k.label}</span>`).join('')}${childrenOf(p.id).length>4?`<span class="chip">+${childrenOf(p.id).length-4} more</span>`:''}</div>`:''}
+  </div>`;
+}
+
+function buildMap(){
+  document.getElementById('laneEntry').innerHTML = ['Organic Search','Google Ads / Paid','Direct / Referral / Quora'].map(e=>
+    `<div class="node" style="border-style:dashed;"><span class="cat-chip" style="background:#f1f5f9;color:var(--muted);">Signal</span><h4>${e}</h4><span class="url">candidate lands on Layer-2 or Layer-3 page</span></div>`
+  ).join('<span class="arrow">→</span>');
+
+  document.getElementById('laneHub').innerHTML = `<div class="node hub-node">
+    <span class="cat-chip" style="background:rgba(255,255,255,.2);color:#fff;">Hub</span>
+    <h4>Employers Hub</h4><span class="url mono">${BASE}/employers</span>
+    <div class="children"><span class="chip" style="background:rgba(255,255,255,.15);color:#fff;">Links to all 13 Layer-2 pages via nav</span></div>
+  </div>`;
+
+  document.getElementById('laneCore').innerHTML = FUNNEL_ORDER.map(id=>nodeCard(byId(id))).join('<span class="arrow">→</span>');
+
+  document.getElementById('laneSupport').innerHTML = ['calling','scheduling'].map(id=>{
+    const p = byId(id); const target = byId(p.supports);
+    return `<div class="node"><span class="cat-chip cat-support">Support Agent</span><h4>${p.label}</h4><span class="url mono">${BASE}${p.path}</span>
+      <div class="children"><span class="chip">↳ feeds ${target.label}</span></div></div>`;
+  }).join('');
+
+  document.getElementById('laneBranding').innerHTML = nodeCard(byId('branding')) + nodeCard(byId('brand-advertise'));
+
+  document.getElementById('lanePlatform').innerHTML = ['ats','virtual-hiring','campus-hiring','lateral-hiring','hiring-talent-platform'].map(id=>nodeCard(byId(id))).join('');
+
+  document.getElementById('laneExit').innerHTML = `<div class="node exit-node">
+    <span class="cat-chip" style="background:rgba(255,255,255,.2);color:#fff;">Conversion</span>
+    <h4>Book a Demo / Talk to Sales</h4><span class="url">present as CTA on every Layer-2 & Layer-3 page</span>
+  </div>
+  <div class="node" style="border-style:dashed;">
+    <span class="cat-chip" style="background:#f1f5f9;color:var(--muted);">Bounce</span>
+    <h4>Leaves without converting</h4><span class="url">biggest leak: Layer-2 pages with no next-step link</span>
+  </div>`;
+}
+
+function buildStats(){
+  const l2 = PAGES.filter(p=>p.layer===2).length, l3 = PAGES.filter(p=>p.layer===3).length;
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat"><b>${PAGES.length}</b><span>Total Pages Mapped</span></div>
+    <div class="stat"><b>3</b><span>Architecture Layers</span></div>
+    <div class="stat"><b>${l2}</b><span>Layer-2 Category Pages</span></div>
+    <div class="stat"><b>${l3}</b><span>Layer-3 Deep-Dive Pages</span></div>`;
+}
+
+function buildEntrySelect(){
+  const groups = {'agent-core':'Core Hiring Funnel','agent-support':'Supporting Agents',branding:'Employer Branding',platform:'Channel / Platform',hub:'Hub'};
+  const sel = document.getElementById('entrySelect');
+  Object.keys(groups).forEach(cat=>{
+    const og = document.createElement('optgroup'); og.label = groups[cat];
+    PAGES.filter(p=>p.cat===cat).forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=(p.layer===3?'— ':'')+p.label; og.appendChild(o); });
+    sel.appendChild(og);
+  });
+}
+
+function tracePath(){
+  const startId = document.getElementById('entrySelect').value;
+  let path = [byId(startId)];
+  let node = path[0];
+  if(node.layer===3){ node = byId(node.parent); path.push(node); }
+  if(node.id==='hub'){ node = byId('sourcing'); path.push(node); }
+  if(node.cat==='agent-core'){
+    const nxt = nextCore(node.id); if(nxt) path.push(nxt);
+  } else if(node.cat==='agent-support' || (node.cat==='platform' && node.supports && node.supports!=='hub')){
+    const t = byId(node.supports); if(t && !path.includes(t)) path.push(t);
+  } else if(node.cat==='branding' && node.id==='brand-advertise'){
+    path.push(byId('branding'));
+  }
+  if(!path.some(p=>p.cat==='branding')) path.push(byId('branding'));
+  path = path.filter((p,i)=>i===0||p.id!==path[i-1].id);
+
+  const reasons = {
+    'root':'Entry point — first touch from search/ads',
+    'parent':'Rolls up to parent category (breadcrumb link)',
+    'hubfallback':'Broad intent → routed to first funnel stage',
+    'nextfunnel':'Natural next stage in the hiring funnel',
+    'support':'Supporting agent feeds this core funnel stage',
+    'branding-parent':'Related branding offering',
+    'trust':'Trust/awareness layer before conversion'
+  };
+  let html = '';
+  path.forEach((p,i)=>{
+    let tag = i===0?reasons.root : (p.cat==='branding'?reasons.trust : (FUNNEL_ORDER.includes(p.id)?reasons.nextfunnel:reasons.parent));
+    html += `<div class="path-card"><div class="step-num">Step ${i+1}</div><h4>${p.label}</h4><p class="mono" style="font-size:10px;">${BASE}${p.path}</p><p>${tag}</p></div>`;
+    if(i<path.length-1) html += `<span class="path-arrow">→</span>`;
+  });
+  html += `<span class="path-arrow">→</span><div class="path-card" style="background:linear-gradient(135deg,var(--teal),#0d9668);color:#fff;"><div class="step-num" style="color:rgba(255,255,255,.7);">Exit</div><h4>Book a Demo</h4><p style="color:rgba(255,255,255,.85);">Conversion CTA</p></div>`;
+  document.getElementById('pathResult').innerHTML = html;
+}
+
+function getRecommendedLinks(page){
+  let links = [];
+  if(page.id!=='hub') links.push({to:'hub', reason:'Hub / breadcrumb link'});
+  if(page.layer===3){
+    const parent = byId(page.parent);
+    links.push({to:parent.id, reason:'Parent category page'});
+    childrenOf(parent.id).filter(s=>s.id!==page.id).slice(0,2).forEach(s=>links.push({to:s.id, reason:'Sibling deep-dive (cross-sell)'}));
+    if(parent.cat==='agent-core'){ const n=nextCore(parent.id); if(n) links.push({to:n.id, reason:'Next funnel stage'}); }
+  } else if(page.layer===2){
+    if(page.cat==='agent-core'){
+      const pr=prevCore(page.id); if(pr) links.push({to:pr.id, reason:'Previous funnel stage'});
+      const nx=nextCore(page.id); if(nx) links.push({to:nx.id, reason:'Next funnel stage'});
+      childrenOf(page.id).slice(0,2).forEach(c=>links.push({to:c.id, reason:'Feature deep-dive'}));
+      links.push({to:'branding', reason:'Trust/awareness cross-link'});
+    } else if(page.cat==='agent-support'){
+      links.push({to:page.supports, reason:'Supports this funnel stage'});
+    } else if(page.cat==='branding'){
+      if(page.id==='branding'){
+        childrenOf('branding').slice(0,3).forEach(c=>links.push({to:c.id, reason:'Branding activity page'}));
+        links.push({to:'brand-advertise', reason:'Related branding offering'});
+        links.push({to:'sourcing', reason:'Feeds top-of-funnel sourcing'});
+      } else if(page.id==='brand-advertise'){
+        links.push({to:'branding', reason:'Parent branding category'});
+        links.push({to:'hiring-talent-platform', reason:'Platform cross-link'});
+      }
+    } else if(page.cat==='platform'){
+      if(page.supports && page.supports!=='hub') links.push({to:page.supports, reason:'Related funnel stage'});
+      PAGES.filter(p=>p.cat==='platform' && p.id!==page.id).slice(0,2).forEach(s=>links.push({to:s.id, reason:'Related hiring channel'}));
+    }
+  } else if(page.id==='hub'){
+    links.push({to:'ALL', reason:'Main navigation links to all 13 Layer-2 category pages'});
+  }
+  const seen = new Set(); return links.filter(l=>{ if(seen.has(l.to)) return false; seen.add(l.to); return true; });
+}
+
+let MATRIX_DATA = [];
+function buildMatrix(){
+  MATRIX_DATA = PAGES.map(p=>({page:p, links:getRecommendedLinks(p)}));
+}
+
+function renderMatrix(){
+  const q = document.getElementById('matrixSearch').value.toLowerCase();
+  const rows = MATRIX_DATA.filter(r => r.page.label.toLowerCase().includes(q) || r.page.path.toLowerCase().includes(q));
+  document.getElementById('matrixBody').innerHTML = rows.map(r=>{
+    const linksHtml = r.links.map(l=> l.to==='ALL' ? `<span class="link-pill">All Layer-2 pages <span class="reason">— ${l.reason}</span></span>` :
+      `<span class="link-pill">${byId(l.to).label} <span class="reason">— ${l.reason}</span></span>`).join('');
+    return `<tr><td><strong>${r.page.label}</strong></td><td class="url-cell mono">${r.page.path}</td><td>${catLabel[r.page.cat]||r.page.cat}</td><td>${linksHtml||'—'}</td></tr>`;
+  }).join('');
+}
+
+function downloadCSV(){
+  let rows = [['Page','URL','Category','Recommended Link To','URL','Reason']];
+  MATRIX_DATA.forEach(r=>{
+    r.links.forEach(l=>{
+      const target = l.to==='ALL' ? {label:'All Layer-2 pages', path:''} : byId(l.to);
+      rows.push([r.page.label, BASE+r.page.path, catLabel[r.page.cat]||r.page.cat, target.label, target.path?BASE+target.path:'', l.reason]);
+    });
+    if(r.links.length===0) rows.push([r.page.label, BASE+r.page.path, catLabel[r.page.cat]||r.page.cat,'','','']);
+  });
+  const csv = rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='unstop_employer_internal_linking_matrix.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+buildStats(); buildMap(); buildEntrySelect(); buildMatrix(); renderMatrix(); tracePath();
+
+
+
+const migrations = [
+  {old:'/employers/source-candidates', oldI:1587, oldC:20, new:'/employers/ai-sourcing-agent', newI:35, newC:1},
+  {old:'/employers/source-candidates/jobs-internships-listings-jobboard', oldI:2815, oldC:54, new:'/employers/ai-sourcing-agent/jobs-internships-listings-jobboard', newI:523, newC:5},
+  {old:'/employers/source-candidates/our-largest-early-talent-community', oldI:66, oldC:2, new:'/employers/ai-sourcing-agent/our-largest-early-talent-community', newI:12, newC:0},
+  {old:'/employers/screen-candidates-powered-by-ai', oldI:2287, oldC:30, new:'/employers/ai-screening-agent', newI:15, newC:2},
+  {old:'/employers/online-assessment-platform', oldI:6589, oldC:140, new:'/employers/ai-assessment-agent', newI:16, newC:4},
+  {old:'/employers/online-assessment-platform/aptitude-test', oldI:465, oldC:16, new:'/employers/ai-assessment-agent/aptitude-test', newI:98, newC:2},
+  {old:'/employers/online-assessment-platform/online-coding-test', oldI:2429, oldC:5, new:'/employers/ai-assessment-agent/online-coding-test', newI:414, newC:0},
+  {old:'/employers/online-assessment-platform/sql-assessments', oldI:29, oldC:1, new:'/employers/ai-assessment-agent/sql-assessments', newI:43, newC:0},
+  {old:'/employers/online-assessment-platform/technical-role-based-tests', oldI:407, oldC:6, new:'/employers/ai-assessment-agent/technical-role-based-tests', newI:0, newC:0},
+  {old:'/employers/online-assessment-platform/business-competency-simulation-games', oldI:17, oldC:0, new:'/employers/ai-assessment-agent/business-competency-simulation-games', newI:0, newC:0},
+  {old:'/employers/online-assessment-platform/communication-assessment', oldI:24, oldC:1, new:'/employers/ai-assessment-agent/communication-assessment', newI:21, newC:1},
+  {old:'/employers/online-assessment-platform/360-degree-next-gen-proctoring', oldI:173, oldC:13, new:'/employers/ai-proctoring-agent', newI:7, newC:0},
+  {old:'/employers/virtual-interview-platform', oldI:2739, oldC:16, new:'/employers/ai-interview-agent', newI:35, newC:2},
+  {old:'/employers/virtual-interview-platform/ai-interview', oldI:1369, oldC:50, new:'/employers/ai-interview-agent/ai-interview', newI:110, newC:0},
+  {old:'/employers/hiring-automation-platform-applicant-tracking-system-ats', oldI:4780, oldC:33, new:'/employers/ats-software', newI:11, newC:0},
+  {old:'/employers/hiring-automation-platform-applicant-tracking-system-ats/campus-hiring', oldI:1223, oldC:25, new:'/employers/campus-hiring', newI:63, newC:5},
+  {old:'/employers/hiring-automation-platform-applicant-tracking-system-ats/virtual-hiring', oldI:307, oldC:5, new:'/employers/virtual-hiring', newI:1, newC:1},
+];
+
+function verdict(m){
+  if(m.oldI > m.newI * 5) return {label:'Old dominates', cls:'loss'};
+  if(m.newI > m.oldI) return {label:'New catching up', cls:'win'};
+  return {label:'Mixed', cls:'tiny'};
+}
+
+document.getElementById('migrationBody').innerHTML = migrations.map(m=>{
+  const v = verdict(m);
+  return `<tr>
+    <td class="mono">${m.old}</td><td class="num">${m.oldI}</td><td class="num">${m.oldC}</td>
+    <td class="arrow-cell">→</td>
+    <td class="mono">${m.new}</td><td class="num">${m.newI}</td><td class="num">${m.newC}</td>
+    <td class="${v.cls}">${v.label}</td>
+  </tr>`;
+}).join('');
+
+const groups = [
+  {
+    title: 'Sourcing', urls: ['ai-sourcing-agent + subpages'],
+    keywords: [
+      ['sourcing platform', 423, 34.7],['candidate sourcing platform', 224, 18.8],
+      ['talent sourcing solution', 164, 33.4],['free job posting sites for internships', 32, 15.1],
+      ['unstop job portal', 418, 6.5]
+    ],
+    competitors: ['Internshala','Naukri','LinkedIn Recruiter','HireEZ','Superset']
+  },
+  {
+    title: 'Screening', urls: ['ai-screening-agent'],
+    keywords: [
+      ['ai candidate screening', 1038, 19.2],['automated candidate screening', 355, 19.6],
+      ['candidate screening software', 73, 33.5],['how to choose an automated candidate screening platform', 23, 2.5]
+    ],
+    competitors: ['Mercer Mettl','iMocha','HireEZ','Zoho Recruit','Turing']
+  },
+  {
+    title: 'Assessment', urls: ['ai-assessment-agent + 6 subpages'],
+    keywords: [
+      ['assessment platform', 725, 46.2],['online assessment software', 701, 37.7],
+      ['skills assessment platform', 145, 57.3],['coding assessment platform', 200, 26.3],
+      ['ai coding assessment platform', 198, 8.9],['talent assessment platform', 260, 27.9]
+    ],
+    competitors: ['Mercer Mettl','HackerEarth','iMocha','TestGorilla','Xobin','Adaface','HireMee','PMaps','CoCubes']
+  },
+  {
+    title: 'Interview', urls: ['ai-interview-agent + ai-interview'],
+    keywords: [
+      ['ai interview platform', 486, 11.0],['ai interview', 477, 44.1],
+      ['interviewing platform', 334, 27.5],['best online interview platform', 285, 24.4],
+      ['digital interview platform', 123, 19.2]
+    ],
+    competitors: ['HireVue','Talview','Mercer Mettl','HackerEarth OnScreen','Spark Hire','Metaview','TheHireHub.AI']
+  },
+  {
+    title: 'Proctoring', urls: ['ai-proctoring-agent'],
+    keywords: [
+      ['ai proctoring platform', 5, 1.4],['ai proctored exam', 2, 1],['unstop camera access', 26, 5.1]
+    ],
+    competitors: ['Mercer Mettl','HireMee','ExamOnline','Talview']
+  },
+  {
+    title: 'Employer Branding', urls: ['employer-branding + 7 subpages, brand-and-advertise'],
+    keywords: [
+      ['employer branding services', 489, 86.5],['employer branding agency', 338, 47.4],
+      ['employer brand agency', 126, 60.3],['employer branding solution', 124, 3.9],
+      ['hackathon', 1096, 1.8],['hackathon platforms', 41, 1.2],['business simulation', 215, 59.6]
+    ],
+    competitors: ['Universum','Symphony Talent','PeopleScout','Blu Ivy Group','HackerEarth (hackathons)','Devfolio (hackathons)']
+  },
+  {
+    title: 'ATS / Campus / Lateral / Virtual Hiring', urls: ['ats-software, campus-hiring, lateral-hiring, virtual-hiring, hiring-talent-platform'],
+    keywords: [
+      ['campus hiring solutions', 405, 3.0],['campus hiring platform', 239, 4.4],
+      ['virtual hiring solutions', 60, 7.0],['web based ats', 46, 54.9],['campusnext', 13, 60.8],['wipro talent next', 12, 3.1]
+    ],
+    competitors: ['Superset','CampusNext','Darwinbox','Keka','Zoho Recruit']
+  }
+];
+
+function posClass(p){ return p<=10?'pos-good':(p<=30?'pos-mid':'pos-bad'); }
+
+document.getElementById('groupCards').innerHTML = groups.map(g=>`
+  <div class="group-card">
+    <h4>${g.title}</h4>
+    <div class="path-note mono">${g.urls.join(', ')}</div>
+    <div class="group-grid">
+      <div>
+        <h5>Real Ranking Keywords (GSC)</h5>
+        ${g.keywords.map(k=>`<span class="kw-pill">${k[0]} <span class="${posClass(k[2])}">#${k[2]}</span> · ${k[1]} impr</span>`).join(' ')}
+      </div>
+      <div>
+        <h5>Key Competitors</h5>
+        ${g.competitors.map(c=>`<span class="comp-pill">${c}</span>`).join(' ')}
+      </div>
+    </div>
+  </div>
+`).join('');
+
+const actions = [
+  {p:'high', t:'Decide canonical URL per page pair', d:'For every old/new pair above, pick one as canonical, 301-redirect the other, and update internal links + sitemap. Right now you\'re splitting link equity across two URLs for the same content.'},
+  {p:'high', t:'"employer branding services" & "employer branding agency"', d:'489 + 338 impressions combined at position 47–60. High-volume, high-intent terms you\'re nowhere near page 1 for. Needs dedicated content/schema work on the employer-branding hub page.'},
+  {p:'high', t:'"assessment platform" / "online assessment software"', d:'725 + 701 impressions at position 37–46. These are head terms — competitors (Mercer Mettl, HackerEarth, iMocha) dominate here. Consider a comparison/alternatives page targeting these directly.'},
+  {p:'med', t:'"ai interview" & "ai interview platform"', d:'477 + 486 impressions, position 11–44. Close to page 1 — a focused content/schema push on ai-interview-agent could convert this into a quick win.'},
+  {p:'med', t:'Campus hiring cluster already performing well', d:'"campus hiring solutions" (pos 3.0) and "campus hiring platform" (pos 4.4) — defend these with fresh content and internal links from the ATS/platform pages.'},
+  {p:'low', t:'Proctoring page has almost no query volume', d:'ai-proctoring-agent gets only 7 impressions. Worth checking if it\'s properly indexed and linked from the assessment + interview pages.'},
+];
+
+document.getElementById('actionList').innerHTML = actions.map(a=>`
+  <li><span class="prio prio-${a.p}">${a.p}</span><div><strong>${a.t}</strong><br>${a.d}</div></li>
+`).join('');
+
+// Full table combining everything for CSV
+const fullRows = [];
+groups.forEach(g=>{
+  g.keywords.forEach(k=>{
+    fullRows.push({page:g.title, keyword:k[0], impr:k[1], pos:k[2], competitors:g.competitors.join('; ')});
+  });
+});
+document.getElementById('fullTableBody').innerHTML = fullRows.map(r=>`
+  <tr><td>${r.page}</td><td>${r.keyword}</td><td class="num">${r.impr}</td><td class="num ${posClass(r.pos)}">#${r.pos}</td><td>${r.competitors}</td></tr>
+`).join('');
+
+function downloadCSVKeywords(){
+  let rows = [['Page Group','Keyword','Impressions','Position','Competitors']];
+  fullRows.forEach(r=> rows.push([r.page, r.keyword, r.impr, r.pos, r.competitors]));
+  rows.push([]);
+  rows.push(['--- URL Migration Check ---']);
+  rows.push(['Old URL','Old Impr','Old Clicks','New URL','New Impr','New Clicks']);
+  migrations.forEach(m=> rows.push([m.old, m.oldI, m.oldC, m.new, m.newI, m.newC]));
+  const csv = rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='unstop_keyword_competitor_intelligence.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+</script>
+</body>
+</html>
