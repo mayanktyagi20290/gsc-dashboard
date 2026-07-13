@@ -152,6 +152,12 @@
   .tabbtn.active{color:var(--blue);border-bottom-color:var(--blue);}
   .tabpanel{display:none;}
   .tabpanel.active{display:block;}
+  #editorPanel input[type=text], #editorPanel input[type=number]{
+    font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);
+  }
+  #editorPanel .group-card{margin-bottom:14px;}
+  .del-link{color:#c0392b;text-decoration:none;margin-left:4px;font-weight:700;}
+  .del-row-btn{font-size:11px;padding:4px 10px;color:#c0392b;border-color:#ffd1d1;}
 
 </style>
 </head>
@@ -232,13 +238,51 @@
 </div>
 
 <div id="tab-keywords" class="tabpanel">
-<section id="alertSection">
-  <h2 class="section-title">🚨 Critical Finding: Old vs New URLs Are Splitting Traffic</h2>
-  <p class="section-sub">Your new AI-agent URLs (the ones you gave me) exist <strong>in parallel</strong> with older, still-live URLs for the same content. GSC shows almost all clicks and impressions are still going to the OLD urls — the new pages are essentially starting from zero, and Google may be treating them as duplicate/competing content.</p>
-  <div class="alert">
-    <h3>⚠ No redirect detected between equivalent pages</h3>
-    <p>Example: <strong>/employers/online-assessment-platform</strong> has 6,589 impressions and 140 clicks (90 days). Its new equivalent <strong>/employers/ai-assessment-agent</strong> has just 16 impressions and 4 clicks. Same pattern repeats across almost every pair below. If the new URL is meant to replace the old one, a 301 redirect + rel=canonical should have been in place — right now you're likely cannibalizing your own rankings.</p>
+<section id="dataManagerSection">
+  <div class="matrix-toolbar">
+    <h2 class="section-title" style="margin-bottom:0;">Manage Data</h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="toggleEditor()" id="btnToggleEditor">✏️ Edit Data</button>
+      <button onclick="exportData()">⬇ Export JSON</button>
+      <button onclick="document.getElementById('importFile').click()">⬆ Import JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="ghost" onclick="resetData()">↺ Reset to Defaults</button>
+    </div>
   </div>
+  <p class="section-sub">Edit keywords, competitors, and old/new URL pairs below. <strong>Export JSON</strong> saves your edits to a file — commit it alongside this HTML in your repo, and <strong>Import JSON</strong> next time to pick up where you left off (edits made here don't survive a page refresh on their own).</p>
+
+  <div id="editorPanel" style="display:none;">
+    <div class="group-card">
+      <h4>URL Migration Pairs</h4>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Old URL</th><th class="num">Impr</th><th class="num">Clicks</th><th>New URL</th><th class="num">Impr</th><th class="num">Clicks</th><th></th></tr></thead>
+        <tbody id="editMigrationsBody"></tbody></table>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+        <input type="text" id="newMigOld" placeholder="/employers/old-url">
+        <input type="number" id="newMigOldI" placeholder="Old impr" style="width:90px;">
+        <input type="number" id="newMigOldC" placeholder="Old clicks" style="width:90px;">
+        <input type="text" id="newMigNew" placeholder="/employers/new-url">
+        <input type="number" id="newMigNewI" placeholder="New impr" style="width:90px;">
+        <input type="number" id="newMigNewC" placeholder="New clicks" style="width:90px;">
+        <button onclick="addMigration()">+ Add Pair</button>
+      </div>
+    </div>
+
+    <div class="group-card">
+      <h4>Keyword Groups (Keywords + Competitors)</h4>
+      <div id="editGroupsList"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;border-top:1px dashed var(--border);padding-top:14px;">
+        <input type="text" id="newGroupTitle" placeholder="New group name (e.g. Referral Hiring)" style="flex:1;min-width:220px;">
+        <button onclick="addGroup()">+ Add Group</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="alertSection">
+  <h2 class="section-title">Old vs New URLs — Ranking Transfer Still In Progress</h2>
+  <p class="section-sub">A redirect exists between these old and new URL pairs, but since it's handled client-side (Angular routing), Google is slower to pick up the signal — GSC still shows almost all clicks and impressions on the OLD urls while the new ones are near zero. Worth monitoring to confirm the transfer completes; if it stalls for too long, a server-side 301 would resolve it faster.</p>
   <div style="overflow-x:auto;">
     <table>
       <thead><tr><th>Old URL (established)</th><th class="num">Impr.</th><th class="num">Clicks</th><th></th><th>New URL (yours)</th><th class="num">Impr.</th><th class="num">Clicks</th><th>Verdict</th></tr></thead>
@@ -505,7 +549,7 @@ buildStats(); buildMap(); buildEntrySelect(); buildMatrix(); renderMatrix(); tra
 
 
 
-const migrations = [
+const DEFAULT_MIGRATIONS = [
   {old:'/employers/source-candidates', oldI:1587, oldC:20, new:'/employers/ai-sourcing-agent', newI:35, newC:1},
   {old:'/employers/source-candidates/jobs-internships-listings-jobboard', oldI:2815, oldC:54, new:'/employers/ai-sourcing-agent/jobs-internships-listings-jobboard', newI:523, newC:5},
   {old:'/employers/source-candidates/our-largest-early-talent-community', oldI:66, oldC:2, new:'/employers/ai-sourcing-agent/our-largest-early-talent-community', newI:12, newC:0},
@@ -525,23 +569,7 @@ const migrations = [
   {old:'/employers/hiring-automation-platform-applicant-tracking-system-ats/virtual-hiring', oldI:307, oldC:5, new:'/employers/virtual-hiring', newI:1, newC:1},
 ];
 
-function verdict(m){
-  if(m.oldI > m.newI * 5) return {label:'Old dominates', cls:'loss'};
-  if(m.newI > m.oldI) return {label:'New catching up', cls:'win'};
-  return {label:'Mixed', cls:'tiny'};
-}
-
-document.getElementById('migrationBody').innerHTML = migrations.map(m=>{
-  const v = verdict(m);
-  return `<tr>
-    <td class="mono">${m.old}</td><td class="num">${m.oldI}</td><td class="num">${m.oldC}</td>
-    <td class="arrow-cell">→</td>
-    <td class="mono">${m.new}</td><td class="num">${m.newI}</td><td class="num">${m.newC}</td>
-    <td class="${v.cls}">${v.label}</td>
-  </tr>`;
-}).join('');
-
-const groups = [
+const DEFAULT_GROUPS = [
   {
     title: 'Sourcing', urls: ['ai-sourcing-agent + subpages'],
     keywords: [
@@ -549,7 +577,13 @@ const groups = [
       ['talent sourcing solution', 164, 33.4],['free job posting sites for internships', 32, 15.1],
       ['unstop job portal', 418, 6.5]
     ],
-    competitors: ['Internshala','Naukri','LinkedIn Recruiter','HireEZ','Superset']
+    competitors: [
+      {name:'Internshala', url:'https://internshala.com'},
+      {name:'Naukri', url:'https://www.naukri.com'},
+      {name:'LinkedIn Recruiter', url:'https://business.linkedin.com/talent-solutions/recruiter'},
+      {name:'HireEZ', url:'https://hireez.com'},
+      {name:'Superset', url:'https://www.joinsuperset.com'}
+    ]
   },
   {
     title: 'Screening', urls: ['ai-screening-agent'],
@@ -557,7 +591,13 @@ const groups = [
       ['ai candidate screening', 1038, 19.2],['automated candidate screening', 355, 19.6],
       ['candidate screening software', 73, 33.5],['how to choose an automated candidate screening platform', 23, 2.5]
     ],
-    competitors: ['Mercer Mettl','iMocha','HireEZ','Zoho Recruit','Turing']
+    competitors: [
+      {name:'Mercer Mettl', url:'https://mettl.com'},
+      {name:'iMocha', url:'https://www.imocha.io'},
+      {name:'HireEZ', url:'https://hireez.com'},
+      {name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'},
+      {name:'Turing', url:'https://www.turing.com'}
+    ]
   },
   {
     title: 'Assessment', urls: ['ai-assessment-agent + 6 subpages'],
@@ -566,7 +606,17 @@ const groups = [
       ['skills assessment platform', 145, 57.3],['coding assessment platform', 200, 26.3],
       ['ai coding assessment platform', 198, 8.9],['talent assessment platform', 260, 27.9]
     ],
-    competitors: ['Mercer Mettl','HackerEarth','iMocha','TestGorilla','Xobin','Adaface','HireMee','PMaps','CoCubes']
+    competitors: [
+      {name:'Mercer Mettl', url:'https://mettl.com'},
+      {name:'HackerEarth', url:'https://www.hackerearth.com'},
+      {name:'iMocha', url:'https://www.imocha.io'},
+      {name:'TestGorilla', url:'https://www.testgorilla.com'},
+      {name:'Xobin', url:'https://xobin.com'},
+      {name:'Adaface', url:'https://www.adaface.com'},
+      {name:'HireMee', url:'https://hiremee.co.in'},
+      {name:'PMaps', url:'https://www.pmapstest.com'},
+      {name:'CoCubes', url:'https://www.cocubes.com'}
+    ]
   },
   {
     title: 'Interview', urls: ['ai-interview-agent + ai-interview'],
@@ -575,14 +625,27 @@ const groups = [
       ['interviewing platform', 334, 27.5],['best online interview platform', 285, 24.4],
       ['digital interview platform', 123, 19.2]
     ],
-    competitors: ['HireVue','Talview','Mercer Mettl','HackerEarth OnScreen','Spark Hire','Metaview','TheHireHub.AI']
+    competitors: [
+      {name:'HireVue', url:'https://www.hirevue.com'},
+      {name:'Talview', url:'https://www.talview.com'},
+      {name:'Mercer Mettl', url:'https://mettl.com'},
+      {name:'HackerEarth OnScreen', url:'https://www.hackerearth.com'},
+      {name:'Spark Hire', url:'https://www.sparkhire.com'},
+      {name:'Metaview', url:'https://www.metaview.ai'},
+      {name:'TheHireHub.AI', url:'https://www.thehirehub.ai'}
+    ]
   },
   {
     title: 'Proctoring', urls: ['ai-proctoring-agent'],
     keywords: [
       ['ai proctoring platform', 5, 1.4],['ai proctored exam', 2, 1],['unstop camera access', 26, 5.1]
     ],
-    competitors: ['Mercer Mettl','HireMee','ExamOnline','Talview']
+    competitors: [
+      {name:'Mercer Mettl', url:'https://mettl.com'},
+      {name:'HireMee', url:'https://hiremee.co.in'},
+      {name:'ExamOnline', url:''},
+      {name:'Talview', url:'https://www.talview.com'}
+    ]
   },
   {
     title: 'Employer Branding', urls: ['employer-branding + 7 subpages, brand-and-advertise'],
@@ -591,7 +654,14 @@ const groups = [
       ['employer brand agency', 126, 60.3],['employer branding solution', 124, 3.9],
       ['hackathon', 1096, 1.8],['hackathon platforms', 41, 1.2],['business simulation', 215, 59.6]
     ],
-    competitors: ['Universum','Symphony Talent','PeopleScout','Blu Ivy Group','HackerEarth (hackathons)','Devfolio (hackathons)']
+    competitors: [
+      {name:'Universum', url:'https://universumglobal.com'},
+      {name:'Symphony Talent', url:'https://www.symphonytalent.com'},
+      {name:'PeopleScout', url:'https://www.peoplescout.com'},
+      {name:'Blu Ivy Group', url:'https://bluivygroup.com'},
+      {name:'HackerEarth (hackathons)', url:'https://www.hackerearth.com'},
+      {name:'Devfolio (hackathons)', url:'https://devfolio.co'}
+    ]
   },
   {
     title: 'ATS / Campus / Lateral / Virtual Hiring', urls: ['ats-software, campus-hiring, lateral-hiring, virtual-hiring, hiring-talent-platform'],
@@ -599,31 +669,18 @@ const groups = [
       ['campus hiring solutions', 405, 3.0],['campus hiring platform', 239, 4.4],
       ['virtual hiring solutions', 60, 7.0],['web based ats', 46, 54.9],['campusnext', 13, 60.8],['wipro talent next', 12, 3.1]
     ],
-    competitors: ['Superset','CampusNext','Darwinbox','Keka','Zoho Recruit']
+    competitors: [
+      {name:'Superset', url:'https://www.joinsuperset.com'},
+      {name:'CampusNext', url:''},
+      {name:'Darwinbox', url:'https://www.darwinbox.com'},
+      {name:'Keka', url:'https://www.keka.com'},
+      {name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'}
+    ]
   }
 ];
 
-function posClass(p){ return p<=10?'pos-good':(p<=30?'pos-mid':'pos-bad'); }
-
-document.getElementById('groupCards').innerHTML = groups.map(g=>`
-  <div class="group-card">
-    <h4>${g.title}</h4>
-    <div class="path-note mono">${g.urls.join(', ')}</div>
-    <div class="group-grid">
-      <div>
-        <h5>Real Ranking Keywords (GSC)</h5>
-        ${g.keywords.map(k=>`<span class="kw-pill">${k[0]} <span class="${posClass(k[2])}">#${k[2]}</span> · ${k[1]} impr</span>`).join(' ')}
-      </div>
-      <div>
-        <h5>Key Competitors</h5>
-        ${g.competitors.map(c=>`<span class="comp-pill">${c}</span>`).join(' ')}
-      </div>
-    </div>
-  </div>
-`).join('');
-
-const actions = [
-  {p:'high', t:'Decide canonical URL per page pair', d:'For every old/new pair above, pick one as canonical, 301-redirect the other, and update internal links + sitemap. Right now you\'re splitting link equity across two URLs for the same content.'},
+const DEFAULT_ACTIONS = [
+  {p:'high', t:'Monitor old→new URL ranking transfer', d:'Redirect exists but is handled client-side (Angular), so Google is picking up the signal slowly. Track these pairs weekly — if impressions/clicks don\'t shift to the new URLs within a reasonable window, consider a server-side 301 to speed up the transfer.'},
   {p:'high', t:'"employer branding services" & "employer branding agency"', d:'489 + 338 impressions combined at position 47–60. High-volume, high-intent terms you\'re nowhere near page 1 for. Needs dedicated content/schema work on the employer-branding hub page.'},
   {p:'high', t:'"assessment platform" / "online assessment software"', d:'725 + 701 impressions at position 37–46. These are head terms — competitors (Mercer Mettl, HackerEarth, iMocha) dominate here. Consider a comparison/alternatives page targeting these directly.'},
   {p:'med', t:'"ai interview" & "ai interview platform"', d:'477 + 486 impressions, position 11–44. Close to page 1 — a focused content/schema push on ai-interview-agent could convert this into a quick win.'},
@@ -631,20 +688,222 @@ const actions = [
   {p:'low', t:'Proctoring page has almost no query volume', d:'ai-proctoring-agent gets only 7 impressions. Worth checking if it\'s properly indexed and linked from the assessment + interview pages.'},
 ];
 
-document.getElementById('actionList').innerHTML = actions.map(a=>`
-  <li><span class="prio prio-${a.p}">${a.p}</span><div><strong>${a.t}</strong><br>${a.d}</div></li>
-`).join('');
+const clone = (o) => JSON.parse(JSON.stringify(o));
+let DATA = { migrations: clone(DEFAULT_MIGRATIONS), groups: clone(DEFAULT_GROUPS), actions: clone(DEFAULT_ACTIONS) };
+let fullRows = [];
 
-// Full table combining everything for CSV
-const fullRows = [];
-groups.forEach(g=>{
-  g.keywords.forEach(k=>{
-    fullRows.push({page:g.title, keyword:k[0], impr:k[1], pos:k[2], competitors:g.competitors.join('; ')});
+function verdict(m){
+  if(m.oldI > m.newI * 5) return {label:'Old dominates', cls:'loss'};
+  if(m.newI > m.oldI) return {label:'New catching up', cls:'win'};
+  return {label:'Mixed', cls:'tiny'};
+}
+function posClass(p){ return p<=10?'pos-good':(p<=30?'pos-mid':'pos-bad'); }
+
+function renderMigrationsTable(){
+  document.getElementById('migrationBody').innerHTML = DATA.migrations.map(m=>{
+    const v = verdict(m);
+    return `<tr>
+      <td class="mono">${m.old}</td><td class="num">${m.oldI}</td><td class="num">${m.oldC}</td>
+      <td class="arrow-cell">→</td>
+      <td class="mono">${m.new}</td><td class="num">${m.newI}</td><td class="num">${m.newC}</td>
+      <td class="${v.cls}">${v.label}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" class="tiny">No migration pairs yet.</td></tr>';
+}
+
+function renderGroupCards(){
+  document.getElementById('groupCards').innerHTML = DATA.groups.map(g=>`
+    <div class="group-card">
+      <h4>${g.title}</h4>
+      <div class="path-note mono">${g.urls.join(', ')}</div>
+      <div class="group-grid">
+        <div>
+          <h5>Real Ranking Keywords (GSC)</h5>
+          ${g.keywords.map(k=>`<span class="kw-pill">${k[0]} <span class="${posClass(k[2])}">#${k[2]}</span> · ${k[1]} impr</span>`).join(' ') || '<span class="tiny">No keywords yet</span>'}
+        </div>
+        <div>
+          <h5>Key Competitors</h5>
+          ${g.competitors.map(c=>`<span class="comp-pill">${c.url ? `<a href="${c.url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">${c.name} ↗</a>` : c.name}</span>`).join(' ') || '<span class="tiny">No competitors yet</span>'}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderActionList(){
+  document.getElementById('actionList').innerHTML = DATA.actions.map(a=>`
+    <li><span class="prio prio-${a.p}">${a.p}</span><div><strong>${a.t}</strong><br>${a.d}</div></li>
+  `).join('');
+}
+
+function competitorsLabel(competitors){
+  return competitors.map(c=> typeof c === 'string' ? c : (c.url ? `${c.name} (${c.url})` : c.name)).join('; ');
+}
+
+function renderFullTable(){
+  fullRows = [];
+  DATA.groups.forEach(g=>{
+    g.keywords.forEach(k=>{
+      fullRows.push({page:g.title, keyword:k[0], impr:k[1], pos:k[2], competitors: competitorsLabel(g.competitors)});
+    });
   });
-});
-document.getElementById('fullTableBody').innerHTML = fullRows.map(r=>`
-  <tr><td>${r.page}</td><td>${r.keyword}</td><td class="num">${r.impr}</td><td class="num ${posClass(r.pos)}">#${r.pos}</td><td>${r.competitors}</td></tr>
-`).join('');
+  document.getElementById('fullTableBody').innerHTML = fullRows.map(r=>`
+    <tr><td>${r.page}</td><td>${r.keyword}</td><td class="num">${r.impr}</td><td class="num ${posClass(r.pos)}">#${r.pos}</td><td>${r.competitors}</td></tr>
+  `).join('');
+}
+
+// --- Editor panel rendering ---
+function renderEditMigrations(){
+  document.getElementById('editMigrationsBody').innerHTML = DATA.migrations.map((m,i)=>`
+    <tr>
+      <td class="mono">${m.old}</td><td class="num">${m.oldI}</td><td class="num">${m.oldC}</td>
+      <td class="mono">${m.new}</td><td class="num">${m.newI}</td><td class="num">${m.newC}</td>
+      <td><button class="ghost del-row-btn" onclick="deleteMigration(${i})">✕</button></td>
+    </tr>
+  `).join('') || '<tr><td colspan="7" class="tiny">None yet.</td></tr>';
+}
+
+function renderEditGroups(){
+  document.getElementById('editGroupsList').innerHTML = DATA.groups.map((g,gi)=>`
+    <div class="group-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <h5 style="margin:0;font-size:13px;">${g.title}</h5>
+        <button class="ghost del-row-btn" onclick="deleteGroup(${gi})">✕ Remove group</button>
+      </div>
+      <div class="group-grid">
+        <div>
+          <h5>Keywords</h5>
+          ${g.keywords.map((k,ki)=>`<span class="kw-pill">${k[0]} #${k[2]} · ${k[1]}i <a href="#" class="del-link" onclick="deleteKeyword(${gi},${ki});return false;">✕</a></span>`).join(' ') || '<span class="tiny">None yet</span>'}
+          <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
+            <input type="text" id="kw-text-${gi}" placeholder="keyword" style="flex:1;min-width:120px;">
+            <input type="number" id="kw-impr-${gi}" placeholder="impr" style="width:65px;">
+            <input type="number" id="kw-pos-${gi}" placeholder="pos" step="0.1" style="width:55px;">
+            <button onclick="addKeyword(${gi})">+</button>
+          </div>
+        </div>
+        <div>
+          <h5>Competitors</h5>
+          ${g.competitors.map((c,ci)=>`<span class="comp-pill">${c.url ? `<a href="${c.url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">${c.name}</a>` : c.name} <a href="#" class="del-link" onclick="editCompetitorUrl(${gi},${ci});return false;" title="Edit URL">✎</a><a href="#" class="del-link" onclick="deleteCompetitor(${gi},${ci});return false;">✕</a></span>`).join(' ') || '<span class="tiny">None yet</span>'}
+          <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
+            <input type="text" id="comp-text-${gi}" placeholder="competitor name" style="flex:1;min-width:110px;">
+            <input type="text" id="comp-url-${gi}" placeholder="https://competitor.com" style="flex:1;min-width:140px;">
+            <button onclick="addCompetitor(${gi})">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function normalizeData(){
+  DATA.groups.forEach(g=>{
+    g.competitors = (g.competitors||[]).map(c=> typeof c === 'string' ? {name:c, url:''} : c);
+  });
+}
+
+function renderAll(){
+  normalizeData();
+  renderMigrationsTable();
+  renderGroupCards();
+  renderActionList();
+  renderFullTable();
+  renderEditMigrations();
+  renderEditGroups();
+}
+
+// --- Editor toggle ---
+function toggleEditor(){
+  const panel = document.getElementById('editorPanel');
+  const btn = document.getElementById('btnToggleEditor');
+  const showing = panel.style.display !== 'none';
+  panel.style.display = showing ? 'none' : 'block';
+  btn.textContent = showing ? '✏️ Edit Data' : '✓ Done Editing';
+}
+
+// --- CRUD: migrations ---
+function addMigration(){
+  const old = document.getElementById('newMigOld').value.trim();
+  const newu = document.getElementById('newMigNew').value.trim();
+  if(!old || !newu){ alert('Old URL and New URL are both required.'); return; }
+  DATA.migrations.push({
+    old, new: newu,
+    oldI: Number(document.getElementById('newMigOldI').value)||0,
+    oldC: Number(document.getElementById('newMigOldC').value)||0,
+    newI: Number(document.getElementById('newMigNewI').value)||0,
+    newC: Number(document.getElementById('newMigNewC').value)||0,
+  });
+  ['newMigOld','newMigOldI','newMigOldC','newMigNew','newMigNewI','newMigNewC'].forEach(id=>document.getElementById(id).value='');
+  renderAll();
+}
+function deleteMigration(i){ DATA.migrations.splice(i,1); renderAll(); }
+
+// --- CRUD: groups ---
+function addGroup(){
+  const title = document.getElementById('newGroupTitle').value.trim();
+  if(!title){ alert('Group name is required.'); return; }
+  DATA.groups.push({title, urls:[], keywords:[], competitors:[]});
+  document.getElementById('newGroupTitle').value = '';
+  renderAll();
+}
+function deleteGroup(gi){ if(confirm('Remove this whole group?')){ DATA.groups.splice(gi,1); renderAll(); } }
+
+function addKeyword(gi){
+  const text = document.getElementById(`kw-text-${gi}`).value.trim();
+  const impr = Number(document.getElementById(`kw-impr-${gi}`).value)||0;
+  const pos = Number(document.getElementById(`kw-pos-${gi}`).value)||0;
+  if(!text){ alert('Keyword text is required.'); return; }
+  DATA.groups[gi].keywords.push([text, impr, pos]);
+  renderAll();
+}
+function deleteKeyword(gi,ki){ DATA.groups[gi].keywords.splice(ki,1); renderAll(); }
+
+function addCompetitor(gi){
+  const text = document.getElementById(`comp-text-${gi}`).value.trim();
+  const url = document.getElementById(`comp-url-${gi}`).value.trim();
+  if(!text){ alert('Competitor name is required.'); return; }
+  DATA.groups[gi].competitors.push({name:text, url});
+  renderAll();
+}
+function deleteCompetitor(gi,ci){ DATA.groups[gi].competitors.splice(ci,1); renderAll(); }
+function editCompetitorUrl(gi,ci){
+  const current = DATA.groups[gi].competitors[ci];
+  const url = prompt(`URL for "${current.name}":`, current.url || '');
+  if(url === null) return;
+  current.url = url.trim();
+  renderAll();
+}
+
+// --- Export / Import / Reset ---
+function exportData(){
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='unstop_keyword_competitor_data.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+function importData(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const parsed = JSON.parse(e.target.result);
+      if(!parsed.migrations || !parsed.groups){ throw new Error('Missing migrations/groups keys'); }
+      DATA = { migrations: parsed.migrations, groups: parsed.groups, actions: parsed.actions || clone(DEFAULT_ACTIONS) };
+      renderAll();
+      alert('Data imported successfully.');
+    }catch(err){
+      alert('Could not read that file as valid data JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+function resetData(){
+  if(confirm('Reset all keywords, competitors, and migration pairs back to the original defaults? This discards any edits.')){
+    DATA = { migrations: clone(DEFAULT_MIGRATIONS), groups: clone(DEFAULT_GROUPS), actions: clone(DEFAULT_ACTIONS) };
+    renderAll();
+  }
+}
 
 function downloadCSVKeywords(){
   let rows = [['Page Group','Keyword','Impressions','Position','Competitors']];
@@ -652,13 +911,15 @@ function downloadCSVKeywords(){
   rows.push([]);
   rows.push(['--- URL Migration Check ---']);
   rows.push(['Old URL','Old Impr','Old Clicks','New URL','New Impr','New Clicks']);
-  migrations.forEach(m=> rows.push([m.old, m.oldI, m.oldC, m.new, m.newI, m.newC]));
+  DATA.migrations.forEach(m=> rows.push([m.old, m.oldI, m.oldC, m.new, m.newI, m.newC]));
   const csv = rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download='unstop_keyword_competitor_intelligence.csv'; a.click();
   URL.revokeObjectURL(url);
 }
+
+renderAll();
 
 </script>
 </body>
