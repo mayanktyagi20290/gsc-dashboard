@@ -174,6 +174,35 @@
   .status-suggested{background:#eef2ff;color:#1c4ed8;}
   select#volSortBy{min-width:220px;}
 
+  /* Action Roadmap */
+  .tier-filterbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+  .tier-filterbtn{font-size:12px;font-weight:700;padding:8px 16px;border-radius:99px;border:1px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;}
+  .tier-filterbtn.active{color:#fff;}
+  .tier-filterbtn[data-tier="all"].active{background:var(--text);border-color:var(--text);}
+  .tier-filterbtn[data-tier="push"].active{background:#0d9668;border-color:#0d9668;}
+  .tier-filterbtn[data-tier="close"].active{background:#1c4ed8;border-color:#1c4ed8;}
+  .tier-filterbtn[data-tier="bet"].active{background:#a9720d;border-color:#a9720d;}
+  .tier-filterbtn[data-tier="later"].active{background:#64748b;border-color:#64748b;}
+  .roadmap{display:flex;flex-direction:column;gap:0;margin-top:4px;}
+  .rstep{display:flex;gap:16px;position:relative;padding-bottom:20px;}
+  .rstep:not(:last-child)::before{content:'';position:absolute;left:19px;top:42px;bottom:0;width:2px;background:var(--border);}
+  .rstep .rnum{flex:0 0 40px;width:40px;height:40px;border-radius:50%;background:#fff;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;z-index:1;}
+  .rstep.tier-push .rnum{border-color:#0d9668;color:#0d9668;background:#e3f6ec;}
+  .rstep.tier-close .rnum{border-color:#1c4ed8;color:#1c4ed8;background:#eaf1ff;}
+  .rstep.tier-bet .rnum{border-color:#a9720d;color:#a9720d;background:#fff6e0;}
+  .rstep.tier-later .rnum{border-color:#94a3b8;color:#64748b;background:#f1f5f9;}
+  .rcard{flex:1;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 18px;box-shadow:0 1px 2px rgba(15,23,42,.03);margin-bottom:2px;}
+  .rcard h4{margin:0 0 4px;font-size:14.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .rcard .rmeta{font-size:10.5px;color:var(--muted2);margin-bottom:9px;}
+  .rcard .rwhy{font-size:12.5px;color:var(--muted);margin-bottom:8px;line-height:1.5;}
+  .rcard .raction{font-size:12.5px;background:#f8fafc;border-left:3px solid var(--blue);padding:9px 12px;border-radius:6px;line-height:1.5;}
+  .rcard .raction b{color:var(--blue-dark);}
+  .tier-chip{display:inline-block;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:3px 9px;border-radius:5px;}
+  .tier-chip.push{background:#e3f6ec;color:#0d9668;}
+  .tier-chip.close{background:#eaf1ff;color:#1c4ed8;}
+  .tier-chip.bet{background:#fff3d6;color:#a9720d;}
+  .tier-chip.later{background:#f1f5f9;color:#64748b;}
+
 </style>
 </head>
 <body>
@@ -197,6 +226,7 @@
     <button class="tabbtn" onclick="switchTab('keywords')" id="btn-tab-keywords">🔑 Keyword &amp; Competitor Intel</button>
     <button class="tabbtn" onclick="switchTab('pagecomp')" id="btn-tab-pagecomp">📄 Page-wise Competitors</button>
     <button class="tabbtn" onclick="switchTab('volumes')" id="btn-tab-volumes">📊 Keyword Volumes</button>
+    <button class="tabbtn" onclick="switchTab('roadmap')" id="btn-tab-roadmap">🚀 Action Roadmap</button>
   </div>
 </header>
 
@@ -374,6 +404,26 @@
       <thead><tr><th style="width:24%;">Page</th><th>Keyword</th><th class="num" style="width:13%;">Monthly Volume</th><th style="width:14%;">Status</th></tr></thead>
       <tbody id="volumeBody"></tbody>
     </table>
+  </div>
+</section>
+</div>
+
+<div id="tab-roadmap" class="tabpanel">
+  <div class="stats" id="roadmapStatsRow"></div>
+<section id="roadmapSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21 L5 12 M5 12 L12 5 L19 12 M12 5 L12 21"/></svg>Action Roadmap — Where To Focus First</h2>
+  <p class="section-sub">All 31 pages, ranked purely on <strong>non-branded</strong> performance of each <strong>new</strong> <code>/employers/*</code> URL — queries that don't contain "Unstop" are the only ones counted here, since branded clicks reflect existing brand awareness, not real organic pull. Step 1 is the single highest-leverage move; work down the list in order rather than jumping around.</p>
+  <div class="tier-filterbar" id="tierFilterBar">
+    <button class="tier-filterbtn active" data-tier="all" onclick="setTierFilter('all')">All 31</button>
+    <button class="tier-filterbtn" data-tier="push" onclick="setTierFilter('push')">🟢 Push To #1</button>
+    <button class="tier-filterbtn" data-tier="close" onclick="setTierFilter('close')">🔵 Close To Page 1</button>
+    <button class="tier-filterbtn" data-tier="bet" onclick="setTierFilter('bet')">🟠 Big Bet</button>
+    <button class="tier-filterbtn" data-tier="later" onclick="setTierFilter('later')">⚪ Build Later</button>
+  </div>
+  <div class="roadmap" id="roadmapList"></div>
+  <div class="matrix-toolbar" style="margin-top:18px;">
+    <span class="tiny">Ranked 1 → 31, highest leverage first</span>
+    <button class="ghost" onclick="downloadRoadmapCSV()">⬇ Download CSV</button>
   </div>
 </section>
 </div>
@@ -1179,9 +1229,102 @@ function downloadVolumeCSV(){
   URL.revokeObjectURL(url);
 }
 
+// --- Action Roadmap: sequenced 1->31 focus order, based only on each NEW URL's own current GSC + volume data ---
+const TIER_META = {
+  push:  {label:'Push To #1',       emoji:'🟢', desc:'Already ranking well with real clicks — small push finishes the job.'},
+  close: {label:'Close To Page 1',  emoji:'🔵', desc:'Decent position (top ~20) with real impressions — moderate on-page push gets it to page 1.'},
+  bet:   {label:'Big Bet',          emoji:'🟠', desc:'High volume/impressions but buried or invisible — needs real content investment.'},
+  later: {label:'Build Later',      emoji:'⚪', desc:'Thin or no data yet — foundational work only, revisit after the above.'},
+};
+
+// Every "why" below cites ONLY non-branded queries (nothing containing "Unstop") — branded clicks reflect
+// existing brand awareness, not real organic pull, so they're excluded from this prioritization entirely.
+const ROADMAP = [
+  {id:'branding-hackathons', tier:'push', why:'Fully non-branded queries already dominate: "hackathon platforms" position 1.37 (51 impressions), "best hackathon platform" position 1.85 (13 impressions, 1 click), and "hackathon hosting platform" position 13.3 (93 impressions, 9 clicks). None of this relies on brand search.', action:'Push "hackathon hosting platform" the last few spots to page 1 — the other two terms are already locked in at position 1–2.'},
+  {id:'campus-hiring', tier:'push', why:'"Campus hiring solutions" ranks position 3.65 (34 impressions, 4 clicks) and "campus recruitment" position 9.75 — both fully non-branded, real demand.', action:'Add campus-specific proof (client logos, placement stats) to lock in position 1–3 and defend against Superset/CampusNext.'},
+  {id:'screening', tier:'push', why:'"AI screening agent" ranks position 2.67 and "automated candidate screening" position 3.33 — both non-branded, both essentially page 1 already.', action:'Low-hanging fruit: add supporting content to grow the impression volume behind an already-excellent position.'},
+  {id:'virtual-hiring', tier:'push', why:'"Virtual recruitment platform" ranks position 5 — small volume but a clean non-branded win already.', action:'Cheap to defend — add 1–2 sections targeting "virtual hiring solutions" and "remote hiring platform" to broaden the footprint.'},
+  {id:'branding-ideathons', tier:'push', why:'"Ideathon" alone pulls 501 impressions at position 1.92, and "ideathon hosting platform" sits at position 1 — both fully non-branded.', action:'Small page, big efficiency — keep it fresh and make sure the B2B hosting-platform angle, not just the definition, is the primary H1.'},
+  {id:'interview', tier:'close', why:'"AI interview agent" ranks position 8, "automated interview platform" position 12, and "virtual interview" position 8.4 (22 impressions) — all non-branded, all just outside page 1.', action:'A focused on-page + schema push on these three terms should clear page 1 within reach.'},
+  {id:'assessment', tier:'close', why:'"Best online assessment platform" ranks position 3.4 (8 impressions) and "online assessment platform for hiring" position 13.4 (5 impressions) — both non-branded.', action:'Expand the sections that already target these two phrases directly; the foundation is working.'},
+  {id:'assessment-aptitude', tier:'close', why:'The bare term "aptitude" pulls 68 impressions at position 8.8, and "aptitude testing platform" sits at position 8.1 — both non-branded.', action:'Add FAQ content and internal links from the main assessment page to consolidate these positions.'},
+  {id:'assessment-coding', tier:'close', why:'"AI-powered coding assessment platform" ranks position 6 on 11 impressions but 0 clicks — good position, pure CTR gap.', action:'Rewrite title/meta to match the exact phrase; content is already ranking, just not being clicked.'},
+  {id:'assessment-sql', tier:'close', why:'"Best SQL assessment tools for hiring" ranks position 6.85 on 39 impressions, 0 clicks — same CTR-gap pattern as coding test.', action:'Low-competition niche — should convert fast once title/meta is rewritten to match the exact phrase.'},
+  {id:'branding-quizzes', tier:'close', why:'Non-branded performance is real but modest: "online quiz platform" ranks position 5.4 on 84 impressions, 0 clicks yet.', action:'Fix title/meta to convert these impressions into clicks — the brand-driven volume elsewhere on this page shouldn\'t be mistaken for organic strength.'},
+  {id:'sourcing-jobboard', tier:'close', why:'"Post internship for free" already converts at position 1, and "free job portals for employers" ranks position 4 — both non-branded, both real B2B intent.', action:'Add more employer-side proof (posting volume, pricing clarity) to convert these good positions into more volume.'},
+  {id:'lateral-hiring', tier:'close', why:'"Lateral hiring" ranks position 8.2 on 17 impressions, but 0 clicks — a real position with a conversion gap.', action:'Add a lateral-hiring-specific hero section and CTA — the page likely doesn\'t match searcher intent well enough yet to earn the click.'},
+  {id:'sourcing', tier:'close', why:'"Talent sourcing solution" ranks position 3.67 — a genuinely strong non-branded position, but on only 3 impressions total.', action:'Funnel Stage 1 (entry point) — worth a light refresh, but the real leverage is downstream once screening/assessment/interview are stronger.'},
+  {id:'assessment-comm', tier:'close', why:'"Communication assessment test" and "online communication test" both rank position 13–14 — non-branded but on very low impression counts.', action:'Low priority for now — a good candidate for incremental content once higher-impact assessment sub-pages are solidified.'},
+  {id:'branding', tier:'bet', why:'"Employer branding solutions" (position 7.95, 320 impressions, 5 clicks) and "employer branding platform" (position 14.7, 344 impressions, 6 clicks) already work well — fully non-branded. But the real prize is untapped: "employer branding agency/company/consultant" pulls 1,000+ combined non-branded impressions sitting at position 47–86 because the page reads as a platform, not an agency-alternative.', action:'Add a dedicated "Unstop vs employer branding agencies" comparison section — this single addition could unlock the largest untapped non-branded opportunity in the whole section.'},
+  {id:'interview-ai', tier:'bet', why:'"AI interviewer" alone pulls 71 non-branded impressions but sits at position 83 — real demand, buried deep. "AI interview" and "AI interview platform" add another ~19 impressions at position 65–68.', action:'Needs a real content rebuild targeting "AI interview"/"AI interviewer" as primary terms, not secondary mentions.'},
+  {id:'hub', tier:'bet', why:'"AI based recruitment platform" pulls 307 non-branded impressions and "recruitment automation platform" pulls 103 — both sit at position 40–53, well outside page 1 despite real search volume.', action:'Build dedicated sections targeting these two phrases directly rather than relying on the hub\'s generic overview content.'},
+  {id:'branding-bizsim', tier:'bet', why:'"Business simulation" (279 impressions) and "business simulation software" (149 impressions) are both non-branded and both sit at position 52–58 — real demand, buried.', action:'Needs real content investment: a sample simulation walkthrough, use-case examples, comparison vs Mercer Mettl/Arctic Shores.'},
+  {id:'ats', tier:'bet', why:'Zero non-branded (or any) GSC visibility on the new URL across 6 months of data pulled.', action:'Check indexing status in GSC URL Inspection first — likely a crawl/index issue, not just a ranking one.'},
+  {id:'branding-dshackathons', tier:'bet', why:'Its own term "data science hackathon" ranks a weak position 28.6 (23 impressions, non-branded), while the generic "hackathon" query surfaces this cluster at position 1.8 with 1,129 impressions — a halo effect not yet converted into direct rankings.', action:'Add dedicated data-science-hackathon content (past events, judging criteria) instead of relying on the hackathons page halo.'},
+  {id:'proctoring', tier:'later', why:'"Proctoring" ranks position 8.3 but only 3 non-branded impressions — thin demand right now.', action:'Low effort to maintain; revisit once higher-impact pages are handled.'},
+  {id:'assessment-technical', tier:'later', why:'"Technical assessment services" ranks a poor position 61.7 on just 3 impressions — weakest of the assessment sub-pages.', action:'Lowest priority in the assessment cluster; rebuild after aptitude/coding/SQL are solidified.'},
+  {id:'assessment-bizsim', tier:'later', why:'No meaningful non-branded GSC data captured on the new URL yet.', action:'Needs baseline content and keyword targeting before it can be judged.'},
+  {id:'sourcing-community', tier:'later', why:'No usable non-branded query data — only irrelevant noise showed up in GSC.', action:'Low priority; revisit once the parent sourcing and jobboard pages are stronger.'},
+  {id:'hiring-talent-platform', tier:'later', why:'No non-branded GSC query data captured; overlaps heavily with the /employers hub itself.', action:'Needs clearer differentiation from the hub, or consider folding into it.'},
+  {id:'branding-talentcommunity', tier:'later', why:'"Talent community platform" ranks position 4.5 — technically strong, but on only 2 total impressions.', action:'Build baseline content connecting it to the sourcing funnel; low urgency given the tiny current volume.'},
+  {id:'brand-advertise', tier:'later', why:'No real non-branded query data captured on the new URL — every mapped keyword also shows 0 tracked monthly volume.', action:'Needs keyword research from scratch before investing in content.'},
+  {id:'branding-brandpresence', tier:'later', why:'No GSC query data captured; mapped keywords are mostly 0-volume.', action:'Low priority — consider merging into the main employer-branding hub.'},
+  {id:'calling', tier:'later', why:'No keyword or GSC data tracked yet for this page at all.', action:'Establish baseline tracking first — confirm indexing and pick 3–5 target terms before judging priority.'},
+  {id:'scheduling', tier:'later', why:'No keyword or GSC data tracked yet for this page at all.', action:'Same as AI Calling Agent — needs baseline tracking before it can be prioritized.'},
+];
+
+let roadmapFilter = 'all';
+function setTierFilter(t){
+  roadmapFilter = t;
+  document.querySelectorAll('.tier-filterbtn').forEach(b=>b.classList.toggle('active', b.dataset.tier===t));
+  renderRoadmap();
+}
+
+function renderRoadmapStats(){
+  const counts = {push:0,close:0,bet:0,later:0};
+  ROADMAP.forEach(r=>counts[r.tier]++);
+  document.getElementById('roadmapStatsRow').innerHTML = `
+    <div class="stat"><b>${counts.push}</b><span>🟢 Push To #1</span></div>
+    <div class="stat"><b>${counts.close}</b><span>🔵 Close To Page 1</span></div>
+    <div class="stat"><b>${counts.bet}</b><span>🟠 Big Bets</span></div>
+    <div class="stat"><b>${counts.later}</b><span>⚪ Build Later</span></div>`;
+}
+
+function renderRoadmap(){
+  const rows = ROADMAP.map((r,i)=>({...r, rank:i+1})).filter(r=> roadmapFilter==='all' || r.tier===roadmapFilter);
+  document.getElementById('roadmapList').innerHTML = rows.map(r=>{
+    const p = byId(r.id);
+    const tm = TIER_META[r.tier];
+    return `<div class="rstep tier-${r.tier}">
+      <div class="rnum">${r.rank}</div>
+      <div class="rcard">
+        <h4>${p.label} <span class="tier-chip ${r.tier}">${tm.emoji} ${tm.label}</span></h4>
+        <div class="rmeta mono"><a href="${BASE}${p.path}" target="_blank" rel="noopener">${BASE}${p.path}</a></div>
+        <div class="rwhy"><strong>Why:</strong> ${r.why}</div>
+        <div class="raction"><b>Do this:</b> ${r.action}</div>
+      </div>
+    </div>`;
+  }).join('') || '<p class="tiny">No pages in this tier.</p>';
+}
+
+function downloadRoadmapCSV(){
+  let rows = [['Rank','Page','URL','Tier','Why','Action']];
+  ROADMAP.forEach((r,i)=>{
+    const p = byId(r.id); const tm = TIER_META[r.tier];
+    rows.push([i+1, p.label, BASE+p.path, tm.label, r.why, r.action]);
+  });
+  const csv = rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='unstop_employer_action_roadmap.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
 renderAll();
 renderVolumeStats();
 renderVolumeTable();
+renderRoadmapStats();
+renderRoadmap();
 
 </script>
 </body>
