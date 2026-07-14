@@ -1968,8 +1968,8 @@ const DataCenter = (function(){
   // ---------------- ValidationService ----------------
   const HEADER_ALIASES = {
     gsc: {
-      query:['query','queries','search query','keyword'],
-      page:['page','pages','landing page','top pages','url'],
+      query:['query','queries','top queries','search query','keyword'],
+      page:['page','pages','top pages','landing page','url'],
       clicks:['clicks'],
       impressions:['impressions','impr','impr.'],
       ctr:['ctr','click through rate','clickthrough rate'],
@@ -1988,7 +1988,10 @@ const DataCenter = (function(){
       serpFeatures:['serp features','serp features by keyword']
     }
   };
-  const REQUIRED_FIELDS = { gsc:['query','page','clicks','impressions','position'], semrush:['keyword','url','position','volume'] };
+  // GSC's own manual export splits Query and Page into separate report tabs (Queries / Pages sheets) —
+  // there is no single-table export that pairs them, so GSC only hard-requires clicks/impressions/position
+  // plus AT LEAST ONE of query/page (checked separately in processGscSheet, not via REQUIRED_FIELDS).
+  const REQUIRED_FIELDS = { gsc:['clicks','impressions','position'], semrush:['keyword','url','position','volume'] };
   function normHeader(h){ return String(h||'').trim().toLowerCase().replace(/\s+/g,' '); }
   function detectColumns(headers, source){
     const aliasMap = HEADER_ALIASES[source];
@@ -2043,14 +2046,18 @@ const DataCenter = (function(){
   function rowGet(row, headerName){ return headerName ? row[headerName] : undefined; }
 
   // ---------------- ImportService: file parsing ----------------
-  function parseFile(file){
+  // Parses EVERY sheet in an .xlsx (a plain .csv is treated as one sheet called "Sheet1").
+  // This matters because Google Search Console's own "Export" button produces a multi-tab
+  // workbook (Chart / Queries / Pages / Countries / Devices / Search appearance / Filters) —
+  // Query and Page live on separate sheets and are never paired in a manual export.
+  function parseWorkbookOrCsv(file){
     const name = file.name.toLowerCase();
     return new Promise((resolve, reject)=>{
       if(name.endsWith('.csv')){
         if(typeof Papa==='undefined'){ reject(new Error('PARSER_UNAVAILABLE')); return; }
         Papa.parse(file, {
           header:true, skipEmptyLines:true,
-          complete:(res)=> resolve({headers: res.meta.fields||[], rows: res.data}),
+          complete:(res)=> resolve({ type:'csv', sheetNames:['Sheet1'], sheets:{ Sheet1: {headers: res.meta.fields||[], rows: res.data} } }),
           error:(err)=> reject(err)
         });
       } else if(name.endsWith('.xlsx') || name.endsWith('.xls')){
@@ -2059,10 +2066,13 @@ const DataCenter = (function(){
         reader.onload = (e)=>{
           try{
             const wb = XLSX.read(e.target.result, {type:'array'});
-            const sheet = wb.Sheets[wb.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json(sheet, {defval:''});
-            const headers = json.length ? Object.keys(json[0]) : [];
-            resolve({headers, rows: json});
+            const sheets = {};
+            wb.SheetNames.forEach(sn=>{
+              const json = XLSX.utils.sheet_to_json(wb.Sheets[sn], {defval:''});
+              const headers = json.length ? Object.keys(json[0]) : [];
+              sheets[sn] = {headers, rows: json};
+            });
+            resolve({ type:'xlsx', sheetNames: wb.SheetNames, sheets });
           }catch(err){ reject(err); }
         };
         reader.onerror = ()=>reject(reader.error||new Error('READ_FAILED'));
@@ -2071,6 +2081,14 @@ const DataCenter = (function(){
         reject(new Error('UNSUPPORTED_FORMAT'));
       }
     });
+  }
+  function findSheetByName(sheets, patterns){
+    const names = Object.keys(sheets);
+    for(const pat of patterns){
+      const found = names.find(n=> pat.test(n.trim()));
+      if(found) return { name: found, ...sheets[found] };
+    }
+    return null;
   }
   function friendlyParseError(err, file){
     const msg = (err && err.message) || String(err);
@@ -2105,27 +2123,20 @@ const DataCenter = (function(){
   function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
   // ---------------- GSC import pipeline ----------------
-  async function importGSC(file){
-    showProgress(file.name);
-    await delay(180);
-    let parsed;
-    try{ parsed = await parseFile(file); }
-    catch(err){ hideProgress(); return { ok:false, error: friendlyParseError(err, file) }; }
-    if(!parsed.rows.length){ hideProgress(); return { ok:false, error:{title:'Empty file', detail:'This file has no data rows. Export a fresh report from Search Console and try again.'} }; }
+  // Processes one sheet's worth of GSC rows. Query and Page are each OPTIONAL at the sheet level
+  // (GSC's own multi-tab export never puts both in the same table) but clicks/impressions/position
+  // are always required, and at least one of query/page must be present for the sheet to be usable.
+  function processGscSheet(headers, rows){
+    const found = detectColumns(headers, 'gsc');
+    const missingHard = ['clicks','impressions','position'].filter(f=>!found[f]);
+    const hasDimension = !!(found.query || found.page);
+    if(missingHard.length || !hasDimension) return { ok:false, found, missingHard, hasDimension };
 
-    const headerCheck = ValidationService.validateHeaders(parsed.headers, 'gsc');
-    if(!headerCheck.valid){
-      hideProgress();
-      return { ok:false, error:{title:'Missing required columns', detail:'Could not find: '+headerCheck.missing.map(f=>f.toUpperCase()).join(', ')+'. Columns detected in your file: '+(parsed.headers.join(', ')||'(none)')} };
-    }
-    setProgressStep(1); await delay(220);
-
-    const found = headerCheck.found;
     let blank=0, missingKeyword=0, invalidUrl=0, ignoredNonEmployer=0, badPosition=0, badCtr=0;
     const clean = [];
-    parsed.rows.forEach(row=>{
-      const query = String(rowGet(row, found.query)||'').trim();
-      const pageRaw = rowGet(row, found.page);
+    rows.forEach(row=>{
+      const query = found.query ? String(rowGet(row, found.query)||'').trim() : '';
+      const pageRaw = found.page ? rowGet(row, found.page) : null;
       const clicks = parseNum(rowGet(row, found.clicks));
       const impressions = parseNum(rowGet(row, found.impressions));
       let ctr = found.ctr ? parseCTR(rowGet(row, found.ctr)) : null;
@@ -2133,22 +2144,77 @@ const DataCenter = (function(){
       const date = found.date ? String(rowGet(row, found.date)||'').trim() : '';
 
       if(!query && !pageRaw && clicks===null && impressions===null){ blank++; return; }
-      if(!query){ missingKeyword++; return; }
-      const normUrl = normalizeUrl(pageRaw);
-      if(!normUrl){ invalidUrl++; return; }
-      if(!isEmployerUrl(normUrl)){ ignoredNonEmployer++; return; }
+      if(found.query && !query){ missingKeyword++; return; }
+
+      let normUrl = null;
+      if(found.page){
+        normUrl = normalizeUrl(pageRaw);
+        if(!normUrl){ invalidUrl++; return; }
+        if(!isEmployerUrl(normUrl)){ ignoredNonEmployer++; return; }
+      }
       if(position!==null && position<=0) badPosition++;
       if(ctr===null && clicks!==null && impressions) ctr = (clicks/impressions)*100;
       if(ctr!==null && (ctr<0 || ctr>100)){ badCtr++; ctr=null; }
 
-      clean.push({ query, page: normUrl, path: pathOf(normUrl), clicks: clicks||0, impressions: impressions||0,
-        ctr: ctr!==null ? +ctr.toFixed(2) : null, position: position!==null ? +position.toFixed(1) : null, date: date||null });
+      clean.push({
+        query: found.query ? query : null, page: normUrl, path: normUrl ? pathOf(normUrl) : null,
+        level: (found.query && found.page) ? 'pair' : (found.query ? 'query' : 'page'),
+        clicks: clicks||0, impressions: impressions||0,
+        ctr: ctr!==null ? +ctr.toFixed(2) : null, position: position!==null ? +position.toFixed(1) : null, date: date||null
+      });
     });
+    return { ok:true, found, clean, stats:{blank, missingKeyword, invalidUrl, ignoredNonEmployer, badPosition, badCtr, totalRowsInFile: rows.length} };
+  }
+
+  async function importGSC(file){
+    showProgress(file.name);
+    await delay(180);
+    let parsed;
+    try{ parsed = await parseWorkbookOrCsv(file); }
+    catch(err){ hideProgress(); return { ok:false, error: friendlyParseError(err, file) }; }
+    if(!parsed.sheetNames.length){ hideProgress(); return { ok:false, error:{title:'Empty file', detail:'No sheets found in this file.'} }; }
+
+    // Recognize GSC's standard export tab names ("Queries" / "Pages"); everything else
+    // (Chart, Countries, Devices, Search appearance, Filters) is intentionally skipped.
+    const queriesSheet = findSheetByName(parsed.sheets, [/^top\s*queries$/i, /^queries$/i]);
+    const pagesSheet = findSheetByName(parsed.sheets, [/^top\s*pages$/i, /^pages$/i]);
+    let targets = [];
+    if(queriesSheet) targets.push(queriesSheet);
+    if(pagesSheet) targets.push(pagesSheet);
+    if(!targets.length){
+      // Flat single-table file (plain CSV, or an .xlsx without GSC's standard tab names)
+      const firstName = parsed.sheetNames[0];
+      targets.push({ name:firstName, ...parsed.sheets[firstName] });
+    }
+    const skippedSheets = parsed.type==='xlsx' ? parsed.sheetNames.filter(sn=>!targets.some(t=>t.name===sn)) : [];
+
+    if(targets.every(t=>!t.rows.length)){
+      hideProgress();
+      return { ok:false, error:{title:'Empty file', detail:'This file has no data rows. Export a fresh report from Search Console and try again.'} };
+    }
+
+    const results = targets.map(t=>({ name:t.name, ...processGscSheet(t.headers, t.rows) }));
+    const succeeded = results.filter(r=>r.ok);
+    const failed = results.filter(r=>!r.ok);
+    if(!succeeded.length){
+      hideProgress();
+      const detail = failed.map(f=>{
+        const parts=[];
+        if(f.missingHard.length) parts.push('missing '+f.missingHard.map(x=>x.toUpperCase()).join(', '));
+        if(!f.hasDimension) parts.push('no Query or Page column found');
+        return `"${f.name}" sheet: ${parts.join('; ')}`;
+      }).join(' · ');
+      return { ok:false, error:{title:'Missing required columns', detail} };
+    }
+    setProgressStep(1); await delay(220);
+
+    let clean = [];
+    succeeded.forEach(r=> clean = clean.concat(r.clean));
 
     setProgressStep(2); await delay(220);
     const seen = new Set(); const deduped = []; let dupCount=0;
     clean.forEach(r=>{
-      const key = r.query.toLowerCase()+'||'+r.page.toLowerCase()+'||'+(r.date||'');
+      const key = r.level+'||'+(r.query||'').toLowerCase()+'||'+(r.page||'').toLowerCase()+'||'+(r.date||'');
       if(seen.has(key)){ dupCount++; return; }
       seen.add(key); deduped.push(r);
     });
@@ -2157,15 +2223,20 @@ const DataCenter = (function(){
     await StorageService.clearStore('gscRecords');
     if(deduped.length) await StorageService.bulkAdd('gscRecords', deduped);
 
-    const landingPages = new Set(deduped.map(r=>r.page)).size;
-    const queries = new Set(deduped.map(r=>r.query.toLowerCase())).size;
+    const landingPages = new Set(deduped.filter(r=>r.page).map(r=>r.page)).size;
+    const queries = new Set(deduped.filter(r=>r.query).map(r=>r.query.toLowerCase())).size;
+    const pairRows = deduped.filter(r=>r.level==='pair').length;
+    const queryOnlyRows = deduped.filter(r=>r.level==='query').length;
+    const pageOnlyRows = deduped.filter(r=>r.level==='page').length;
     const dates = deduped.map(r=>r.date).filter(Boolean).sort();
     const dateRange = dates.length ? `${dates[0]} → ${dates[dates.length-1]}` : 'Not present in this export';
+    const combined = succeeded.reduce((acc,r)=>{ Object.keys(r.stats).forEach(k=> acc[k]=(acc[k]||0)+r.stats[k]); return acc; }, {});
 
     const historyEntry = {
       source:'gsc', fileName:file.name, fileSize:file.size, uploadDate:new Date().toISOString(),
       recordsImported: deduped.length, landingPages, keywords: queries, duplicatesRemoved: dupCount, status:'success', fileBlob: file,
-      summary:{ rowsImported:deduped.length, landingPages, queries, dateRange, duplicatesRemoved:dupCount, blank, missingKeyword, invalidUrl, ignoredNonEmployer, badPosition, badCtr, totalRowsInFile: parsed.rows.length }
+      summary:{ rowsImported:deduped.length, landingPages, queries, dateRange, duplicatesRemoved:dupCount,
+        pairRows, queryOnlyRows, pageOnlyRows, sheetsUsed: succeeded.map(r=>r.name), sheetsSkipped: skippedSheets, ...combined }
     };
     const histId = await StorageService.addHistoryEntry(historyEntry);
     historyEntry.id = histId;
@@ -2182,9 +2253,11 @@ const DataCenter = (function(){
   async function importSEMrush(file){
     showProgress(file.name);
     await delay(180);
-    let parsed;
-    try{ parsed = await parseFile(file); }
+    let parsedWb;
+    try{ parsedWb = await parseWorkbookOrCsv(file); }
     catch(err){ hideProgress(); return { ok:false, error: friendlyParseError(err, file) }; }
+    const firstSheetName = parsedWb.sheetNames[0];
+    const parsed = firstSheetName ? parsedWb.sheets[firstSheetName] : {headers:[], rows:[]};
     if(!parsed.rows.length){ hideProgress(); return { ok:false, error:{title:'Empty file', detail:'This file has no data rows.'} }; }
 
     const headerCheck = ValidationService.validateHeaders(parsed.headers, 'semrush');
@@ -2259,12 +2332,30 @@ const DataCenter = (function(){
   }
 
   // ---------------- MergeService ----------------
+  // Two-tier join, because GSC's manual export can't always give a true Query×Page pair:
+  //  1) EXACT match — gscRecords with level:'pair' (query+page together) joined to SEMrush on path+keyword.
+  //     Only possible if the GSC file had both dimensions in one table (e.g. a future API-based export).
+  //  2) PAGE-CONTEXT — gscRecords with level:'page' (from a "Pages" tab, page only, no query) joined to
+  //     SEMrush purely on path. Gives real page-wide clicks/impressions/position as context for every
+  //     keyword on that page — clearly kept in separate pageClicks/pageImpressions/pagePosition fields
+  //     so it's never confused with a keyword-specific number.
+  // level:'query' records (query only, no page — e.g. from a "Queries" tab) can't be attributed to any
+  // single page at all, so they're stored and counted but intentionally excluded from this table.
   function keyOf(path, keyword){ return path.toLowerCase()+'||'+String(keyword).trim().toLowerCase(); }
   const MergeService = {
     async build(){
       const [gsc, semrush] = await Promise.all([StorageService.getAll('gscRecords'), StorageService.getAll('semrushRecords')]);
+
+      const pageAgg = new Map();
+      gsc.filter(r=>r.level==='page' && r.path).forEach(r=>{
+        if(!pageAgg.has(r.path)) pageAgg.set(r.path, {clicks:0, impressions:0, positionSum:0, positionCount:0});
+        const a = pageAgg.get(r.path);
+        a.clicks += r.clicks||0; a.impressions += r.impressions||0;
+        if(r.position!==null){ a.positionSum+=r.position; a.positionCount++; }
+      });
+
       const map = new Map();
-      gsc.forEach(r=>{
+      gsc.filter(r=>r.level==='pair').forEach(r=>{
         const k = keyOf(r.path, r.query);
         if(!map.has(k)) map.set(k, {keyword:r.query, landingPage:r.path, gsc:null, semrush:null});
         const entry = map.get(k);
@@ -2279,21 +2370,30 @@ const DataCenter = (function(){
         if(!map.has(k)) map.set(k, {keyword:r.keyword, landingPage:r.path, gsc:null, semrush:null});
         map.get(k).semrush = {volume:r.volume, kd:r.kd, intent:r.intent, cpc:r.cpc, trafficPct:r.trafficPct, serpFeatures:r.serpFeatures, position:r.position};
       });
-      const rows = [...map.values()].map(e=>({
-        keyword: e.keyword, landingPage: e.landingPage,
-        clicks: e.gsc ? e.gsc.clicks : null, impressions: e.gsc ? e.gsc.impressions : null,
-        ctr: (e.gsc && e.gsc.ctrCount) ? +(e.gsc.ctrSum/e.gsc.ctrCount).toFixed(2) : null,
-        gscPosition: (e.gsc && e.gsc.positionCount) ? +(e.gsc.positionSum/e.gsc.positionCount).toFixed(1) : null,
-        volume: e.semrush ? e.semrush.volume : null, kd: e.semrush ? e.semrush.kd : null,
-        intent: e.semrush ? e.semrush.intent : null, cpc: e.semrush ? e.semrush.cpc : null,
-        trafficPct: e.semrush ? e.semrush.trafficPct : null, serpFeatures: e.semrush ? e.semrush.serpFeatures : null,
-        semrushPosition: e.semrush ? e.semrush.position : null,
-        inGSC: !!e.gsc, inSEMrush: !!e.semrush
-      }));
+      const rows = [...map.values()].map(e=>{
+        const pa = pageAgg.get(e.landingPage);
+        return {
+          keyword: e.keyword, landingPage: e.landingPage,
+          clicks: e.gsc ? e.gsc.clicks : null, impressions: e.gsc ? e.gsc.impressions : null,
+          ctr: (e.gsc && e.gsc.ctrCount) ? +(e.gsc.ctrSum/e.gsc.ctrCount).toFixed(2) : null,
+          gscPosition: (e.gsc && e.gsc.positionCount) ? +(e.gsc.positionSum/e.gsc.positionCount).toFixed(1) : null,
+          pageClicks: pa ? pa.clicks : null, pageImpressions: pa ? pa.impressions : null,
+          pagePosition: (pa && pa.positionCount) ? +(pa.positionSum/pa.positionCount).toFixed(1) : null,
+          volume: e.semrush ? e.semrush.volume : null, kd: e.semrush ? e.semrush.kd : null,
+          intent: e.semrush ? e.semrush.intent : null, cpc: e.semrush ? e.semrush.cpc : null,
+          trafficPct: e.semrush ? e.semrush.trafficPct : null, serpFeatures: e.semrush ? e.semrush.serpFeatures : null,
+          semrushPosition: e.semrush ? e.semrush.position : null,
+          inGSC: !!e.gsc, inSEMrush: !!e.semrush, hasPageContext: !!pa
+        };
+      });
       await StorageService.clearStore('mergedCache');
       if(rows.length) await StorageService.bulkAdd('mergedCache', rows.map(r=>({...r})));
       mergedDatasetMemory = rows;
       return rows;
+    },
+    async getGscLevelCounts(){
+      const gsc = await StorageService.getAll('gscRecords');
+      return { pair: gsc.filter(r=>r.level==='pair').length, query: gsc.filter(r=>r.level==='query').length, page: gsc.filter(r=>r.level==='page').length };
     }
   };
 
@@ -2329,6 +2429,11 @@ const DataCenter = (function(){
           <div>${source==='gsc'?'Queries':'Keywords'}<b>${last.keywords}</b></div>
           ${extra}
         </div>
+        ${source==='gsc' ? `
+        <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);font-size:11px;color:var(--muted);">
+          Sheets used: <strong>${(s.sheetsUsed||[]).join(', ')||'—'}</strong>${s.sheetsSkipped&&s.sheetsSkipped.length?` · skipped: ${s.sheetsSkipped.join(', ')}`:''}<br>
+          ${s.pairRows ? `${s.pairRows.toLocaleString()} exact query+page pairs` : `<span style="color:var(--muted2);">No exact query+page pairs</span> — GSC's manual export keeps them on separate tabs`}${s.pageOnlyRows?`, ${s.pageOnlyRows.toLocaleString()} page-level rows (Pages tab)`:''}${s.queryOnlyRows?`, ${s.queryOnlyRows.toLocaleString()} query-level rows (Queries tab, not tied to one page)`:''}
+        </div>` : ''}
       </div>
       <div style="font-size:10.5px;color:var(--muted2);margin-top:8px;">Uploaded ${new Date(last.uploadDate).toLocaleString()} · ${(last.fileSize/1024).toFixed(1)} KB · ${last.fileName}</div>`;
   }
@@ -2360,52 +2465,61 @@ const DataCenter = (function(){
 
   async function renderMergeStatsAndTable(){
     const rows = await MergeService.build();
+    const levelCounts = await MergeService.getGscLevelCounts();
     const statsEl = document.getElementById('dcMergeStats');
     if(!statsEl) return;
-    const both = rows.filter(r=>r.inGSC && r.inSEMrush).length;
-    const gscOnly = rows.filter(r=>r.inGSC && !r.inSEMrush).length;
-    const semOnly = rows.filter(r=>!r.inGSC && r.inSEMrush).length;
+    const exact = rows.filter(r=>r.inGSC && r.inSEMrush).length;
+    const pageCtx = rows.filter(r=>!r.inGSC && r.hasPageContext).length;
+    const semOnly = rows.filter(r=>!r.inGSC && !r.hasPageContext && r.inSEMrush).length;
     statsEl.innerHTML = `
       <div class="stat"><b>${rows.length.toLocaleString()}</b><span>Unified Rows</span></div>
-      <div class="stat"><b>${both.toLocaleString()}</b><span>Matched (GSC + SEMrush)</span></div>
-      <div class="stat"><b>${gscOnly.toLocaleString()}</b><span>GSC Only</span></div>
-      <div class="stat"><b>${semOnly.toLocaleString()}</b><span>SEMrush Only</span></div>`;
+      <div class="stat"><b>${exact.toLocaleString()}</b><span>Exact Query+Page Match</span></div>
+      <div class="stat"><b>${pageCtx.toLocaleString()}</b><span>SEMrush + Page-Level GSC Context</span></div>
+      <div class="stat"><b>${semOnly.toLocaleString()}</b><span>SEMrush Only (no GSC data for page)</span></div>`;
+    if(levelCounts.query>0){
+      statsEl.insertAdjacentHTML('afterend', `<p class="tiny" id="dcQueryOnlyNote" style="margin-top:4px;">+ ${levelCounts.query.toLocaleString()} GSC query rows imported but not shown here — they came from a "Queries" tab with no Page column, so they can't be attributed to a specific landing page.</p>`);
+    } else {
+      const old = document.getElementById('dcQueryOnlyNote'); if(old) old.remove();
+    }
     const wrap = document.getElementById('dcMergeTableWrap');
-    if(!rows.length){ wrap.innerHTML = `<div class="dc-empty-state">Import both a GSC and a SEMrush export to see the unified dataset here.</div>`; return; }
-    const top = rows.slice().sort((a,b)=>(b.clicks||0)-(a.clicks||0) || (b.volume||0)-(a.volume||0)).slice(0,50);
-    wrap.innerHTML = `<table><thead><tr><th>Keyword</th><th>Landing Page</th><th class="num">Clicks</th><th class="num">Impr.</th><th class="num">CTR</th><th class="num">GSC Pos.</th><th class="num">Volume</th><th class="num">KD</th><th>Intent</th></tr></thead>
+    if(!rows.length){ wrap.innerHTML = `<div class="dc-empty-state">Import a GSC and/or SEMrush export to see the unified dataset here.</div>`; return; }
+    const top = rows.slice().sort((a,b)=>(b.clicks||0)-(a.clicks||0) || (b.pageClicks||0)-(a.pageClicks||0) || (b.volume||0)-(a.volume||0)).slice(0,50);
+    wrap.innerHTML = `<table><thead><tr><th>Keyword</th><th>Landing Page</th><th class="num">Query Clicks</th><th class="num">Query Impr.</th><th class="num">Query Pos.</th><th class="num">Page Clicks</th><th class="num">Page Impr.</th><th class="num">Page Pos.</th><th class="num">Volume</th><th class="num">KD</th><th>Intent</th></tr></thead>
       <tbody>${top.map(r=>`<tr>
         <td>${r.keyword}</td><td class="url-cell mono">${r.landingPage}</td>
-        <td class="num">${r.clicks??'—'}</td><td class="num">${r.impressions??'—'}</td>
-        <td class="num">${r.ctr!==null?r.ctr+'%':'—'}</td><td class="num">${r.gscPosition??'—'}</td>
+        <td class="num">${r.clicks??'—'}</td><td class="num">${r.impressions??'—'}</td><td class="num">${r.gscPosition??'—'}</td>
+        <td class="num">${r.pageClicks??'—'}</td><td class="num">${r.pageImpressions??'—'}</td><td class="num">${r.pagePosition??'—'}</td>
         <td class="num">${r.volume??'—'}</td><td class="num">${r.kd??'—'}</td><td>${r.intent??'—'}</td>
       </tr>`).join('')}</tbody></table>
-      <p class="tiny" style="margin-top:8px;">Showing top 50 of ${rows.length.toLocaleString()} unified rows, sorted by clicks then volume. Full dataset available programmatically via <code>DataCenter.getMergedDataset()</code>.</p>`;
+      <p class="tiny" style="margin-top:8px;">Showing top 50 of ${rows.length.toLocaleString()} unified rows. "Query" columns only populate from an exact GSC query+page pair; "Page" columns are the whole page's GSC totals (from a Pages-tab import) shown as context for every keyword on that page — not keyword-specific. Full dataset available programmatically via <code>DataCenter.getMergedDataset()</code>.</p>`;
   }
 
+  let sourceHasData = { gsc:false, semrush:false };
   function renderDashboardWidget(){
     const el = document.getElementById('dashDCStatus');
     if(!el) return;
-    const gsc = mergedDatasetMemory.some(r=>r.inGSC), sem = mergedDatasetMemory.some(r=>r.inSEMrush);
-    if(!mergedDatasetMemory.length){
+    if(!sourceHasData.gsc && !sourceHasData.semrush){
       el.innerHTML = `<div class="dc-empty-state">No files imported yet — head to <a href="#" onclick="switchTab('datacenter');return false;">Data Center</a> to load a GSC or SEMrush export.</div>`;
       return;
     }
-    const both = mergedDatasetMemory.filter(r=>r.inGSC && r.inSEMrush).length;
+    const exact = mergedDatasetMemory.filter(r=>r.inGSC && r.inSEMrush).length;
+    const pageCtx = mergedDatasetMemory.filter(r=>!r.inGSC && r.hasPageContext).length;
     el.innerHTML = `<div class="dash-grid" style="grid-template-columns:repeat(3,1fr);">
-      <div class="kpi"><div class="kpi-label">Unified Rows</div><div class="kpi-val">${mergedDatasetMemory.length.toLocaleString()}</div><div class="kpi-sub">${gsc?'GSC ✓':'GSC —'} · ${sem?'SEMrush ✓':'SEMrush —'}</div></div>
-      <div class="kpi"><div class="kpi-label">Matched Keyword+Page Pairs</div><div class="kpi-val">${both.toLocaleString()}</div><div class="kpi-sub">present in both sources</div></div>
+      <div class="kpi"><div class="kpi-label">Unified Rows</div><div class="kpi-val">${mergedDatasetMemory.length.toLocaleString()}</div><div class="kpi-sub">${sourceHasData.gsc?'GSC ✓':'GSC —'} · ${sourceHasData.semrush?'SEMrush ✓':'SEMrush —'}</div></div>
+      <div class="kpi"><div class="kpi-label">Exact Keyword+Page Matches</div><div class="kpi-val">${exact.toLocaleString()}</div><div class="kpi-sub">${pageCtx?`+ ${pageCtx.toLocaleString()} with page-level GSC context`:'present in both sources'}</div></div>
       <div class="kpi"><div class="kpi-label">Go To</div><div class="kpi-val" style="font-size:15px;"><a href="#" onclick="switchTab('datacenter');return false;">Data Center →</a></div><div class="kpi-sub">full table, history, re-import</div></div>
     </div>`;
   }
 
   async function refreshEverything(){
     await Promise.all([renderCard('gsc'), renderCard('semrush')]);
+    const [gscLast, semLast] = await Promise.all([StorageService.getMeta('gsc_last'), StorageService.getMeta('semrush_last')]);
+    sourceHasData = { gsc: !!gscLast, semrush: !!semLast };
     await renderHistory();
     await renderMergeStatsAndTable();
     renderDashboardWidget();
     const badge = document.getElementById('dcNavBadge');
-    if(badge) badge.style.display = mergedDatasetMemory.length ? 'inline-block' : 'none';
+    if(badge) badge.style.display = (sourceHasData.gsc || sourceHasData.semrush) ? 'inline-block' : 'none';
     // Additive, non-destructive refresh of existing modules — safe no-ops if a page hasn't defined them.
     ['renderDashboard','renderVolumeStats','renderVolumeTable','renderCannibalization','renderRoadmapStats'].forEach(fn=>{
       try{ if(typeof window[fn]==='function') window[fn](); }catch(e){ console.warn('DataCenter refresh: '+fn+' failed', e); }
