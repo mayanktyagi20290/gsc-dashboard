@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employer Pages SEO Toolkit | Unstop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --blue:#1c4ed8; --blue-dark:#1741b8; --teal:#10b981; --coral:#ff4b72; --amber:#f59e0b; --lavender:#818cf8;
+    --bg:#f6f8fc; --card:#ffffff; --border:#e6eaf1; --text:#0f172a; --muted:#64748b; --muted2:#94a3b8;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;position:relative;}
+  body::before, body::after{content:'';position:fixed;width:520px;height:520px;border-radius:50%;filter:blur(110px);z-index:-1;pointer-events:none;}
+  body::before{top:-160px;left:-160px;background:rgba(28,78,216,.10);}
+  body::after{bottom:-180px;right:-160px;background:rgba(16,185,129,.10);}
+  code, .mono{font-family:'JetBrains Mono',monospace;}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 24px;}
+  header{padding:32px 0 8px;}
+  .headrow{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .logomark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--teal));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:17px;box-shadow:0 6px 16px rgba(28,78,216,.25);flex:0 0 auto;}
+  .brand .dot{display:none;}
+  .brand h1{font-size:19px;margin:0;font-weight:800;letter-spacing:-.02em;background:linear-gradient(90deg,var(--blue),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .brand .sub{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+  .badge{font-size:11px;font-weight:700;padding:6px 12px;border-radius:99px;background:#eef2ff;color:var(--blue);border:1px solid #dbe4ff;}
+  h2.section-title{font-size:21px;font-weight:800;margin:0 0 4px;letter-spacing:-.015em;display:flex;align-items:center;gap:9px;}
+  h2.section-title .icn{width:22px;height:22px;flex:0 0 auto;color:var(--blue);}
+  p.section-sub{font-size:13px;color:var(--muted);margin:0 0 20px;max-width:720px;}
+  section{padding:38px 0;border-top:1px solid var(--border);}
+  section:first-of-type{border-top:none;}
+
+  /* stats strip */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px;}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:0 1px 3px rgba(15,23,42,.04);transition:box-shadow .2s,transform .2s;}
+  .stat:hover{box-shadow:0 10px 24px rgba(15,23,42,.08);transform:translateY(-2px);}
+  .stat b{font-size:24px;display:block;font-weight:800;}
+  .stat span{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
+
+  /* journey map */
+  .lane-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:22px 0 10px;display:flex;align-items:center;gap:8px;}
+  .lane-label .tag{padding:2px 8px;border-radius:6px;font-size:10px;}
+  .lane{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;}
+  .node{flex:0 0 200px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:15px;position:relative;transition:box-shadow .2s, transform .2s;box-shadow:0 1px 2px rgba(15,23,42,.03);}
+  .node:hover{box-shadow:0 12px 28px rgba(15,23,42,.10);transform:translateY(-3px);}
+  .node .cat-chip{display:inline-block;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:5px;margin-bottom:8px;}
+  .node h4{font-size:13px;margin:0 0 4px;font-weight:700;line-height:1.3;}
+  .node .url{font-size:10px;color:var(--muted2);word-break:break-all;margin-bottom:8px;display:block;}
+  .children{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+  .chip{font-size:9.5px;font-weight:600;background:#f1f5f9;color:var(--muted);padding:3px 7px;border-radius:6px;}
+  .arrow{align-self:center;color:var(--muted2);font-size:20px;flex:0 0 auto;}
+  .hub-node{background:linear-gradient(135deg,var(--blue),#3b5fe0);color:#fff;flex:0 0 220px;}
+  .hub-node .url{color:rgba(255,255,255,.7);}
+  .exit-node{background:linear-gradient(135deg,var(--teal),#0d9668);color:#fff;flex:0 0 220px;}
+  .exit-node .url{color:rgba(255,255,255,.75);}
+  .cat-core{background:#eaf1ff;color:var(--blue);}
+  .cat-support{background:#eef0ff;color:var(--lavender);}
+  .cat-branding{background:#ffe9ee;color:var(--coral);}
+  .cat-platform{background:#fff6e0;color:#b8790a;}
+
+  /* simulator */
+  .sim-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:22px;}
+  select, input[type=text]{font-family:inherit;font-size:13px;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);}
+  select{min-width:320px;}
+  button{font-family:inherit;font-size:13px;font-weight:700;padding:10px 20px;border-radius:10px;border:none;background:var(--blue);color:#fff;cursor:pointer;transition:background .15s;}
+  button:hover{background:var(--blue-dark);}
+  button.ghost{background:#fff;color:var(--blue);border:1px solid #cddcff;}
+  #pathResult{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;}
+  .path-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:15px;flex:1 1 190px;min-width:180px;box-shadow:0 1px 2px rgba(15,23,42,.03);}
+  .path-card .step-num{font-size:10px;font-weight:800;color:var(--muted2);text-transform:uppercase;}
+  .path-card h4{margin:4px 0 6px;font-size:13px;}
+  .path-card p{margin:0;font-size:11.5px;color:var(--muted);line-height:1.4;}
+  .path-arrow{align-self:center;color:var(--muted2);font-size:22px;}
+
+  /* matrix table */
+  .matrix-toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;font-size:12.5px;}
+  thead th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);background:#f8fafc;padding:10px 14px;border-bottom:1px solid var(--border);}
+  tbody td{padding:10px 14px;border-bottom:1px solid #eef1f5;vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  .link-pill{display:inline-block;font-size:10.5px;background:#f1f5f9;color:var(--text);padding:2px 8px;border-radius:6px;margin:2px 3px 2px 0;}
+  .link-pill .reason{color:var(--muted2);font-weight:500;}
+  .url-cell{font-size:11px;color:var(--muted);}
+  footer{padding:26px 0 40px;text-align:center;font-size:11px;color:var(--muted2);}
+  footer a{color:var(--blue);text-decoration:none;font-weight:600;}
+  @media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr);} select{min-width:0;width:100%;}}
+
+
+  :root{
+    --blue:#1c4ed8; --blue-dark:#1741b8; --teal:#10b981; --coral:#ff4b72; --amber:#f59e0b; --lavender:#818cf8;
+    --bg:#f7f9fc; --card:#ffffff; --border:#e2e8f0; --text:#0f172a; --muted:#64748b; --muted2:#94a3b8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;}
+  code,.mono{font-family:'JetBrains Mono',monospace;}
+  .wrap{max-width:1320px;margin:0 auto;padding:0 24px 60px;}
+  header{padding:28px 0 8px;}
+  .headrow{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand .dot{width:10px;height:10px;border-radius:99px;background:var(--teal);box-shadow:0 0 0 4px rgba(16,185,129,.15);}
+  .brand h1{font-size:15px;margin:0;font-weight:800;}
+  .brand .sub{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+  .badge{font-size:11px;font-weight:700;padding:5px 10px;border-radius:99px;background:#eef2ff;color:var(--blue);border:1px solid #dbe4ff;}
+  h2.section-title{font-size:20px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em;}
+  p.section-sub{font-size:13px;color:var(--muted);margin:0 0 18px;max-width:800px;}
+  section{padding:32px 0;border-top:1px solid var(--border);}
+  section:first-of-type{border-top:none;}
+
+  .alert{background:#fff4f4;border:1.5px solid #ffd1d1;border-radius:16px;padding:20px 22px;margin-bottom:20px;}
+  .alert h3{margin:0 0 6px;color:#c0392b;font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px;}
+  .alert p{margin:0;font-size:12.5px;color:#7a3a3a;line-height:1.6;}
+
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;font-size:12px;}
+  thead th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);background:#f8fafc;padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  tbody td{padding:9px 12px;border-bottom:1px solid #eef1f5;vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  .num{font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap;}
+  .arrow-cell{text-align:center;color:var(--muted2);font-weight:700;}
+  .tiny{font-size:10.5px;color:var(--muted2);}
+  .win{color:var(--teal);font-weight:700;}
+  .loss{color:#c0392b;font-weight:700;}
+
+  .kw-pill{display:inline-block;font-size:10.5px;background:#f1f5f9;padding:2px 8px;border-radius:6px;margin:2px 3px 2px 0;}
+  .pos-good{color:var(--teal);font-weight:700;}
+  .pos-bad{color:#c0392b;font-weight:700;}
+  .pos-mid{color:var(--amber);font-weight:700;}
+
+  .comp-pill{display:inline-block;font-size:11px;font-weight:600;background:#eef2ff;color:var(--blue);padding:3px 9px;border-radius:99px;margin:2px 4px 2px 0;border:1px solid #dbe4ff;}
+  .comp-link{color:var(--blue-dark);text-decoration:underline;text-decoration-color:rgba(28,78,216,.35);text-underline-offset:2px;cursor:pointer;}
+  .comp-link:hover{text-decoration-color:var(--blue-dark);}
+
+  .group-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:16px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(15,23,42,.04);transition:box-shadow .2s;}
+  .group-card:hover{box-shadow:0 8px 20px rgba(15,23,42,.07);}
+  .group-card h4{margin:0 0 4px;font-size:14px;font-weight:800;}
+  .group-card .path-note{font-size:11px;color:var(--muted2);margin-bottom:12px;}
+  .group-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;}
+  .group-grid h5{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 8px;}
+
+  .action-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;}
+  .action-list li{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:12.5px;display:flex;gap:10px;align-items:flex-start;}
+  .action-list .prio{font-size:9px;font-weight:800;text-transform:uppercase;padding:2px 7px;border-radius:5px;flex:0 0 auto;margin-top:1px;}
+  .prio-high{background:#ffe3e3;color:#c0392b;}
+  .prio-med{background:#fff3d6;color:#a9720d;}
+  .prio-low{background:#e3f6ec;color:#0d9668;}
+
+  .matrix-toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+  button{font-family:inherit;font-size:13px;font-weight:700;padding:9px 18px;border-radius:10px;border:1px solid #cddcff;background:#fff;color:var(--blue);cursor:pointer;}
+  button:hover{background:#eef2ff;}
+  footer{padding:26px 0 10px;text-align:center;font-size:11px;color:var(--muted2);}
+  footer a{color:var(--blue);text-decoration:none;font-weight:600;}
+  @media(max-width:800px){.group-grid{grid-template-columns:1fr;}}
+
+
+  .tabbar{display:inline-flex;gap:4px;margin-top:18px;background:#eef1f7;border-radius:99px;padding:5px;}
+  .tabbtn{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;padding:9px 20px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-radius:99px;transition:all .2s;}
+  .tabbtn.active{color:var(--blue);background:#fff;box-shadow:0 2px 8px rgba(15,23,42,.08);}
+  .tabpanel{display:none;}
+  .tabpanel.active{display:block;}
+  #editorPanel input[type=text], #editorPanel input[type=number]{
+    font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);
+  }
+  #editorPanel .group-card{margin-bottom:14px;}
+  .del-link{color:#c0392b;text-decoration:none;margin-left:4px;font-weight:700;}
+  .del-row-btn{font-size:11px;padding:4px 10px;color:#c0392b;border-color:#ffd1d1;}
+
+  .status-pill{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;}
+  .status-existing{background:#e3f6ec;color:#0d9668;}
+  .status-new{background:#fff3d6;color:#a9720d;}
+  .status-suggested{background:#eef2ff;color:#1c4ed8;}
+  select#volSortBy{min-width:220px;}
+
+  /* Action Roadmap */
+  .tier-filterbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+  .tier-filterbtn{font-size:12px;font-weight:700;padding:8px 16px;border-radius:99px;border:1px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;}
+  .tier-filterbtn.active{color:#fff;}
+  .tier-filterbtn[data-tier="all"].active{background:var(--text);border-color:var(--text);}
+  .tier-filterbtn[data-tier="push"].active{background:#0d9668;border-color:#0d9668;}
+  .tier-filterbtn[data-tier="close"].active{background:#1c4ed8;border-color:#1c4ed8;}
+  .tier-filterbtn[data-tier="bet"].active{background:#a9720d;border-color:#a9720d;}
+  .tier-filterbtn[data-tier="later"].active{background:#64748b;border-color:#64748b;}
+  .roadmap{display:flex;flex-direction:column;gap:0;margin-top:4px;}
+  .rstep{display:flex;gap:16px;position:relative;padding-bottom:20px;}
+  .rstep:not(:last-child)::before{content:'';position:absolute;left:19px;top:42px;bottom:0;width:2px;background:var(--border);}
+  .rstep .rnum{flex:0 0 40px;width:40px;height:40px;border-radius:50%;background:#fff;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;z-index:1;}
+  .rstep.tier-push .rnum{border-color:#0d9668;color:#0d9668;background:#e3f6ec;}
+  .rstep.tier-close .rnum{border-color:#1c4ed8;color:#1c4ed8;background:#eaf1ff;}
+  .rstep.tier-bet .rnum{border-color:#a9720d;color:#a9720d;background:#fff6e0;}
+  .rstep.tier-later .rnum{border-color:#94a3b8;color:#64748b;background:#f1f5f9;}
+  .rcard{flex:1;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 18px;box-shadow:0 1px 2px rgba(15,23,42,.03);margin-bottom:2px;}
+  .rcard h4{margin:0 0 4px;font-size:14.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .rcard .rmeta{font-size:10.5px;color:var(--muted2);margin-bottom:9px;}
+  .rcard .rwhy{font-size:12.5px;color:var(--muted);margin-bottom:8px;line-height:1.5;}
+  .rcard .raction{font-size:12.5px;background:#f8fafc;border-left:3px solid var(--blue);padding:9px 12px;border-radius:6px;line-height:1.5;}
+  .rcard .raction b{color:var(--blue-dark);}
+  .tier-chip{display:inline-block;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:3px 9px;border-radius:5px;}
+  .tier-chip.push{background:#e3f6ec;color:#0d9668;}
+  .tier-chip.close{background:#eaf1ff;color:#1c4ed8;}
+  .tier-chip.bet{background:#fff3d6;color:#a9720d;}
+  .tier-chip.later{background:#f1f5f9;color:#64748b;}
+
+  /* ===== Phase 1: Enterprise shell (sidebar, dashboard, cmd palette) ===== */
+  html{scrollbar-gutter:stable;}
+  body{overflow-x:hidden;}
+  .app-shell{display:flex;align-items:flex-start;min-height:100vh;}
+  .sidebar{
+    flex:0 0 258px;width:258px;position:sticky;top:0;height:100vh;overflow-y:auto;
+    background:linear-gradient(180deg,#0b1220,#0f1a30 65%,#0b1220);color:#e2e8f0;
+    padding:20px 14px 20px;display:flex;flex-direction:column;gap:4px;z-index:40;
+    border-right:1px solid rgba(255,255,255,.06);transition:width .2s,flex-basis .2s,padding .2s;
+  }
+  .sidebar::-webkit-scrollbar{width:6px;}
+  .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:99px;}
+  .sidebar.collapsed{flex:0 0 76px;width:76px;padding:20px 10px;}
+  .sb-brand{display:flex;align-items:center;gap:10px;padding:2px 8px 18px;}
+  .sb-brand .logomark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--teal));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex:0 0 auto;box-shadow:0 6px 16px rgba(28,78,216,.35);}
+  .sb-brand h1{font-size:13.5px;margin:0;font-weight:800;color:#fff;letter-spacing:-.01em;line-height:1.25;}
+  .sb-brand .sub{font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+  .sidebar.collapsed .sb-brand h1, .sidebar.collapsed .sb-brand .sub, .sidebar.collapsed .navlabel, .sidebar.collapsed .navtext, .sidebar.collapsed .navkbd{display:none;}
+  .sb-collapse{margin-left:auto;background:rgba(255,255,255,.06);border:none;color:#94a3b8;width:24px;height:24px;border-radius:7px;cursor:pointer;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:12px;}
+  .sb-collapse:hover{background:rgba(255,255,255,.12);color:#fff;}
+  .sb-search{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:9px 10px;margin:0 4px 16px;color:#94a3b8;font-size:12px;cursor:pointer;transition:background .15s;}
+  .sb-search:hover{background:rgba(255,255,255,.1);}
+  .sb-search .navkbd{margin-left:auto;}
+  .navlabel{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:14px 12px 6px;}
+  .navlabel:first-of-type{padding-top:2px;}
+  .navbtn{display:flex;align-items:center;gap:11px;width:100%;text-align:left;font-family:inherit;font-size:13px;font-weight:600;padding:9px 12px;border:none;background:transparent;color:#cbd5e1;cursor:pointer;border-radius:10px;transition:background .15s,color .15s;position:relative;}
+  .navbtn .navicon{width:17px;height:17px;flex:0 0 auto;opacity:.85;}
+  .navbtn .navtext{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .navbtn .navkbd{font-size:9.5px;font-weight:700;color:#64748b;background:rgba(255,255,255,.06);border-radius:5px;padding:2px 5px;}
+  .navbtn:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .navbtn.active{background:linear-gradient(90deg,rgba(28,78,216,.35),rgba(28,78,216,.12));color:#fff;}
+  .navbtn.active::before{content:'';position:absolute;left:-14px;top:8px;bottom:8px;width:3px;border-radius:3px;background:linear-gradient(180deg,var(--blue),var(--teal));}
+  .sidebar.collapsed .navbtn{justify-content:center;padding:10px 0;}
+  .sb-foot{margin-top:auto;padding:14px 12px 2px;font-size:10.5px;color:#475569;border-top:1px solid rgba(255,255,255,.06);}
+  .main-content{flex:1;min-width:0;}
+  .main-content .wrap{max-width:1320px;}
+  .main-content header{display:none;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:20px 28px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.7);backdrop-filter:blur(10px);position:sticky;top:0;z-index:30;}
+  .topbar h2{font-size:16px;margin:0;font-weight:800;letter-spacing:-.01em;}
+  .topbar .topbar-sub{font-size:11.5px;color:var(--muted);margin-top:1px;}
+  .topbar-search{display:flex;align-items:center;gap:8px;background:#f1f5f9;border:1px solid var(--border);border-radius:10px;padding:8px 12px;color:var(--muted);font-size:12px;cursor:pointer;min-width:220px;}
+  .topbar-search:hover{background:#e9eef5;}
+  .topbar-search .navkbd{margin-left:auto;font-size:9.5px;font-weight:700;color:var(--muted2);background:#fff;border:1px solid var(--border);border-radius:5px;padding:2px 5px;}
+  .main-inner{padding:26px 28px 10px;}
+  @media(max-width:960px){
+    .sidebar{position:fixed;left:0;top:0;transform:translateX(-100%);box-shadow:0 0 40px rgba(0,0,0,.3);}
+    .sidebar.mobile-open{transform:translateX(0);}
+    .main-content{width:100%;}
+  }
+
+  /* Command palette */
+  .cmdk-overlay{position:fixed;inset:0;background:rgba(10,15,25,.55);backdrop-filter:blur(3px);z-index:200;display:none;align-items:flex-start;justify-content:center;padding-top:12vh;}
+  .cmdk-overlay.open{display:flex;}
+  .cmdk-box{width:min(560px,92vw);background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.35);overflow:hidden;border:1px solid var(--border);}
+  .cmdk-input-row{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);}
+  .cmdk-input-row svg{flex:0 0 auto;color:var(--muted2);}
+  .cmdk-input-row input{border:none;outline:none;font-size:15px;flex:1;font-family:inherit;padding:0;}
+  .cmdk-input-row .navkbd{font-size:10px;font-weight:700;color:var(--muted2);background:#f1f5f9;border-radius:5px;padding:3px 6px;}
+  .cmdk-results{max-height:52vh;overflow-y:auto;padding:8px;}
+  .cmdk-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13px;}
+  .cmdk-item:hover, .cmdk-item.sel{background:#eef2ff;}
+  .cmdk-item .cat-chip{margin:0;}
+  .cmdk-item .cik-path{color:var(--muted2);font-size:11px;margin-left:auto;font-family:'JetBrains Mono',monospace;}
+  .cmdk-empty{padding:24px 18px;text-align:center;color:var(--muted2);font-size:12.5px;}
+
+  /* Dashboard */
+  .dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  @media(max-width:1100px){.dash-grid{grid-template-columns:repeat(2,1fr);}}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:17px 18px;box-shadow:0 1px 3px rgba(15,23,42,.04);transition:box-shadow .2s,transform .2s;position:relative;overflow:hidden;}
+  .kpi:hover{box-shadow:0 12px 26px rgba(15,23,42,.09);transform:translateY(-2px);}
+  .kpi .kpi-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+  .kpi .kpi-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);}
+  .kpi .kpi-val{font-size:26px;font-weight:800;margin:6px 0 3px;letter-spacing:-.02em;}
+  .kpi .kpi-sub{font-size:11px;color:var(--muted2);}
+  .kpi .kpi-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .kpi .kpi-icon svg{width:16px;height:16px;}
+  .dash-section{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px 22px;margin-top:18px;box-shadow:0 1px 3px rgba(15,23,42,.04);}
+  .dash-section h3{font-size:14px;margin:0 0 3px;font-weight:800;}
+  .dash-section .dash-sub{font-size:11.5px;color:var(--muted);margin:0 0 16px;}
+  .tier-bar{display:flex;height:34px;border-radius:10px;overflow:hidden;margin-bottom:12px;}
+  .tier-bar span{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;transition:flex-grow .3s;}
+  .legend-row{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);}
+  .legend-row .dot{width:8px;height:8px;border-radius:99px;display:inline-block;margin-right:5px;}
+  .opp-list{display:flex;flex-direction:column;gap:8px;}
+  .opp-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;font-size:12.5px;}
+  .opp-row .opp-rank{width:22px;height:22px;border-radius:7px;background:#eaf1ff;color:var(--blue);font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .opp-row .opp-name{font-weight:700;flex:1;min-width:0;}
+  .opp-row .opp-meta{color:var(--muted2);font-size:11px;white-space:nowrap;}
+  .catbar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+  .catbar-row .catbar-label{width:150px;flex:0 0 auto;font-size:11.5px;font-weight:600;color:var(--text);}
+  .catbar-track{flex:1;height:9px;border-radius:99px;background:#f1f5f9;overflow:hidden;}
+  .catbar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--teal));}
+  .catbar-val{width:64px;flex:0 0 auto;text-align:right;font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+  .scope-note{font-size:10.5px;color:var(--muted2);background:#f8fafc;border:1px dashed var(--border);border-radius:8px;padding:8px 10px;margin-top:10px;line-height:1.5;}
+  .cannib-card{border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;background:#fff;}
+  .cannib-card .cannib-kw{font-weight:800;font-size:13.5px;}
+  .cannib-card .cannib-pages{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .cannib-pill{background:#fff4f4;border:1px solid #ffd1d1;color:#c0392b;font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;}
+  .cannib-clean{text-align:center;padding:40px 20px;color:var(--muted);}
+  .cannib-clean svg{width:40px;height:40px;color:var(--teal);margin-bottom:10px;}
+
+</style>
+</head>
+<body>
+<div class="cmdk-overlay" id="cmdkOverlay" onclick="if(event.target===this) closeCmdk()">
+  <div class="cmdk-box">
+    <div class="cmdk-input-row">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21 L16.65 16.65"/></svg>
+      <input type="text" id="cmdkInput" placeholder="Search pages, tabs…" oninput="cmdkSearch()" autocomplete="off">
+      <span class="navkbd">ESC</span>
+    </div>
+    <div class="cmdk-results" id="cmdkResults"></div>
+  </div>
+</div>
+
+<div class="app-shell">
+<nav class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <span class="logomark">U</span>
+    <div><h1>SEO Toolkit</h1><div class="sub">Unstop Employers</div></div>
+    <button class="sb-collapse" onclick="toggleSidebar()" title="Collapse">◂</button>
+  </div>
+  <div class="sb-search" onclick="openCmdk()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21 L16.65 16.65"/></svg>
+    <span class="navtext">Quick search…</span>
+    <span class="navkbd">⌘K</span>
+  </div>
+
+  <div class="navlabel">Overview</div>
+  <button class="tabbtn navbtn active" onclick="switchTab('dashboard')" id="btn-tab-dashboard"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2"/><rect x="13" y="3.5" width="7.5" height="4.5" rx="2"/><rect x="13" y="10.5" width="7.5" height="10" rx="2"/><rect x="3.5" y="13.5" width="7.5" height="7" rx="2"/></svg><span class="navtext">Dashboard</span></button>
+  <button class="tabbtn navbtn" onclick="switchTab('journey')" id="btn-tab-journey"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.2"/><circle cx="19" cy="18" r="2.2"/><path d="M7 7.5 L12 12 L17 16"/></svg><span class="navtext">Journey Map</span></button>
+
+  <div class="navlabel">Intelligence</div>
+  <button class="tabbtn navbtn" onclick="switchTab('keywords')" id="btn-tab-keywords"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="12" r="4"/><path d="M12 12 L21 12 M17.5 12 L17.5 16 M21 12 L21 15"/></svg><span class="navtext">Keyword &amp; Competitor Intel</span></button>
+  <button class="tabbtn navbtn" onclick="switchTab('pagecomp')" id="btn-tab-pagecomp"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M3.5 9.5 L20.5 9.5 M9 3.5 L9 20.5"/></svg><span class="navtext">Page-wise Competitors</span></button>
+  <button class="tabbtn navbtn" onclick="switchTab('volumes')" id="btn-tab-volumes"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19 L4 13 M10 19 L10 8 M16 19 L16 4 M4 19 L20 19"/></svg><span class="navtext">Keyword Volumes</span></button>
+  <button class="tabbtn navbtn" onclick="switchTab('cannibalization')" id="btn-tab-cannibalization"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L21.5 20 L2.5 20 Z"/><path d="M12 9.5 L12 14"/><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none"/></svg><span class="navtext">Cannibalization</span></button>
+
+  <div class="navlabel">Plan</div>
+  <button class="tabbtn navbtn" onclick="switchTab('roadmap')" id="btn-tab-roadmap"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21 L5 12 M5 12 L12 5 L19 12 M12 5 L12 21"/></svg><span class="navtext">Action Roadmap</span></button>
+
+  <div class="sb-foot">v3 · Enterprise SEO OS<br>Internal tool · not public</div>
+</nav>
+
+<div class="main-content">
+<div class="topbar">
+  <div>
+    <h2 id="topbarTitle">Dashboard</h2>
+    <div class="topbar-sub" id="topbarSub">Executive overview across all 31 employer pages</div>
+  </div>
+  <div class="topbar-search" onclick="openCmdk()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21 L16.65 16.65"/></svg>
+    <span>Search pages…</span>
+    <span class="navkbd">⌘K</span>
+  </div>
+</div>
+<div class="main-inner">
+<div class="wrap">
+
+<header>
+  <div class="headrow">
+    <div class="brand">
+      <span class="logomark">U</span>
+      <div>
+        <h1>Employer Pages SEO Toolkit</h1>
+        <div class="sub">Unstop &middot; Internal SEO Tool</div>
+      </div>
+    </div>
+    <span class="badge">v2 &middot; Journey Map + Keyword Intelligence</span>
+  </div>
+  <p class="section-sub" style="margin-top:14px;">Two views on the same 31 <code>/employers/*</code> pages: the entry-to-exit journey & internal linking plan, and real keyword/competitor data pulled from Search Console.</p>
+</header>
+
+<div id="tab-dashboard" class="tabpanel active">
+<section id="dashKpiSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2"/><rect x="13" y="3.5" width="7.5" height="4.5" rx="2"/><rect x="13" y="10.5" width="7.5" height="10" rx="2"/><rect x="3.5" y="13.5" width="7.5" height="7" rx="2"/></svg>Executive Overview</h2>
+  <p class="section-sub">Every number below is computed live from the data already in this toolkit — real GSC impressions/clicks, your SEMrush keyword volumes, the researched competitor links, and the internal linking matrix. No backlink, domain authority, Core Web Vitals, schema-crawl, or revenue figures are shown here yet, since no Ahrefs/Semrush/PageSpeed/GA4 connection is wired up — those modules will populate once a data source is connected instead of showing invented numbers.</p>
+  <div class="dash-grid" id="dashKpis"></div>
+</section>
+
+<section id="dashTierSection">
+  <div class="dash-section">
+    <h3>Roadmap Focus Distribution</h3>
+    <p class="dash-sub">Where all 31 pages currently sit on the non-branded Action Roadmap.</p>
+    <div class="tier-bar" id="dashTierBar"></div>
+    <div class="legend-row" id="dashTierLegend"></div>
+  </div>
+
+  <div class="dash-section">
+    <h3>Top Opportunity Pages</h3>
+    <p class="dash-sub">"Push To #1" tier — already ranking with real non-branded clicks, closest to a quick win. Full sequence lives in the Action Roadmap tab.</p>
+    <div class="opp-list" id="dashOppList"></div>
+  </div>
+
+  <div class="dash-section">
+    <h3>Tracked Monthly Search Volume by Category</h3>
+    <p class="dash-sub">Sum of SEMrush monthly volume for every keyword mapped to pages in each category.</p>
+    <div id="dashCatBars"></div>
+    <div class="scope-note">GSC impression/click totals above are scoped to the 17 pages with an old→new URL migration pair on file (see Keyword &amp; Competitor Intel tab). The other 14 pages either never had an old URL or have no GSC data captured yet — see the Action Roadmap "Build Later" tier for exactly which ones.</div>
+  </div>
+</section>
+</div>
+
+<div id="tab-journey" class="tabpanel">
+  <div class="stats" id="statsRow"></div>
+<section id="journeyMapSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.4"/><circle cx="19" cy="18" r="2.4"/><path d="M7 7.5 L12 12 L17 16"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>Journey Map</h2>
+  <p class="section-sub">Entry → Hub → Core Hiring Funnel (in sequence) → Supporting Agents → Trust Layer → Exit. Scroll each row horizontally.</p>
+
+  <div class="lane-label">Entry Signals</div>
+  <div class="lane" id="laneEntry"></div>
+
+  <div class="lane-label">Hub</div>
+  <div class="lane" id="laneHub"></div>
+
+  <div class="lane-label"><span class="tag cat-core">Core Hiring Funnel</span> — sequential, one stage feeds the next</div>
+  <div class="lane" id="laneCore"></div>
+
+  <div class="lane-label"><span class="tag cat-support">Supporting Agents</span> — plug into a specific funnel stage</div>
+  <div class="lane" id="laneSupport"></div>
+
+  <div class="lane-label"><span class="tag cat-branding">Trust &amp; Awareness Layer</span></div>
+  <div class="lane" id="laneBranding"></div>
+
+  <div class="lane-label"><span class="tag cat-platform">Channel / Platform Pages</span></div>
+  <div class="lane" id="lanePlatform"></div>
+
+  <div class="lane-label">Exit</div>
+  <div class="lane" id="laneExit"></div>
+</section>
+
+<section id="simSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M10 8.5 L16 12 L10 15.5 Z" fill="currentColor" stroke="none"/></svg>Path Simulator</h2>
+  <p class="section-sub">Pick any page as the entry point (matches how an employer would actually land via organic search) and see the recommended forward path to conversion.</p>
+  <div class="sim-controls">
+    <select id="entrySelect"></select>
+    <button onclick="tracePath()">Trace Path →</button>
+  </div>
+  <div id="pathResult"></div>
+</section>
+
+<section id="matrixSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="7" height="7" rx="2"/><rect x="14" y="9" width="7" height="7" rx="2"/><path d="M10 12.5 L14 12.5"/></svg>Internal Linking Matrix</h2>
+  <p class="section-sub">Auto-generated outbound link recommendations for every page, with the reason each link earns its place. Use this as the implementation checklist.</p>
+  <div class="matrix-toolbar">
+    <input type="text" id="matrixSearch" placeholder="Filter by page name or URL…" oninput="renderMatrix()" style="min-width:280px;">
+    <button class="ghost" onclick="downloadCSV()">⬇ Download CSV</button>
+  </div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th style="width:22%;">Page</th><th style="width:18%;">URL</th><th style="width:12%;">Category</th><th>Recommended Outbound Links</th></tr></thead>
+      <tbody id="matrixBody"></tbody>
+    </table>
+  </div>
+</section>
+</div>
+
+<div id="tab-keywords" class="tabpanel">
+<section id="dataManagerSection">
+  <div class="matrix-toolbar">
+    <h2 class="section-title" style="margin-bottom:0;"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4.5 L19.5 9.5 L8.5 20.5 L3.5 21.5 L4.5 16.5 Z"/></svg>Manage Data</h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="toggleEditor()" id="btnToggleEditor">✏️ Edit Data</button>
+      <button onclick="exportData()">⬇ Export JSON</button>
+      <button onclick="document.getElementById('importFile').click()">⬆ Import JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="ghost" onclick="resetData()">↺ Reset to Defaults</button>
+    </div>
+  </div>
+  <p class="section-sub">Edit keywords, competitors, and old/new URL pairs below. <strong>Export JSON</strong> saves your edits to a file — commit it alongside this HTML in your repo, and <strong>Import JSON</strong> next time to pick up where you left off (edits made here don't survive a page refresh on their own).</p>
+
+  <div id="editorPanel" style="display:none;">
+    <div class="group-card">
+      <h4>URL Migration Pairs</h4>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Old URL</th><th class="num">Impr</th><th class="num">Clicks</th><th>New URL</th><th class="num">Impr</th><th class="num">Clicks</th><th></th></tr></thead>
+        <tbody id="editMigrationsBody"></tbody></table>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+        <input type="text" id="newMigOld" placeholder="/employers/old-url">
+        <input type="number" id="newMigOldI" placeholder="Old impr" style="width:90px;">
+        <input type="number" id="newMigOldC" placeholder="Old clicks" style="width:90px;">
+        <input type="text" id="newMigNew" placeholder="/employers/new-url">
+        <input type="number" id="newMigNewI" placeholder="New impr" style="width:90px;">
+        <input type="number" id="newMigNewC" placeholder="New clicks" style="width:90px;">
+        <button onclick="addMigration()">+ Add Pair</button>
+      </div>
+    </div>
+
+    <div class="group-card">
+      <h4>Keyword Groups (Keywords + Competitors)</h4>
+      <div id="editGroupsList"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;border-top:1px dashed var(--border);padding-top:14px;">
+        <input type="text" id="newGroupTitle" placeholder="New group name (e.g. Referral Hiring)" style="flex:1;min-width:220px;">
+        <button onclick="addGroup()">+ Add Group</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="alertSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L21.5 20 L2.5 20 Z"/><path d="M12 9.5 L12 14"/><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none"/></svg>Old vs New URLs — Ranking Transfer Still In Progress</h2>
+  <p class="section-sub">A redirect exists between these old and new URL pairs, but since it's handled client-side (Angular routing), Google is slower to pick up the signal — GSC still shows almost all clicks and impressions on the OLD urls while the new ones are near zero. Worth monitoring to confirm the transfer completes; if it stalls for too long, a server-side 301 would resolve it faster.</p>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th>Old URL (established)</th><th class="num">Impr.</th><th class="num">Clicks</th><th></th><th>New URL (yours)</th><th class="num">Impr.</th><th class="num">Clicks</th><th>Verdict</th></tr></thead>
+      <tbody id="migrationBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="keywordCompSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="12" r="4.5"/><path d="M12 12 L21 12 M17.5 12 L17.5 16 M21 12 L21 15"/></svg>Real Keywords + Competitors by Funnel Stage</h2>
+  <p class="section-sub">Top non-branded queries your pages actually rank for (from GSC), plus the real players showing up in search for those terms.</p>
+  <div id="groupCards"></div>
+</section>
+
+<section id="actionSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M7.5 12 L10.5 15 L16.5 8.5"/></svg>Priority Actions</h2>
+  <ul class="action-list" id="actionList"></ul>
+</section>
+
+<section id="matrixSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5 L20.5 9.5 M9 4.5 L9 19.5"/></svg>Full Data Table</h2>
+  <p class="section-sub">Every page, its top keyword, position, and mapped competitors — for the CSV.</p>
+  <div class="matrix-toolbar">
+    <span class="tiny">31 pages mapped</span>
+    <button onclick="downloadCSVKeywords()">⬇ Download CSV</button>
+  </div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th>Page</th><th>Top Real Keyword</th><th class="num">Impr.</th><th class="num">Pos.</th><th>Key Competitors</th></tr></thead>
+      <tbody id="fullTableBody"></tbody>
+    </table>
+  </div>
+</section>
+</div>
+
+<div id="tab-pagecomp" class="tabpanel">
+<section id="pageCompSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M3.5 9.5 L20.5 9.5 M9 3.5 L9 20.5"/></svg>Page-wise Competitors</h2>
+  <p class="section-sub">Every one of the 31 pages with its own specific competitors — not just the funnel-stage group. E.g. the Online Coding Test page competes with HackerRank/Codility specifically, not the general Assessment competitor list. Parent/Secondary Keyword columns pull straight from the Keyword Volume Map. Competitor links point to each rival's specific service page for this context (not their homepage), unless flagged as a fallback — hover a competitor name for the note.</p>
+  <div class="matrix-toolbar">
+    <input type="text" id="pageCompSearch" placeholder="Filter by page name or URL…" oninput="renderPageCompetitors()" style="min-width:280px;">
+    <button onclick="downloadPageCompCSV()">⬇ Download CSV</button>
+  </div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th style="width:13%;">Page</th><th style="width:13%;">URL</th><th style="width:15%;">Parent Keyword</th><th style="width:17%;">Secondary Keywords</th><th>Competitors</th></tr></thead>
+      <tbody id="pageCompBody"></tbody>
+    </table>
+  </div>
+</section>
+</div>
+
+<div id="tab-volumes" class="tabpanel">
+  <div class="stats" id="volStatsRow"></div>
+<section id="volumeTableSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19 L4 13 M10 19 L10 8 M16 19 L16 4 M4 19 L20 19"/></svg>Keyword Volume Map</h2>
+  <p class="section-sub">Every keyword mapped to its target employer page — Monthly Volume pulled from SEMrush, plus GSC-sourced additions and B2B fill-ins for thin pages. <strong>Existing</strong> = already had SEMrush volume, <strong>New (GSC)</strong> = added from real Search Console queries that were missing, <strong>Suggested</strong> = fill-in for a page that had too few keywords, volume not yet checked.</p>
+  <div class="matrix-toolbar">
+    <input type="text" id="volSearch" placeholder="Filter by keyword or page…" oninput="renderVolumeTable()" style="min-width:280px;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <select id="volSortBy" onchange="renderVolumeTable()">
+        <option value="page">Sort: Page (grouped)</option>
+        <option value="volume-desc">Sort: Volume high → low</option>
+        <option value="volume-asc">Sort: Volume low → high</option>
+        <option value="az">Sort: Keyword A → Z</option>
+      </select>
+      <button class="ghost" onclick="downloadVolumeCSV()">⬇ Download CSV</button>
+    </div>
+  </div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th style="width:24%;">Page</th><th>Keyword</th><th class="num" style="width:13%;">Monthly Volume</th><th style="width:14%;">Status</th></tr></thead>
+      <tbody id="volumeBody"></tbody>
+    </table>
+  </div>
+</section>
+</div>
+
+<div id="tab-roadmap" class="tabpanel">
+  <div class="stats" id="roadmapStatsRow"></div>
+<section id="roadmapSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21 L5 12 M5 12 L12 5 L19 12 M12 5 L12 21"/></svg>Action Roadmap — Where To Focus First</h2>
+  <p class="section-sub">All 31 pages, ranked purely on <strong>non-branded</strong> performance of each <strong>new</strong> <code>/employers/*</code> URL — queries that don't contain "Unstop" are the only ones counted here, since branded clicks reflect existing brand awareness, not real organic pull. Step 1 is the single highest-leverage move; work down the list in order rather than jumping around.</p>
+  <div class="tier-filterbar" id="tierFilterBar">
+    <button class="tier-filterbtn active" data-tier="all" onclick="setTierFilter('all')">All 31</button>
+    <button class="tier-filterbtn" data-tier="push" onclick="setTierFilter('push')">🟢 Push To #1</button>
+    <button class="tier-filterbtn" data-tier="close" onclick="setTierFilter('close')">🔵 Close To Page 1</button>
+    <button class="tier-filterbtn" data-tier="bet" onclick="setTierFilter('bet')">🟠 Big Bet</button>
+    <button class="tier-filterbtn" data-tier="later" onclick="setTierFilter('later')">⚪ Build Later</button>
+  </div>
+  <div class="roadmap" id="roadmapList"></div>
+  <div class="matrix-toolbar" style="margin-top:18px;">
+    <span class="tiny">Ranked 1 → 31, highest leverage first</span>
+    <button class="ghost" onclick="downloadRoadmapCSV()">⬇ Download CSV</button>
+  </div>
+</section>
+</div>
+
+<div id="tab-cannibalization" class="tabpanel">
+<section id="cannibSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L21.5 20 L2.5 20 Z"/><path d="M12 9.5 L12 14"/><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none"/></svg>Keyword Cannibalization Detector</h2>
+  <p class="section-sub">Scans every keyword in the Keyword Volume Map for exact-match overlap across more than one page. If the same term is mapped to two pages, both will compete for the same SERP slot — pick one primary target and de-duplicate.</p>
+  <div class="stats" id="cannibStatsRow"></div>
+  <div id="cannibList" style="margin-top:18px;"></div>
+</section>
+</div>
+
+<footer>
+  Internal planning tool for SEO/AEO use &middot; generated for <a href="https://unstop.com/employers" target="_blank">unstop.com/employers</a> &middot; not for public deployment
+</footer>
+
+</div>
+</div>
+</div>
+</div>
+
+<script>
+const TAB_META = {
+  dashboard: {title:'Dashboard', sub:'Executive overview across all 31 employer pages'},
+  journey: {title:'Journey Map', sub:'Entry → hub → funnel → exit, plus the internal linking matrix & path simulator'},
+  keywords: {title:'Keyword & Competitor Intel', sub:'Real GSC queries and competitors by funnel stage'},
+  pagecomp: {title:'Page-wise Competitors', sub:'Per-page parent/secondary keywords and deep-linked competitors'},
+  volumes: {title:'Keyword Volumes', sub:'Every keyword mapped to its target page with monthly search volume'},
+  cannibalization: {title:'Cannibalization Detector', sub:'Keywords mapped to more than one page — pick a single primary target'},
+  roadmap: {title:'Action Roadmap', sub:'All 31 pages ranked on non-branded new-URL performance'},
+};
+function switchTab(name){
+  document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('btn-tab-'+name).classList.add('active');
+  const meta = TAB_META[name];
+  if(meta){
+    document.getElementById('topbarTitle').textContent = meta.title;
+    document.getElementById('topbarSub').textContent = meta.sub;
+  }
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  window.scrollTo({top:0, behavior:'instant'});
+}
+function toggleSidebar(){
+  const sb = document.getElementById('sidebar');
+  sb.classList.toggle('collapsed');
+  const btn = sb.querySelector('.sb-collapse');
+  btn.textContent = sb.classList.contains('collapsed') ? '▸' : '◂';
+}
+
+
+const BASE = 'https://unstop.com';
+const PAGES = [
+  {id:'hub', path:'/employers', layer:1, cat:'hub', label:'Employers Hub'},
+
+  {id:'sourcing', path:'/employers/ai-sourcing-agent', layer:2, cat:'agent-core', label:'AI Sourcing Agent', parent:'hub', funnel:1},
+  {id:'sourcing-jobboard', path:'/employers/ai-sourcing-agent/jobs-internships-listings-jobboard', layer:3, cat:'agent-core', label:'Jobs & Internships Listings', parent:'sourcing'},
+  {id:'sourcing-community', path:'/employers/ai-sourcing-agent/our-largest-early-talent-community', layer:3, cat:'agent-core', label:'Early Talent Community', parent:'sourcing'},
+
+  {id:'screening', path:'/employers/ai-screening-agent', layer:2, cat:'agent-core', label:'AI Screening Agent', parent:'hub', funnel:2},
+
+  {id:'assessment', path:'/employers/ai-assessment-agent', layer:2, cat:'agent-core', label:'AI Assessment Agent', parent:'hub', funnel:3},
+  {id:'assessment-aptitude', path:'/employers/ai-assessment-agent/aptitude-test', layer:3, cat:'agent-core', label:'Aptitude Test', parent:'assessment'},
+  {id:'assessment-coding', path:'/employers/ai-assessment-agent/online-coding-test', layer:3, cat:'agent-core', label:'Online Coding Test', parent:'assessment'},
+  {id:'assessment-sql', path:'/employers/ai-assessment-agent/sql-assessments', layer:3, cat:'agent-core', label:'SQL Assessments', parent:'assessment'},
+  {id:'assessment-technical', path:'/employers/ai-assessment-agent/technical-role-based-tests', layer:3, cat:'agent-core', label:'Technical Role-Based Tests', parent:'assessment'},
+  {id:'assessment-bizsim', path:'/employers/ai-assessment-agent/business-competency-simulation-games', layer:3, cat:'agent-core', label:'Business Competency Simulation Games', parent:'assessment'},
+  {id:'assessment-comm', path:'/employers/ai-assessment-agent/communication-assessment', layer:3, cat:'agent-core', label:'Communication Assessment', parent:'assessment'},
+
+  {id:'interview', path:'/employers/ai-interview-agent', layer:2, cat:'agent-core', label:'AI Interview Agent', parent:'hub', funnel:4},
+  {id:'interview-ai', path:'/employers/ai-interview-agent/ai-interview', layer:3, cat:'agent-core', label:'AI Interview', parent:'interview'},
+
+  {id:'proctoring', path:'/employers/ai-proctoring-agent', layer:2, cat:'agent-core', label:'AI Proctoring Agent', parent:'hub', funnel:5},
+
+  {id:'calling', path:'/employers/ai-calling-agent', layer:2, cat:'agent-support', label:'AI Calling Agent', parent:'hub', supports:'screening'},
+  {id:'scheduling', path:'/employers/ai-scheduling-agent', layer:2, cat:'agent-support', label:'AI Scheduling Agent', parent:'hub', supports:'interview'},
+
+  {id:'branding', path:'/employers/employer-branding', layer:2, cat:'branding', label:'Employer Branding', parent:'hub', supports:'sourcing'},
+  {id:'branding-quizzes', path:'/employers/employer-branding/quizzes', layer:3, cat:'branding', label:'Quizzes', parent:'branding'},
+  {id:'branding-hackathons', path:'/employers/employer-branding/hackathons', layer:3, cat:'branding', label:'Hackathons', parent:'branding'},
+  {id:'branding-bizsim', path:'/employers/employer-branding/business-simulations', layer:3, cat:'branding', label:'Business Simulations', parent:'branding'},
+  {id:'branding-talentcommunity', path:'/employers/employer-branding/build-your-talent-community', layer:3, cat:'branding', label:'Build Your Talent Community', parent:'branding'},
+  {id:'branding-dshackathons', path:'/employers/employer-branding/data-science-hackathons', layer:3, cat:'branding', label:'Data Science Hackathons', parent:'branding'},
+  {id:'branding-ideathons', path:'/employers/employer-branding/ideathons', layer:3, cat:'branding', label:'Ideathons', parent:'branding'},
+  {id:'branding-brandpresence', path:'/employers/employer-branding/build-your-brand-presence', layer:3, cat:'branding', label:'Build Your Brand Presence', parent:'branding'},
+  {id:'brand-advertise', path:'/employers/brand-and-advertise', layer:2, cat:'branding', label:'Brand & Advertise', parent:'hub', supports:'branding'},
+
+  {id:'ats', path:'/employers/ats-software', layer:2, cat:'platform', label:'ATS Software', parent:'hub', supports:'screening'},
+  {id:'virtual-hiring', path:'/employers/virtual-hiring', layer:2, cat:'platform', label:'Virtual Hiring', parent:'hub', supports:'interview'},
+  {id:'campus-hiring', path:'/employers/campus-hiring', layer:2, cat:'platform', label:'Campus Hiring', parent:'hub', supports:'sourcing'},
+  {id:'lateral-hiring', path:'/employers/lateral-hiring', layer:2, cat:'platform', label:'Lateral Hiring', parent:'hub', supports:'sourcing'},
+  {id:'hiring-talent-platform', path:'/employers/hiring-talent-platform', layer:2, cat:'platform', label:'Hiring Talent Platform', parent:'hub', supports:'hub'},
+];
+const FUNNEL_ORDER = ['sourcing','screening','assessment','interview','proctoring'];
+const byId = id => PAGES.find(p=>p.id===id);
+const childrenOf = id => PAGES.filter(p=>p.parent===id);
+const nextCore = id => { const i=FUNNEL_ORDER.indexOf(id); return i>=0 && i<FUNNEL_ORDER.length-1 ? byId(FUNNEL_ORDER[i+1]) : null; };
+const prevCore = id => { const i=FUNNEL_ORDER.indexOf(id); return i>0 ? byId(FUNNEL_ORDER[i-1]) : null; };
+const catLabel = {hub:'Hub','agent-core':'Core Agent','agent-support':'Support Agent',branding:'Branding',platform:'Platform',exit:'Exit'};
+const catClass = {hub:'cat-core','agent-core':'cat-core','agent-support':'cat-support',branding:'cat-branding',platform:'cat-platform'};
+
+function nodeCard(p, big){
+  const kids = childrenOf(p.id).slice(0,4);
+  return `<div class="node ${big?'':''}">
+    <span class="cat-chip ${catClass[p.cat]||''}">${catLabel[p.cat]||p.cat}</span>
+    <h4>${p.label}</h4>
+    <span class="url mono">${BASE}${p.path}</span>
+    ${kids.length? `<div class="children">${kids.map(k=>`<span class="chip">${k.label}</span>`).join('')}${childrenOf(p.id).length>4?`<span class="chip">+${childrenOf(p.id).length-4} more</span>`:''}</div>`:''}
+  </div>`;
+}
+
+function buildMap(){
+  document.getElementById('laneEntry').innerHTML = ['Organic Search','Google Ads / Paid','Direct / Referral / Quora'].map(e=>
+    `<div class="node" style="border-style:dashed;"><span class="cat-chip" style="background:#f1f5f9;color:var(--muted);">Signal</span><h4>${e}</h4><span class="url">candidate lands on Layer-2 or Layer-3 page</span></div>`
+  ).join('<span class="arrow">→</span>');
+
+  document.getElementById('laneHub').innerHTML = `<div class="node hub-node">
+    <span class="cat-chip" style="background:rgba(255,255,255,.2);color:#fff;">Hub</span>
+    <h4>Employers Hub</h4><span class="url mono">${BASE}/employers</span>
+    <div class="children"><span class="chip" style="background:rgba(255,255,255,.15);color:#fff;">Links to all 13 Layer-2 pages via nav</span></div>
+  </div>`;
+
+  document.getElementById('laneCore').innerHTML = FUNNEL_ORDER.map(id=>nodeCard(byId(id))).join('<span class="arrow">→</span>');
+
+  document.getElementById('laneSupport').innerHTML = ['calling','scheduling'].map(id=>{
+    const p = byId(id); const target = byId(p.supports);
+    return `<div class="node"><span class="cat-chip cat-support">Support Agent</span><h4>${p.label}</h4><span class="url mono">${BASE}${p.path}</span>
+      <div class="children"><span class="chip">↳ feeds ${target.label}</span></div></div>`;
+  }).join('');
+
+  document.getElementById('laneBranding').innerHTML = nodeCard(byId('branding')) + nodeCard(byId('brand-advertise'));
+
+  document.getElementById('lanePlatform').innerHTML = ['ats','virtual-hiring','campus-hiring','lateral-hiring','hiring-talent-platform'].map(id=>nodeCard(byId(id))).join('');
+
+  document.getElementById('laneExit').innerHTML = `<div class="node exit-node">
+    <span class="cat-chip" style="background:rgba(255,255,255,.2);color:#fff;">Conversion</span>
+    <h4>Book a Demo / Talk to Sales</h4><span class="url">present as CTA on every Layer-2 & Layer-3 page</span>
+  </div>
+  <div class="node" style="border-style:dashed;">
+    <span class="cat-chip" style="background:#f1f5f9;color:var(--muted);">Bounce</span>
+    <h4>Leaves without converting</h4><span class="url">biggest leak: Layer-2 pages with no next-step link</span>
+  </div>`;
+}
+
+function buildStats(){
+  const l2 = PAGES.filter(p=>p.layer===2).length, l3 = PAGES.filter(p=>p.layer===3).length;
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat"><b>${PAGES.length}</b><span>Total Pages Mapped</span></div>
+    <div class="stat"><b>3</b><span>Architecture Layers</span></div>
+    <div class="stat"><b>${l2}</b><span>Layer-2 Category Pages</span></div>
+    <div class="stat"><b>${l3}</b><span>Layer-3 Deep-Dive Pages</span></div>`;
+}
+
+function buildEntrySelect(){
+  const groups = {'agent-core':'Core Hiring Funnel','agent-support':'Supporting Agents',branding:'Employer Branding',platform:'Channel / Platform',hub:'Hub'};
+  const sel = document.getElementById('entrySelect');
+  Object.keys(groups).forEach(cat=>{
+    const og = document.createElement('optgroup'); og.label = groups[cat];
+    PAGES.filter(p=>p.cat===cat).forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=(p.layer===3?'— ':'')+p.label; og.appendChild(o); });
+    sel.appendChild(og);
+  });
+}
+
+function tracePath(){
+  const startId = document.getElementById('entrySelect').value;
+  let path = [byId(startId)];
+  let node = path[0];
+  if(node.layer===3){ node = byId(node.parent); path.push(node); }
+  if(node.id==='hub'){ node = byId('sourcing'); path.push(node); }
+  if(node.cat==='agent-core'){
+    const nxt = nextCore(node.id); if(nxt) path.push(nxt);
+  } else if(node.cat==='agent-support' || (node.cat==='platform' && node.supports && node.supports!=='hub')){
+    const t = byId(node.supports); if(t && !path.includes(t)) path.push(t);
+  } else if(node.cat==='branding' && node.id==='brand-advertise'){
+    path.push(byId('branding'));
+  }
+  if(!path.some(p=>p.cat==='branding')) path.push(byId('branding'));
+  path = path.filter((p,i)=>i===0||p.id!==path[i-1].id);
+
+  const reasons = {
+    'root':'Entry point — first touch from search/ads',
+    'parent':'Rolls up to parent category (breadcrumb link)',
+    'hubfallback':'Broad intent → routed to first funnel stage',
+    'nextfunnel':'Natural next stage in the hiring funnel',
+    'support':'Supporting agent feeds this core funnel stage',
+    'branding-parent':'Related branding offering',
+    'trust':'Trust/awareness layer before conversion'
+  };
+  let html = '';
+  path.forEach((p,i)=>{
+    let tag = i===0?reasons.root : (p.cat==='branding'?reasons.trust : (FUNNEL_ORDER.includes(p.id)?reasons.nextfunnel:reasons.parent));
+    html += `<div class="path-card"><div class="step-num">Step ${i+1}</div><h4>${p.label}</h4><p class="mono" style="font-size:10px;">${BASE}${p.path}</p><p>${tag}</p></div>`;
+    if(i<path.length-1) html += `<span class="path-arrow">→</span>`;
+  });
+  html += `<span class="path-arrow">→</span><div class="path-card" style="background:linear-gradient(135deg,var(--teal),#0d9668);color:#fff;"><div class="step-num" style="color:rgba(255,255,255,.7);">Exit</div><h4>Book a Demo</h4><p style="color:rgba(255,255,255,.85);">Conversion CTA</p></div>`;
+  document.getElementById('pathResult').innerHTML = html;
+}
+
+function getRecommendedLinks(page){
+  let links = [];
+  if(page.id!=='hub') links.push({to:'hub', reason:'Hub / breadcrumb link'});
+  if(page.layer===3){
+    const parent = byId(page.parent);
+    links.push({to:parent.id, reason:'Parent category page'});
+    childrenOf(parent.id).filter(s=>s.id!==page.id).slice(0,2).forEach(s=>links.push({to:s.id, reason:'Sibling deep-dive (cross-sell)'}));
+    if(parent.cat==='agent-core'){ const n=nextCore(parent.id); if(n) links.push({to:n.id, reason:'Next funnel stage'}); }
+  } else if(page.layer===2){
+    if(page.cat==='agent-core'){
+      const pr=prevCore(page.id); if(pr) links.push({to:pr.id, reason:'Previous funnel stage'});
+      const nx=nextCore(page.id); if(nx) links.push({to:nx.id, reason:'Next funnel stage'});
+      childrenOf(page.id).slice(0,2).forEach(c=>links.push({to:c.id, reason:'Feature deep-dive'}));
+      links.push({to:'branding', reason:'Trust/awareness cross-link'});
+    } else if(page.cat==='agent-support'){
+      links.push({to:page.supports, reason:'Supports this funnel stage'});
+    } else if(page.cat==='branding'){
+      if(page.id==='branding'){
+        childrenOf('branding').slice(0,3).forEach(c=>links.push({to:c.id, reason:'Branding activity page'}));
+        links.push({to:'brand-advertise', reason:'Related branding offering'});
+        links.push({to:'sourcing', reason:'Feeds top-of-funnel sourcing'});
+      } else if(page.id==='brand-advertise'){
+        links.push({to:'branding', reason:'Parent branding category'});
+        links.push({to:'hiring-talent-platform', reason:'Platform cross-link'});
+      }
+    } else if(page.cat==='platform'){
+      if(page.supports && page.supports!=='hub') links.push({to:page.supports, reason:'Related funnel stage'});
+      PAGES.filter(p=>p.cat==='platform' && p.id!==page.id).slice(0,2).forEach(s=>links.push({to:s.id, reason:'Related hiring channel'}));
+    }
+  } else if(page.id==='hub'){
+    links.push({to:'ALL', reason:'Main navigation links to all 13 Layer-2 category pages'});
+  }
+  const seen = new Set(); return links.filter(l=>{ if(seen.has(l.to)) return false; seen.add(l.to); return true; });
+}
+
+let MATRIX_DATA = [];
+function buildMatrix(){
+  MATRIX_DATA = PAGES.map(p=>({page:p, links:getRecommendedLinks(p)}));
+}
+
+function renderMatrix(){
+  const q = document.getElementById('matrixSearch').value.toLowerCase();
+  const rows = MATRIX_DATA.filter(r => r.page.label.toLowerCase().includes(q) || r.page.path.toLowerCase().includes(q));
+  document.getElementById('matrixBody').innerHTML = rows.map(r=>{
+    const linksHtml = r.links.map(l=> l.to==='ALL' ? `<span class="link-pill">All Layer-2 pages <span class="reason">— ${l.reason}</span></span>` :
+      `<span class="link-pill">${byId(l.to).label} <span class="reason">— ${l.reason}</span></span>`).join('');
+    return `<tr><td><strong>${r.page.label}</strong></td><td class="url-cell mono">${r.page.path}</td><td>${catLabel[r.page.cat]||r.page.cat}</td><td>${linksHtml||'—'}</td></tr>`;
+  }).join('');
+}
+
+function downloadCSV(){
+  let rows = [['Page','URL','Category','Recommended Link To','URL','Reason']];
+  MATRIX_DATA.forEach(r=>{
+    r.links.forEach(l=>{
+      const target = l.to==='ALL' ? {label:'All Layer-2 pages', path:''} : byId(l.to);
+      rows.push([r.page.label, BASE+r.page.path, catLabel[r.page.cat]||r.page.cat, target.label, target.path?BASE+target.path:'', l.reason]);
+    });
+    if(r.links.length===0) rows.push([r.page.label, BASE+r.page.path, catLabel[r.page.cat]||r.page.cat,'','','']);
+  });
+  const csv = rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='unstop_employer_internal_linking_matrix.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+buildStats(); buildMap(); buildEntrySelect(); buildMatrix(); renderMatrix(); tracePath();
+
+// --- Command palette (Cmd+K) ---
+const CMDK_TABS = Object.keys(TAB_META).map(k=>({type:'tab', id:k, label:TAB_META[k].title, sub:TAB_META[k].sub}));
+let cmdkSel = 0, cmdkItems = [];
+function openCmdk(){
+  document.getElementById('cmdkOverlay').classList.add('open');
+  const inp = document.getElementById('cmdkInput');
+  inp.value=''; inp.focus();
+  cmdkSearch();
+}
+function closeCmdk(){ document.getElementById('cmdkOverlay').classList.remove('open'); }
+function cmdkSearch(){
+  const q = document.getElementById('cmdkInput').value.trim().toLowerCase();
+  let pageMatches = q ? PAGES.filter(p=>p.label.toLowerCase().includes(q) || p.path.toLowerCase().includes(q)) : PAGES.slice(0,6);
+  let tabMatches = q ? CMDK_TABS.filter(t=>t.label.toLowerCase().includes(q)) : CMDK_TABS;
+  cmdkItems = [
+    ...tabMatches.map(t=>({type:'tab', id:t.id, label:t.label, sub:t.sub})),
+    ...pageMatches.slice(0,25).map(p=>({type:'page', id:p.id, label:p.label, sub:BASE+p.path, cat:p.cat}))
+  ];
+  cmdkSel = 0;
+  renderCmdkResults();
+}
+function renderCmdkResults(){
+  const box = document.getElementById('cmdkResults');
+  if(!cmdkItems.length){ box.innerHTML = '<div class="cmdk-empty">No matches. Try a page name or URL fragment.</div>'; return; }
+  box.innerHTML = cmdkItems.map((it,i)=>{
+    if(it.type==='tab'){
+      return `<div class="cmdk-item ${i===cmdkSel?'sel':''}" onclick="cmdkGo(${i})"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18 L15 12 L9 6"/></svg><span>${it.label}</span><span class="cik-path">${it.sub}</span></div>`;
+    }
+    return `<div class="cmdk-item ${i===cmdkSel?'sel':''}" onclick="cmdkGo(${i})"><span class="cat-chip ${catClass[it.cat]||''}" style="margin:0;">${catLabel[it.cat]||it.cat}</span><span>${it.label}</span><span class="cik-path">${it.sub}</span></div>`;
+  }).join('');
+}
+function cmdkGo(i){
+  const it = cmdkItems[i];
+  if(!it) return;
+  closeCmdk();
+  if(it.type==='tab'){ switchTab(it.id); return; }
+  // page result → jump to Page-wise Competitors tab and filter to that page
+  switchTab('pagecomp');
+  const search = document.getElementById('pageCompSearch');
+  if(search){ search.value = it.label; renderPageCompetitors(); }
+}
+document.addEventListener('keydown', (e)=>{
+  const isK = (e.key==='k' || e.key==='K');
+  if((e.metaKey||e.ctrlKey) && isK){ e.preventDefault(); openCmdk(); return; }
+  const overlay = document.getElementById('cmdkOverlay');
+  if(!overlay.classList.contains('open')) return;
+  if(e.key==='Escape'){ closeCmdk(); return; }
+  if(e.key==='ArrowDown'){ e.preventDefault(); cmdkSel = Math.min(cmdkSel+1, cmdkItems.length-1); renderCmdkResults(); return; }
+  if(e.key==='ArrowUp'){ e.preventDefault(); cmdkSel = Math.max(cmdkSel-1, 0); renderCmdkResults(); return; }
+  if(e.key==='Enter'){ e.preventDefault(); cmdkGo(cmdkSel); return; }
+});
+
+
+
+const DEFAULT_MIGRATIONS = [
+  {old:'/employers/source-candidates', oldI:1587, oldC:20, new:'/employers/ai-sourcing-agent', newI:35, newC:1},
+  {old:'/employers/source-candidates/jobs-internships-listings-jobboard', oldI:2815, oldC:54, new:'/employers/ai-sourcing-agent/jobs-internships-listings-jobboard', newI:523, newC:5},
+  {old:'/employers/source-candidates/our-largest-early-talent-community', oldI:66, oldC:2, new:'/employers/ai-sourcing-agent/our-largest-early-talent-community', newI:12, newC:0},
+  {old:'/employers/screen-candidates-powered-by-ai', oldI:2287, oldC:30, new:'/employers/ai-screening-agent', newI:15, newC:2},
+  {old:'/employers/online-assessment-platform', oldI:6589, oldC:140, new:'/employers/ai-assessment-agent', newI:16, newC:4},
+  {old:'/employers/online-assessment-platform/aptitude-test', oldI:465, oldC:16, new:'/employers/ai-assessment-agent/aptitude-test', newI:98, newC:2},
+  {old:'/employers/online-assessment-platform/online-coding-test', oldI:2429, oldC:5, new:'/employers/ai-assessment-agent/online-coding-test', newI:414, newC:0},
+  {old:'/employers/online-assessment-platform/sql-assessments', oldI:29, oldC:1, new:'/employers/ai-assessment-agent/sql-assessments', newI:43, newC:0},
+  {old:'/employers/online-assessment-platform/technical-role-based-tests', oldI:407, oldC:6, new:'/employers/ai-assessment-agent/technical-role-based-tests', newI:0, newC:0},
+  {old:'/employers/online-assessment-platform/business-competency-simulation-games', oldI:17, oldC:0, new:'/employers/ai-assessment-agent/business-competency-simulation-games', newI:0, newC:0},
+  {old:'/employers/online-assessment-platform/communication-assessment', oldI:24, oldC:1, new:'/employers/ai-assessment-agent/communication-assessment', newI:21, newC:1},
+  {old:'/employers/online-assessment-platform/360-degree-next-gen-proctoring', oldI:173, oldC:13, new:'/employers/ai-proctoring-agent', newI:7, newC:0},
+  {old:'/employers/virtual-interview-platform', oldI:2739, oldC:16, new:'/employers/ai-interview-agent', newI:35, newC:2},
+  {old:'/employers/virtual-interview-platform/ai-interview', oldI:1369, oldC:50, new:'/employers/ai-interview-agent/ai-interview', newI:110, newC:0},
+  {old:'/employers/hiring-automation-platform-applicant-tracking-system-ats', oldI:4780, oldC:33, new:'/employers/ats-software', newI:11, newC:0},
+  {old:'/employers/hiring-automation-platform-applicant-tracking-system-ats/campus-hiring', oldI:1223, oldC:25, new:'/employers/campus-hiring', newI:63, newC:5},
+  {old:'/employers/hiring-automation-platform-applicant-tracking-system-ats/virtual-hiring', oldI:307, oldC:5, new:'/employers/virtual-hiring', newI:1, newC:1},
+];
+
+const DEFAULT_GROUPS = [
+  {
+    title: 'Sourcing', urls: ['ai-sourcing-agent + subpages'], primaryPath: '/employers/ai-sourcing-agent',
+    keywords: [
+      ['sourcing platform', 423, 34.7],['candidate sourcing platform', 224, 18.8],
+      ['talent sourcing solution', 164, 33.4],['free job posting sites for internships', 32, 15.1],
+      ['unstop job portal', 418, 6.5]
+    ],
+    competitors: [
+      {name:'Internshala', url:'https://internshala.com'},
+      {name:'Naukri', url:'https://www.naukri.com'},
+      {name:'LinkedIn Recruiter', url:'https://business.linkedin.com/talent-solutions/recruiter'},
+      {name:'HireEZ', url:'https://hireez.com'},
+      {name:'Superset', url:'https://www.joinsuperset.com'}
+    ]
+  },
+  {
+    title: 'Screening', urls: ['ai-screening-agent'], primaryPath: '/employers/ai-screening-agent',
+    keywords: [
+      ['ai candidate screening', 1038, 19.2],['automated candidate screening', 355, 19.6],
+      ['candidate screening software', 73, 33.5],['how to choose an automated candidate screening platform', 23, 2.5]
+    ],
+    competitors: [
+      {name:'Mercer Mettl', url:'https://mettl.com'},
+      {name:'iMocha', url:'https://www.imocha.io'},
+      {name:'HireEZ', url:'https://hireez.com'},
+      {name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'},
+      {name:'Turing', url:'https://www.turing.com'}
+    ]
+  },
+  {
+    title: 'Assessment', urls: ['ai-assessment-agent + 6 subpages'], primaryPath: '/employers/ai-assessment-agent',
+    keywords: [
+      ['assessment platform', 725, 46.2],['online assessment software', 701, 37.7],
+      ['skills assessment platform', 145, 57.3],['coding assessment platform', 200, 26.3],
+      ['ai coding assessment platform', 198, 8.9],['talent assessment platform', 260, 27.9]
+    ],
+    competitors: [
+      {name:'Mercer Mettl', url:'https://mettl.com'},
+      {name:'HackerEarth', url:'https://www.hackerearth.com'},
+      {name:'iMocha', url:'https://www.imocha.io'},
+      {name:'TestGorilla', url:'https://www.testgorilla.com'},
+      {name:'Xobin', url:'https://xobin.com'},
+      {name:'Adaface', url:'https://www.adaface.com'},
+      {name:'HireMee', url:'https://hiremee.co.in'},
+      {name:'PMaps', url:'https://www.pmapstest.com'},
+      {name:'CoCubes', url:'https://www.cocubes.com'}
+    ]
+  },
+  {
+    title: 'Interview', urls: ['ai-interview-agent + ai-interview'], primaryPath: '/employers/ai-interview-agent',
+    keywords: [
+      ['ai interview platform', 486, 11.0],['ai interview', 477, 44.1],
+      ['interviewing platform', 334, 27.5],['best online interview platform', 285, 24.4],
+      ['digital interview platform', 123, 19.2]
+    ],
+    competitors: [
+      {name:'HireVue', url:'https://www.hirevue.com'},
+      {name:'Talview', url:'https://www.talview.com'},
+      {name:'Mercer Mettl', url:'https://mettl.com'},
+      {name:'HackerEarth OnScreen', url:'https://www.hackerearth.com'},
+      {name:'Spark Hire', url:'https://www.sparkhire.com'},
+      {name:'Metaview', url:'https://www.metaview.ai'},
+      {name:'TheHireHub.AI', url:'https://www.thehirehub.ai'}
+    ]
+  },
+  {
+    title: 'Proctoring', urls: ['ai-proctoring-agent'], primaryPath: '/employers/ai-proctoring-agent',
+    keywords: [
+      ['ai proctoring platform', 5, 1.4],['ai proctored exam', 2, 1],['unstop camera access', 26, 5.1]
+    ],
+    competitors: [
+      {name:'Mercer Mettl', url:'https://mettl.com'},
+      {name:'HireMee', url:'https://hiremee.co.in'},
+      {name:'ExamOnline', url:''},
+      {name:'Talview', url:'https://www.talview.com'}
+    ]
+  },
+  {
+    title: 'Employer Branding', urls: ['employer-branding + 7 subpages, brand-and-advertise'], primaryPath: '/employers/employer-branding',
+    keywords: [
+      ['employer branding services', 489, 86.5],['employer branding agency', 338, 47.4],
+      ['employer brand agency', 126, 60.3],['employer branding solution', 124, 3.9],
+      ['hackathon', 1096, 1.8],['hackathon platforms', 41, 1.2],['business simulation', 215, 59.6]
+    ],
+    competitors: [
+      {name:'Universum', url:'https://universumglobal.com'},
+      {name:'Symphony Talent', url:'https://www.symphonytalent.com'},
+      {name:'PeopleScout', url:'https://www.peoplescout.com'},
+      {name:'Blu Ivy Group', url:'https://bluivygroup.com'},
+      {name:'HackerEarth (hackathons)', url:'https://www.hackerearth.com'},
+      {name:'Devfolio (hackathons)', url:'https://devfolio.co'}
+    ]
+  },
+  {
+    title: 'ATS / Campus / Lateral / Virtual Hiring', urls: ['ats-software, campus-hiring, lateral-hiring, virtual-hiring, hiring-talent-platform'], primaryPath: '/employers/ats-software',
+    keywords: [
+      ['campus hiring solutions', 405, 3.0],['campus hiring platform', 239, 4.4],
+      ['virtual hiring solutions', 60, 7.0],['web based ats', 46, 54.9],['campusnext', 13, 60.8],['wipro talent next', 12, 3.1]
+    ],
+    competitors: [
+      {name:'Superset', url:'https://www.joinsuperset.com'},
+      {name:'CampusNext', url:''},
+      {name:'Darwinbox', url:'https://www.darwinbox.com'},
+      {name:'Keka', url:'https://www.keka.com'},
+      {name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'}
+    ]
+  }
+];
+
+const DEFAULT_ACTIONS = [
+  {p:'high', t:'Monitor old→new URL ranking transfer', d:'Redirect exists but is handled client-side (Angular), so Google is picking up the signal slowly. Track these pairs weekly — if impressions/clicks don\'t shift to the new URLs within a reasonable window, consider a server-side 301 to speed up the transfer.'},
+  {p:'high', t:'"employer branding services" & "employer branding agency"', d:'489 + 338 impressions combined at position 47–60. High-volume, high-intent terms you\'re nowhere near page 1 for. Needs dedicated content/schema work on the employer-branding hub page.'},
+  {p:'high', t:'"assessment platform" / "online assessment software"', d:'725 + 701 impressions at position 37–46. These are head terms — competitors (Mercer Mettl, HackerEarth, iMocha) dominate here. Consider a comparison/alternatives page targeting these directly.'},
+  {p:'med', t:'"ai interview" & "ai interview platform"', d:'477 + 486 impressions, position 11–44. Close to page 1 — a focused content/schema push on ai-interview-agent could convert this into a quick win.'},
+  {p:'med', t:'Campus hiring cluster already performing well', d:'"campus hiring solutions" (pos 3.0) and "campus hiring platform" (pos 4.4) — defend these with fresh content and internal links from the ATS/platform pages.'},
+  {p:'low', t:'Proctoring page has almost no query volume', d:'ai-proctoring-agent gets only 7 impressions. Worth checking if it\'s properly indexed and linked from the assessment + interview pages.'},
+];
+
+// URLs verified via live research (Jul 2026). Each points to the competitor's specific
+// product/service page matching this exact Unstop context, unless flagged deepLink:false —
+// in that case no dedicated page exists and their homepage/closest-hub page is the honest fallback.
+const DEFAULT_PAGE_COMPETITORS = {
+  'hub': [{name:'Naukri', url:'https://www.naukri.com/naukri-talent-cloud'},{name:'LinkedIn Talent Solutions', url:'https://business.linkedin.com/talent-solutions'},{name:'HackerEarth', url:'https://www.hackerearth.com/recruit/'},{name:'Mercer Mettl', url:'https://mettl.com/en/digital-hiring/'}],
+  'sourcing': [{name:'Internshala', url:'https://internshala.com/employer/'},{name:'Naukri (Resdex)', url:'https://www.naukri.com/recruit/buy-resume-database-access-packages'},{name:'LinkedIn Recruiter', url:'https://business.linkedin.com/talent-solutions/recruiter'},{name:'HireEZ', url:'https://hireez.com/ai-sourcing/'},{name:'Superset', url:'https://joinsuperset.com/employer.html'}],
+  'sourcing-jobboard': [{name:'Internshala', url:'https://internshala.com/post-job/'},{name:'Naukri', url:'https://www.naukri.com/recruit/job-posting'},{name:'Indeed', url:'https://employers.indeed.com/post-job'}],
+  'sourcing-community': [{name:'Internshala Student Partner', url:'https://isp.internshala.com/'},{name:'LinkedIn', url:'https://business.linkedin.com/talent-solutions', deepLink:false, note:'No dedicated public talent-community page — hub fallback'},{name:'Wellfound', url:'https://wellfound.com/recruit/overview'}],
+  'screening': [{name:'Mercer Mettl', url:'https://mettl.com/en-gb/online-assessment-platform/', note:'Assessment platform (screening use case)'},{name:'iMocha', url:'https://www.imocha.io/products/skills-assessment', note:'Assessment platform (screening use case)'},{name:'HireEZ', url:'https://hireez.com/ai-sourcing/', deepLink:false, note:'Sourcing product — no distinct screening page'},{name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'},{name:'Turing', url:'https://www.turing.com', deepLink:false, note:'Homepage — not independently verified'}],
+  'assessment': [{name:'Mercer Mettl', url:'https://mettl.com/en-gb/online-assessment-platform/'},{name:'HackerEarth', url:'https://www.hackerearth.com/recruit/assessments'},{name:'iMocha', url:'https://www.imocha.io/products/skills-assessment'},{name:'TestGorilla', url:'https://www.testgorilla.com/assessments/'},{name:'Xobin', url:'https://xobin.com/products/skill-assessment-software/'},{name:'Adaface', url:'https://www.adaface.com/online-assessment-platform'},{name:'HireMee', url:'https://hiremee.co.in/online-assessment-platform'},{name:'PMaps', url:'http://www.pmaps.in/solution/psychometric/'},{name:'CoCubes', url:'https://www.cocubes.com/online-examination-solution.aspx'}],
+  'assessment-aptitude': [{name:'Mercer Mettl', url:'https://mettl.com/en/aptitude-tests/'},{name:'PMaps', url:'http://www.pmaps.in/solution/cognitive-and-aptitude-products/'},{name:'IBM Kenexa', url:'https://www.ibm.com/support/pages/ibm-kenexa-assess-cloud-sample-assess-reports', deepLink:false, note:'No current standalone marketing page — closest live IBM reference'}],
+  'assessment-coding': [{name:'HackerEarth', url:'https://www.hackerearth.com/recruit/assessments'},{name:'HackerRank', url:'https://www.hackerrank.com/products/screen'},{name:'Codility', url:'https://www.codility.com/product-tour/'},{name:'CodeSignal', url:'https://codesignal.com/technical-assessments/'}],
+  'assessment-sql': [{name:'HackerEarth', url:'https://www.hackerearth.com/tests/sql-query-test'},{name:'Adaface', url:'https://www.adaface.com/assessment-test/sql-online-test'},{name:'iMocha', url:'https://www.imocha.io/pre-employment-testing/sql-ms-sql-my-sql'}],
+  'assessment-technical': [{name:'Mercer Mettl', url:'https://mettl.com/en/skills-assessment-test/'},{name:'iMocha', url:'https://www.imocha.io/pre-employment-testing/it-skill-test'},{name:'HackerEarth', url:'https://www.hackerearth.com/recruit/features/skill-based-assessments'}],
+  'assessment-bizsim': [{name:'Mercer Mettl', url:'https://mettl.com/test/case-study-analysis-and-decision-making-skills/'},{name:'Arctic Shores', url:'https://www.arcticshores.com/how-it-works'}],
+  'assessment-comm': [{name:'Mercer Mettl', url:'https://mettl.com/en/test/corporate-communications-assessment/'},{name:'PMaps', url:'https://pmaps.in/', deepLink:false, note:'No dedicated communication-assessment page found'},{name:'Versant (Pearson)', url:'https://www.pearson.com/languages/hr-professionals/versant.html'}],
+  'interview': [{name:'HireVue', url:'https://www.hirevue.com/platform/online-video-interviewing-software'},{name:'Talview', url:'https://www.talview.com/en/on-demand-video-interviewing'},{name:'Mercer Mettl', url:'https://mettl.com/en/virtual-video-interview-platform/'},{name:'HackerEarth OnScreen', url:'https://www.hackerearth.com/ai/onscreen'},{name:'Spark Hire', url:'https://www.sparkhire.com/video-interviews/software/'},{name:'Metaview', url:'https://www.metaview.ai/', deepLink:false, note:'Unified product, no separate interviewing sub-page'},{name:'TheHireHub.AI', url:'https://www.thehirehub.ai/', deepLink:false, note:'Live but general AI recruitment tool, no dedicated interview page'}],
+  'interview-ai': [{name:'HireVue', url:'https://www.hirevue.com/platform/ai-interviewer'},{name:'Talview (Ivy)', url:'https://www.talview.com/en/ivy-ai-interviewer'},{name:'Metaview', url:'https://www.metaview.ai/', deepLink:false, note:'No distinct AI-interview sub-page'}],
+  'proctoring': [{name:'Mercer Mettl', url:'https://mettl.com/en/online-remote-proctoring/'},{name:'HireMee', url:'https://hiremee.co.in/ai-proctored-assessment-platform'},{name:'Talview (Alvy)', url:'https://www.talview.com/en/alvy-ai-proctoring-agent'}],
+  'calling': [{name:'Talkpush', url:'https://www.talkpush.com/voice-ai'},{name:'Sense (SenseHQ)', url:'https://www.sensehq.com/product/automation'},{name:'Paradox (Olivia)', url:'https://www.paradox.ai/why-paradox'}],
+  'scheduling': [{name:'GoodTime', url:'https://goodtime.io/products/hire/automated-interview-scheduling/'},{name:'Calendly', url:'https://calendly.com/solutions/recruiting'},{name:'Paradox (Olivia)', url:'https://www.paradox.ai/products/conversational-scheduling'}],
+  'branding': [{name:'Universum', url:'https://universumglobal.com/solutions/'},{name:'Symphony Talent', url:'https://www.symphonytalent.com/solutions/employer-branding-creative-services/'},{name:'PeopleScout', url:'https://www.peoplescout.com/solutions/employer-branding/'},{name:'Blu Ivy Group', url:'https://bluivygroup.com/services/employer-brand-strategy-research-consulting/'}],
+  'branding-quizzes': [{name:'ProProfs Quiz Maker', url:'https://www.proprofs.com/quiz-school/'}],
+  'branding-hackathons': [{name:'Devfolio', url:'https://org.devfolio.co/', note:'Organizer dashboard — no separate marketing page'},{name:'HackerEarth', url:'https://www.hackerearth.com/recruit/hackathons'},{name:'MLH', url:'https://sponsor.mlh.io/'}],
+  'branding-bizsim': [{name:'Mercer Mettl', url:'https://mettl.com/en/test/case-study-analysis-and-decision-making-skills/'},{name:'Arctic Shores', url:'https://www.arcticshores.com/una', note:'Core product page ("The Product")'}],
+  'branding-talentcommunity': [{name:'Phenom People', url:'https://www.phenom.com/talent-crm'},{name:'Beamery', url:'https://beamery.com/platform/talent-acquisition/talent-crm/'}],
+  'branding-dshackathons': [{name:'Kaggle', url:'https://www.kaggle.com/competition-hosting'},{name:'HackerEarth', url:'https://www.hackerearth.com/hackathon/explore/field/data-science-and-engineering/'},{name:'Devfolio', url:'https://org.devfolio.co/'}],
+  'branding-ideathons': [{name:'Devfolio', url:'https://guide.devfolio.co/docs/guide/setting-up-a-hackathon-for-business', deepLink:false, note:'No dedicated ideathon page — closest business-hackathon guide'},{name:'HackerEarth', url:'https://www.hackerearth.com/hackathon/info/organizer/'}],
+  'branding-brandpresence': [{name:'Glassdoor', url:'https://www.glassdoor.com/employers/', deepLink:false, note:'No standalone employer-branding product URL — hub fallback'},{name:'LinkedIn (Career Pages)', url:'https://business.linkedin.com/talent-solutions/company-career-pages'},{name:'Universum', url:'https://universumglobal.com/solutions/'}],
+  'brand-advertise': [{name:'Universum', url:'https://universumglobal.com/solutions/#activation'},{name:'LinkedIn Talent Brand', url:'https://business.linkedin.com/talent-solutions/company-career-pages', note:'Career Pages is the current live product'},{name:'Glassdoor', url:'https://www.glassdoor.com/employers/solutions/employer-branding-ads/'}],
+  'ats': [{name:'Darwinbox', url:'https://darwinbox.com/products/recruitment'},{name:'Keka', url:'https://www.keka.com/applicant-tracking-system'},{name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'},{name:'Greenhouse', url:'https://www.greenhouse.com/', deepLink:false, note:'Single-product company — homepage IS the ATS page'}],
+  'virtual-hiring': [{name:'HireVue', url:'https://www.hirevue.com/virtual-hiring'},{name:'Talview', url:'https://www.talview.com/en/virtual-hiring-event-platform'},{name:'Mercer Mettl', url:'https://mettl.com/en/virtual-remote-hiring-software/'}],
+  'campus-hiring': [{name:'Superset', url:'https://joinsuperset.com/employer.html'},{name:'CampusNext (domain inactive)', url:'', deepLink:false, note:'campusnext.org/.co both unreachable — appears dead, consider dropping'},{name:'HackerEarth', url:'https://www.hackerearth.com/recruit/university-hiring'}],
+  'lateral-hiring': [{name:'Naukri', url:'https://www.naukri.com/naukri-talent-cloud', deepLink:false, note:'No distinct lateral-hiring page — hub fallback'},{name:'LinkedIn Recruiter', url:'https://business.linkedin.com/talent-solutions/recruiter'},{name:'Instahyre', url:'https://www.instahyre.com/employers/'}],
+  'hiring-talent-platform': [{name:'Darwinbox', url:'https://darwinbox.com/products/recruitment'},{name:'Keka', url:'https://www.keka.com/applicant-tracking-system'},{name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'}],
+};
+
+const clone = (o) => JSON.parse(JSON.stringify(o));
+let DATA = { migrations: clone(DEFAULT_MIGRATIONS), groups: clone(DEFAULT_GROUPS), actions: clone(DEFAULT_ACTIONS), pageCompetitors: clone(DEFAULT_PAGE_COMPETITORS) };
+let fullRows = [];
+
+function verdict(m){
+  if(m.oldI > m.newI * 5) return {label:'Old dominates', cls:'loss'};
+  if(m.newI > m.oldI) return {label:'New catching up', cls:'win'};
+  return {label:'Mixed', cls:'tiny'};
+}
+function posClass(p){ return p<=10?'pos-good':(p<=30?'pos-mid':'pos-bad'); }
+
+function renderMigrationsTable(){
+  document.getElementById('migrationBody').innerHTML = DATA.migrations.map(m=>{
+    const v = verdict(m);
+    return `<tr>
+      <td class="mono">${m.old}</td><td class="num">${m.oldI}</td><td class="num">${m.oldC}</td>
+      <td class="arrow-cell">→</td>
+      <td class="mono">${m.new}</td><td class="num">${m.newI}</td><td class="num">${m.newC}</td>
+      <td class="${v.cls}">${v.label}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" class="tiny">No migration pairs yet.</td></tr>';
+}
+
+function groupAccentColor(title){
+  const t = title.toLowerCase();
+  if(t.includes('branding')) return 'var(--coral)';
+  if(t.includes('ats') || t.includes('campus') || t.includes('lateral') || t.includes('platform')) return 'var(--amber)';
+  if(t.includes('proctor')) return 'var(--lavender)';
+  return 'var(--blue)';
+}
+
+function renderGroupCards(){
+  document.getElementById('groupCards').innerHTML = DATA.groups.map(g=>`
+    <div class="group-card" style="border-left-color:${groupAccentColor(g.title)};">
+      <h4>${g.title}</h4>
+      <div class="path-note mono">${g.primaryPath ? `<a href="${BASE}${g.primaryPath}" target="_blank" rel="noopener" style="color:inherit;">${g.urls.join(', ')} ↗</a>` : g.urls.join(', ')}</div>
+      <div class="group-grid">
+        <div>
+          <h5>Real Ranking Keywords (GSC)</h5>
+          ${g.keywords.map(k=>`<span class="kw-pill">${k[0]} <span class="${posClass(k[2])}">#${k[2]}</span> · ${k[1]} impr</span>`).join(' ') || '<span class="tiny">No keywords yet</span>'}
+        </div>
+        <div>
+          <h5>Key Competitors</h5>
+          ${g.competitors.map(c=>`<span class="comp-pill">${c.url ? `<a href="${c.url}" target="_blank" rel="noopener" class="comp-link">${c.name} ↗</a>` : c.name}</span>`).join(' ') || '<span class="tiny">No competitors yet</span>'}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderActionList(){
+  document.getElementById('actionList').innerHTML = DATA.actions.map(a=>`
+    <li><span class="prio prio-${a.p}">${a.p}</span><div><strong>${a.t}</strong><br>${a.d}</div></li>
+  `).join('');
+}
+
+function competitorsLabel(competitors){
+  return competitors.map(c=> typeof c === 'string' ? c : (c.url ? `${c.name} (${c.url})` : c.name)).join('; ');
+}
+
+function renderFullTable(){
+  fullRows = [];
+  DATA.groups.forEach(g=>{
+    g.keywords.forEach(k=>{
+      fullRows.push({page:g.title, keyword:k[0], impr:k[1], pos:k[2], competitors: competitorsLabel(g.competitors)});
+    });
+  });
+  document.getElementById('fullTableBody').innerHTML = fullRows.map(r=>`
+    <tr><td>${r.page}</td><td>${r.keyword}</td><td class="num">${r.impr}</td><td class="num ${posClass(r.pos)}">#${r.pos}</td><td>${r.competitors}</td></tr>
+  `).join('');
+}
+
+// --- Editor panel rendering ---
+function renderEditMigrations(){
+  document.getElementById('editMigrationsBody').innerHTML = DATA.migrations.map((m,i)=>`
+    <tr>
+      <td class="mono">${m.old}</td><td class="num">${m.oldI}</td><td class="num">${m.oldC}</td>
+      <td class="mono">${m.new}</td><td class="num">${m.newI}</td><td class="num">${m.newC}</td>
+      <td><button class="ghost del-row-btn" onclick="deleteMigration(${i})">✕</button></td>
+    </tr>
+  `).join('') || '<tr><td colspan="7" class="tiny">None yet.</td></tr>';
+}
+
+function renderEditGroups(){
+  document.getElementById('editGroupsList').innerHTML = DATA.groups.map((g,gi)=>`
+    <div class="group-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <h5 style="margin:0;font-size:13px;">${g.title}</h5>
+        <button class="ghost del-row-btn" onclick="deleteGroup(${gi})">✕ Remove group</button>
+      </div>
+      <div class="tiny mono" style="margin:4px 0 10px;">
+        Internal link: ${g.primaryPath ? `<a href="${BASE}${g.primaryPath}" target="_blank" rel="noopener">${g.primaryPath}</a>` : '<em>none set</em>'}
+        <a href="#" class="del-link" onclick="editGroupPath(${gi});return false;" title="Edit internal link" style="color:var(--blue);">✎ edit</a>
+      </div>
+      <div class="group-grid">
+        <div>
+          <h5>Keywords</h5>
+          ${g.keywords.map((k,ki)=>`<span class="kw-pill">${k[0]} #${k[2]} · ${k[1]}i <a href="#" class="del-link" onclick="deleteKeyword(${gi},${ki});return false;">✕</a></span>`).join(' ') || '<span class="tiny">None yet</span>'}
+          <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
+            <input type="text" id="kw-text-${gi}" placeholder="keyword" style="flex:1;min-width:120px;">
+            <input type="number" id="kw-impr-${gi}" placeholder="impr" style="width:65px;">
+            <input type="number" id="kw-pos-${gi}" placeholder="pos" step="0.1" style="width:55px;">
+            <button onclick="addKeyword(${gi})">+</button>
+          </div>
+        </div>
+        <div>
+          <h5>Competitors</h5>
+          ${g.competitors.map((c,ci)=>`<span class="comp-pill">${c.url ? `<a href="${c.url}" target="_blank" rel="noopener" class="comp-link">${c.name}</a>` : c.name} <a href="#" class="del-link" onclick="editCompetitorUrl(${gi},${ci});return false;" title="Edit URL">✎</a><a href="#" class="del-link" onclick="deleteCompetitor(${gi},${ci});return false;">✕</a></span>`).join(' ') || '<span class="tiny">None yet</span>'}
+          <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
+            <input type="text" id="comp-text-${gi}" placeholder="competitor name" style="flex:1;min-width:110px;">
+            <input type="text" id="comp-url-${gi}" placeholder="https://competitor.com" style="flex:1;min-width:140px;">
+            <button onclick="addCompetitor(${gi})">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function normalizeData(){
+  DATA.groups.forEach(g=>{
+    g.competitors = (g.competitors||[]).map(c=> typeof c === 'string' ? {name:c, url:''} : c);
+    if(g.primaryPath === undefined) g.primaryPath = '';
+  });
+  if(!DATA.pageCompetitors) DATA.pageCompetitors = clone(DEFAULT_PAGE_COMPETITORS);
+  PAGES.forEach(p=>{ if(!DATA.pageCompetitors[p.id]) DATA.pageCompetitors[p.id] = []; });
+}
+
+function renderAll(){
+  normalizeData();
+  renderMigrationsTable();
+  renderGroupCards();
+  renderActionList();
+  renderFullTable();
+  renderEditMigrations();
+  renderEditGroups();
+  renderPageCompetitors();
+}
+
+// --- Page-wise competitors tab ---
+function getParentSecondary(pageId){
+  const kws = (KEYWORD_VOLUMES[pageId]||[]).slice();
+  if(!kws.length) return {parent:null, secondary:[]};
+  const sorted = kws.slice().sort((a,b)=> (b[1]||0) - (a[1]||0));
+  return {parent: sorted[0], secondary: sorted.slice(1,4)};
+}
+function fmtVol(v){ return (v===null||v===undefined) ? '—' : v.toLocaleString(); }
+function renderPageCompetitors(){
+  const q = (document.getElementById('pageCompSearch').value||'').toLowerCase();
+  const rows = PAGES.filter(p=> p.label.toLowerCase().includes(q) || p.path.toLowerCase().includes(q));
+  document.getElementById('pageCompBody').innerHTML = rows.map(p=>{
+    const comps = DATA.pageCompetitors[p.id] || [];
+    const {parent, secondary} = getParentSecondary(p.id);
+    return `<tr>
+      <td><strong>${p.label}</strong><div class="tiny">${catLabel[p.cat]||p.cat}</div></td>
+      <td class="url-cell mono"><a href="${BASE}${p.path}" target="_blank" rel="noopener">${p.path}</a></td>
+      <td>${parent ? `<strong>${parent[0]}</strong><div class="tiny">Vol: ${fmtVol(parent[1])}/mo</div>` : '<span class="tiny">No keyword data</span>'}</td>
+      <td>${secondary.length ? secondary.map(s=>`${s[0]} <span class="tiny">(${fmtVol(s[1])})</span>`).join('<br>') : '<span class="tiny">—</span>'}</td>
+      <td>
+        ${comps.map((c,ci)=>`<span class="comp-pill" ${c.note?`title="${c.note.replace(/"/g,'&quot;')}"`:''}>${c.url ? `<a href="${c.url}" target="_blank" rel="noopener" class="comp-link">${c.name}</a>` : c.name}${c.deepLink===false?' <span class="tiny">(fallback)</span>':''} <a href="#" class="del-link" onclick="editPageCompetitorUrl('${p.id}',${ci});return false;" title="Edit URL">✎</a><a href="#" class="del-link" onclick="deletePageCompetitor('${p.id}',${ci});return false;">✕</a></span>`).join(' ') || '<span class="tiny">No competitors yet</span>'}
+        <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
+          <input type="text" id="pc-text-${p.id}" placeholder="competitor name" style="min-width:110px;">
+          <input type="text" id="pc-url-${p.id}" placeholder="https://competitor.com" style="min-width:150px;">
+          <button onclick="addPageCompetitor('${p.id}')">+</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+function addPageCompetitor(pageId){
+  const text = document.getElementById(`pc-text-${pageId}`).value.trim();
+  const url = document.getElementById(`pc-url-${pageId}`).value.trim();
+  if(!text){ alert('Competitor name is required.'); return; }
+  if(!DATA.pageCompetitors[pageId]) DATA.pageCompetitors[pageId] = [];
+  DATA.pageCompetitors[pageId].push({name:text, url});
+  renderPageCompetitors();
+}
+function deletePageCompetitor(pageId, ci){ DATA.pageCompetitors[pageId].splice(ci,1); renderPageCompetitors(); }
+function editPageCompetitorUrl(pageId, ci){
+  const current = DATA.pageCompetitors[pageId][ci];
+  const url = prompt(`URL for "${current.name}":`, current.url || '');
+  if(url === null) return;
+  current.url = url.trim();
+  renderPageCompetitors();
+}
+function downloadPageCompCSV(){
+  let rows = [['Page','URL','Category','Parent Keyword','Parent Volume','Secondary Keywords','Competitors']];
+  PAGES.forEach(p=>{
+    const comps = (DATA.pageCompetitors[p.id]||[]);
+    const {parent, secondary} = getParentSecondary(p.id);
+    const secLabel = secondary.map(s=>`${s[0]} (${fmtVol(s[1])})`).join('; ');
+    rows.push([p.label, BASE+p.path, catLabel[p.cat]||p.cat, parent?parent[0]:'', parent?fmtVol(parent[1]):'', secLabel, competitorsLabel(comps)]);
+  });
+  const csv = rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='unstop_page_wise_competitors.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// --- Editor toggle ---
+function toggleEditor(){
+  const panel = document.getElementById('editorPanel');
+  const btn = document.getElementById('btnToggleEditor');
+  const showing = panel.style.display !== 'none';
+  panel.style.display = showing ? 'none' : 'block';
+  btn.textContent = showing ? '✏️ Edit Data' : '✓ Done Editing';
+}
+
+// --- CRUD: migrations ---
+function addMigration(){
+  const old = document.getElementById('newMigOld').value.trim();
+  const newu = document.getElementById('newMigNew').value.trim();
+  if(!old || !newu){ alert('Old URL and New URL are both required.'); return; }
+  DATA.migrations.push({
+    old, new: newu,
+    oldI: Number(document.getElementById('newMigOldI').value)||0,
+    oldC: Number(document.getElementById('newMigOldC').value)||0,
+    newI: Number(document.getElementById('newMigNewI').value)||0,
+    newC: Number(document.getElementById('newMigNewC').value)||0,
+  });
+  ['newMigOld','newMigOldI','newMigOldC','newMigNew','newMigNewI','newMigNewC'].forEach(id=>document.getElementById(id).value='');
+  renderAll();
+}
+function deleteMigration(i){ DATA.migrations.splice(i,1); renderAll(); }
+
+// --- CRUD: groups ---
+function addGroup(){
+  const title = document.getElementById('newGroupTitle').value.trim();
+  if(!title){ alert('Group name is required.'); return; }
+  const primaryPath = prompt('Internal unstop.com path for this service (e.g. /employers/ai-sourcing-agent) — optional, leave blank to skip:', '') || '';
+  DATA.groups.push({title, urls:[], keywords:[], competitors:[], primaryPath: primaryPath.trim()});
+  document.getElementById('newGroupTitle').value = '';
+  renderAll();
+}
+function deleteGroup(gi){ if(confirm('Remove this whole group?')){ DATA.groups.splice(gi,1); renderAll(); } }
+function editGroupPath(gi){
+  const current = DATA.groups[gi];
+  const path = prompt('Internal unstop.com path (e.g. /employers/ai-sourcing-agent):', current.primaryPath || '');
+  if(path === null) return;
+  current.primaryPath = path.trim();
+  renderAll();
+}
+
+function addKeyword(gi){
+  const text = document.getElementById(`kw-text-${gi}`).value.trim();
+  const impr = Number(document.getElementById(`kw-impr-${gi}`).value)||0;
+  const pos = Number(document.getElementById(`kw-pos-${gi}`).value)||0;
+  if(!text){ alert('Keyword text is required.'); return; }
+  DATA.groups[gi].keywords.push([text, impr, pos]);
+  renderAll();
+}
+function deleteKeyword(gi,ki){ DATA.groups[gi].keywords.splice(ki,1); renderAll(); }
+
+function addCompetitor(gi){
+  const text = document.getElementById(`comp-text-${gi}`).value.trim();
+  const url = document.getElementById(`comp-url-${gi}`).value.trim();
+  if(!text){ alert('Competitor name is required.'); return; }
+  DATA.groups[gi].competitors.push({name:text, url});
+  renderAll();
+}
+function deleteCompetitor(gi,ci){ DATA.groups[gi].competitors.splice(ci,1); renderAll(); }
+function editCompetitorUrl(gi,ci){
+  const current = DATA.groups[gi].competitors[ci];
+  const url = prompt(`URL for "${current.name}":`, current.url || '');
+  if(url === null) return;
+  current.url = url.trim();
+  renderAll();
+}
+
+// --- Export / Import / Reset ---
+function exportData(){
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='unstop_keyword_competitor_data.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+function importData(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const parsed = JSON.parse(e.target.result);
+      if(!parsed.migrations || !parsed.groups){ throw new Error('Missing migrations/groups keys'); }
+      DATA = { migrations: parsed.migrations, groups: parsed.groups, actions: parsed.actions || clone(DEFAULT_ACTIONS), pageCompetitors: parsed.pageCompetitors || clone(DEFAULT_PAGE_COMPETITORS) };
+      renderAll();
+      alert('Data imported successfully.');
+    }catch(err){
+      alert('Could not read that file as valid data JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+function resetData(){
+  if(confirm('Reset all keywords, competitors, and migration pairs back to the original defaults? This discards any edits.')){
+    DATA = { migrations: clone(DEFAULT_MIGRATIONS), groups: clone(DEFAULT_GROUPS), actions: clone(DEFAULT_ACTIONS), pageCompetitors: clone(DEFAULT_PAGE_COMPETITORS) };
+    renderAll();
+  }
+}
+
+function downloadCSVKeywords(){
+  let rows = [['Page Group','Keyword','Impressions','Position','Competitors']];
+  fullRows.forEach(r=> rows.push([r.page, r.keyword, r.impr, r.pos, r.competitors]));
+  rows.push([]);
+  rows.push(['--- URL Migration Check ---']);
+  rows.push(['Old URL','Old Impr','Old Clicks','New URL','New Impr','New Clicks']);
+  DATA.migrations.forEach(m=> rows.push([m.old, m.oldI, m.oldC, m.new, m.newI, m.newC]));
+  const csv = rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='unstop_keyword_competitor_intelligence.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// --- Keyword Volume Map (SEMrush volume + GSC gap-fills, mapped to PAGES ids) ---
+const KEYWORD_VOLUMES = {
+  "ats": [["Applicant Tracking Software", 3600, "Existing"], ["ATS System", 2900, "Existing"], ["ATS Platform", 320, "Existing"], ["ATS Tool", 320, "Existing"], ["Recruitment ATS", 210, "Existing"], ["AI ATS", 170, "Existing"], ["ATS Solution", 110, "Existing"], ["Hiring ATS", 50, "Existing"], ["Enterprise ATS", 30, "Existing"]],
+  "hub": [["Recruitment Software", 3600, "Existing"], ["Hiring Software", 1900, "Existing"], ["Hiring Platform", 1300, "Existing"], ["AI Recruitment Software", 1000, "Existing"], ["Recruitment Platform", 880, "Existing"], ["Online Recruitment Platform", 480, "Existing"], ["Hiring Solution", 320, "Existing"], ["AI Hiring Platform", 210, "Existing"], ["Hiring System", 170, "Existing"], ["Hiring Tool", 170, "Existing"], ["Recruitment Solution", 170, "Existing"], ["AI Recruiting Platform", 140, "Existing"], ["Online Hiring Platform", 50, "Existing"], ["Digital Hiring Platform", 20, "Existing"], ["AI Based Recruitment Platform", 110, "New (GSC)"], ["Recruitment Automation Platform", 110, "New (GSC)"]],
+  "interview-ai": [["AI Interview", 2900, "Existing"], ["AI Interview Platform", 170, "Existing"], ["Interview Platform", 140, "Existing"]],
+  "interview": [["AI Voice Agent", 1600, "Existing"], ["AI Interview Assistant", 1300, "Existing"], ["Video Interview Software", 720, "Existing"], ["Interview Scheduler", 480, "Existing"], ["Interview Scheduling Software", 480, "Existing"], ["AI Interview Software", 390, "Existing"], ["Video Interview Platform", 390, "Existing"], ["AI Calling Agent", 390, "Existing"], ["AI Interview Tool", 210, "Existing"], ["Automated Calling Software", 210, "Existing"], ["AI Scheduling Software", 140, "Existing"], ["AI Interview Application", 90, "Existing"], ["AI Calling Software", 50, "Existing"], ["Interview Scheduling Platform", 50, "Existing"], ["One Way Interview Software", 50, "Existing"], ["AI Powered Interview Platform", 40, "Existing"], ["Candidate Scheduling Software", 30, "Existing"], ["Digital Interview Platform", 30, "Existing"], ["AI Interview Agent", 30, "Existing"], ["AI Interview System", 20, "Existing"], ["Interview Booking Software", 20, "Existing"], ["Voice AI for Recruitment", 20, "Existing"], ["AI Scheduling Agent", 20, "Existing"], ["AI Calling Platform", 10, "Existing"], ["AI Calling Solution", 10, "Existing"], ["AI Voice Calling Software", 10, "Existing"], ["Interview Automation Software", 10, "Existing"], ["Interview Scheduler Software", 0, "Existing"], ["Interview Scheduling Solution", 0, "Existing"], ["Recruitment Scheduling Software", 0, "Existing"], ["AI Interview Solution", 0, "Existing"], ["Recruitment Calling Software", 0, "Existing"], ["Interview Calling Software", 0, "Existing"], ["Candidate Calling Software", 0, "Existing"], ["AI Interview Technology", 0, "Existing"], ["Automated Interview Platform", 10, "New (GSC)"]],
+  "branding-bizsim": [["Business Simulation Games", 1300, "Existing"], ["Business Simulation Software", 210, "Existing"], ["Business Learning Platform", 90, "Existing"], ["Business Strategy Simulation", 50, "Existing"], ["Business Simulation Platform", 0, "Existing"], ["Business Simulation Tool", 0, "Existing"], ["Leadership Simulation Software", 0, "Existing"], ["Management Simulation Platform", 0, "Existing"], ["Hiring Simulation Platform", 0, "Existing"], ["Management Simulation Software", 0, "Existing"], ["Business Simulation Solution", 0, "Existing"], ["Business Simulation System", 0, "Existing"], ["Corporate Simulation Platform", 0, "Existing"], ["Enterprise Simulation Platform", 0, "Existing"]],
+  "sourcing-jobboard": [["Job Board Software", 880, "Existing"], ["Job Posting Software", 260, "Existing"], ["Job Board Platform", 170, "Existing"], ["Job Posting Platform", 140, "Existing"], ["Hiring Marketplace", 90, "Existing"], ["Recruitment Marketplace", 70, "Existing"], ["Employer Job Board", 20, "Existing"], ["Internship Job Board", 10, "Existing"], ["Internship Platform", 10, "Existing"], ["Recruitment Job Board", 10, "Existing"], ["Free Job Portals For Employers", 70, "New (GSC)"], ["Post Internship For Free", 0, "New (GSC)"]],
+  "hiring-talent-platform": [["Talent Acquisition Platform", 720, "Existing"], ["Talent Hiring Platform", null, "Suggested (fill-in)"], ["End To End Hiring Platform", null, "Suggested (fill-in)"], ["Unified Talent Acquisition Platform", null, "Suggested (fill-in)"]],
+  "assessment": [["Assessment Software", 720, "Existing"], ["Assessment Platform", 390, "Existing"], ["Assessment Tool", 320, "Existing"], ["Online Assessment Platform", 320, "Existing"], ["Talent Assessment Platform", 260, "Existing"], ["Pre Employment Assessment Software", 50, "Existing"], ["Assessment Solution", 40, "Existing"], ["Hiring Assessment Software", 40, "Existing"], ["Skills Assessment Platform", 20, "Existing"], ["Recruitment Assessment Platform", 0, "Existing"], ["AI Assessment Agent", 0, "Existing"]],
+  "assessment-technical": [["Technical Skills Assessment", 720, "Existing"], ["Technical Assessment Platform", 40, "Existing"], ["Technical Assessment Software", 40, "Existing"], ["Role Based Assessment", 10, "Existing"], ["Technical Hiring Assessment", 0, "Existing"], ["Engineering Assessment Platform", 0, "Existing"], ["Technical Evaluation Software", 0, "Existing"], ["Technical Recruitment Assessment", 0, "Existing"]],
+  "sourcing": [["Candidate Sourcing Software", 590, "Existing"], ["Candidate Sourcing Platform", 260, "Existing"], ["AI Sourcing Software", 210, "Existing"], ["AI Talent Sourcing", 170, "Existing"], ["Talent Sourcing Platform", 140, "Existing"], ["AI Sourcing Tool", 90, "Existing"], ["AI Sourcing Agent", 30, "Existing"], ["AI Sourcing Platform", 20, "Existing"], ["Talent Sourcing Solution", 170, "New (GSC)"]],
+  "screening": [["Candidate Screening Software", 390, "Existing"], ["AI Resume Screening", 320, "Existing"], ["Resume Screening Software", 320, "Existing"], ["AI Screening Tool", 260, "Existing"], ["AI Screening Software", 70, "Existing"], ["Recruitment Screening Software", 40, "Existing"], ["AI Screening Solution", 20, "Existing"], ["Candidate Screening Platform", 20, "Existing"], ["Technical Screening Platform", 10, "Existing"], ["AI Screening Agent", 10, "Existing"], ["AI Screening Platform", 0, "Existing"], ["Automated Candidate Screening", 260, "New (GSC)"]],
+  "branding": [["Employer Branding Services", 320, "Existing"], ["Recruitment Marketing Platform", 210, "Existing"], ["Employer Solution", 170, "Existing"], ["Employer Branding Platform", 90, "Existing"], ["Employer Branding Software", 70, "Existing"], ["Talent Marketing Platform", 70, "Existing"], ["Employer Branding Solution", 40, "Existing"], ["Employer Branding Tool", 40, "Existing"], ["Employer Software", 30, "Existing"], ["Employer Platform", 20, "Existing"], ["Employer Brand Platform", 10, "Existing"], ["Talent Branding Platform", 0, "Existing"], ["Employer Value Proposition Software", 0, "Existing"], ["Employer Engagement Platform", 0, "Existing"], ["Employer Marketing Platform", 0, "Existing"], ["Employer Brand Software", 0, "Existing"], ["Employer Brand Solution", 0, "Existing"], ["Recruitment Branding Platform", 0, "Existing"], ["Talent Brand Platform", 0, "Existing"], ["Employer Branding Agency", 880, "New (GSC)"], ["Employer Brand Agency", 210, "New (GSC)"], ["Employer Branding Company", 70, "New (GSC)"], ["Employer Branding Consultant", 140, "New (GSC)"], ["Best Employer Branding Platforms", 10, "New (GSC)"]],
+  "assessment-aptitude": [["Online Aptitude Test", 320, "Existing"], ["Pre Employment Aptitude Test", 140, "Existing"], ["Candidate Aptitude Test", 50, "Existing"], ["Aptitude Test Platform", 20, "Existing"], ["Aptitude Test Software", 20, "Existing"], ["Hiring Aptitude Test", 20, "Existing"], ["AI Aptitude Test", 10, "Existing"], ["Aptitude Assessment Software", 0, "Existing"], ["Aptitude Testing Platform", 0, "Existing"], ["Aptitude Assessment Platform", 0, "Existing"]],
+  "assessment-comm": [["Soft Skills Assessment", 320, "Existing"], ["Communication Skills Assessment", 260, "Existing"], ["English Communication Test", 30, "Existing"], ["Spoken English Assessment", 10, "Existing"], ["Communication Assessment Platform", 0, "Existing"], ["Communication Assessment Software", 0, "Existing"], ["Verbal Assessment Platform", 0, "Existing"], ["Communication Evaluation Software", 0, "Existing"], ["Hiring Communication Assessment", 0, "Existing"], ["AI Communication Assessment", 0, "Existing"], ["Communication Assessment Test", 70, "New (GSC)"], ["Online Communication Test", 20, "New (GSC)"]],
+  "proctoring": [["Online Proctoring Software", 260, "Existing"], ["Online Proctoring Platform", 140, "Existing"], ["Remote Proctoring Software", 110, "Existing"], ["AI Proctoring Software", 70, "Existing"], ["Exam Proctoring Software", 40, "Existing"], ["Remote Proctoring Platform", 30, "Existing"], ["AI Proctoring Platform", 10, "Existing"], ["AI Proctoring Solution", 0, "Existing"], ["AI Exam Monitoring", 0, "Existing"], ["Assessment Proctoring Software", 0, "Existing"], ["AI Proctoring Agent", 0, "Existing"]],
+  "branding-quizzes": [["Quiz Software", 210, "Existing"], ["Online Quiz Platform", 170, "Existing"], ["Quiz Platform", 90, "Existing"], ["Quiz Tool", 90, "Existing"], ["Interactive Quiz Platform", 20, "Existing"], ["Quiz Solution", 0, "Existing"], ["Engagement Quiz Platform", 0, "Existing"], ["Hiring Quiz Platform", 0, "Existing"], ["Recruitment Quiz Software", 0, "Existing"], ["Corporate Quiz Platform", 0, "Existing"]],
+  "assessment-coding": [["Coding Interview Platform", 140, "Existing"], ["Coding Assessment Platform", 110, "Existing"], ["Coding Test Software", 20, "Existing"], ["Developer Assessment Platform", 20, "Existing"], ["Online Coding Test Platform", 20, "Existing"], ["Coding Competition Platform", 20, "Existing"], ["AI Coding Assessment", 10, "Existing"], ["Coding Challenge Platform", 10, "Existing"], ["Technical Coding Test", 10, "Existing"], ["Coding Evaluation Software", 0, "Existing"], ["Programming Assessment Platform", 0, "Existing"]],
+  "assessment-sql": [["SQL Online Test", 140, "Existing"], ["SQL Interview Test", 30, "Existing"], ["SQL Skills Assessment", 30, "Existing"], ["SQL Test Platform", 10, "Existing"], ["SQL Assessment Platform", 0, "Existing"], ["SQL Assessment Software", 0, "Existing"], ["SQL Hiring Assessment", 0, "Existing"], ["Database Assessment Platform", 0, "Existing"], ["SQL Screening Software", 0, "Existing"], ["SQL Evaluation Platform", 0, "Existing"]],
+  "branding-ideathons": [["Innovation Platform", 140, "Existing"], ["Innovation Management Platform", 110, "Existing"], ["Innovation Challenge Platform", 50, "Existing"], ["Enterprise Innovation Platform", 20, "Existing"], ["Ideathon Platform", 0, "Existing"], ["Ideathon Software", 0, "Existing"], ["Idea Competition Platform", 0, "Existing"], ["Corporate Ideathon Platform", 0, "Existing"], ["Student Ideathon Platform", 0, "Existing"], ["Business Ideathon Platform", 0, "Existing"], ["Ideathon Hosting Platform", 0, "New (GSC)"]],
+  "branding-hackathons": [["Hackathon Platform", 110, "Existing"], ["Hackathon Software", 110, "Existing"], ["Virtual Hackathon Platform", 90, "Existing"], ["Online Hackathon Platform", 40, "Existing"], ["Hackathon Management Software", 30, "Existing"], ["AI Competition Platform", 20, "Existing"], ["Corporate Hackathon Platform", 0, "Existing"], ["Coding Hackathon Platform", 0, "Existing"], ["AI Hackathon Platform", 0, "Existing"], ["Enterprise Hackathon Platform", 0, "Existing"], ["Hackathon Hosting Platform", 20, "New (GSC)"], ["Best Hackathon Platform", 10, "New (GSC)"]],
+  "campus-hiring": [["University Hiring Platform", 50, "Existing"], ["Campus Hiring Software", 40, "Existing"], ["Campus Recruitment Platform", 40, "Existing"], ["Campus Hiring Platform", 20, "Existing"], ["Campus Hiring Solution", 10, "Existing"], ["Virtual Campus Recruitment Software", 30, "New (GSC)"]],
+  "virtual-hiring": [["Virtual Hiring Platform", 50, "Existing"], ["Virtual Recruitment Platform", 50, "Existing"], ["Virtual Hiring Software", 30, "Existing"], ["Remote Hiring Platform", 20, "Existing"], ["Virtual Hiring Solution", 10, "Existing"]],
+  "branding-talentcommunity": [["Talent Community Software", 20, "Existing"], ["Student Community Platform", 20, "Existing"], ["Talent Engagement Platform", 20, "Existing"], ["Talent Community Platform", 0, "Existing"], ["Talent Network Platform", 0, "Existing"], ["Candidate Community Platform", 0, "Existing"], ["Employer Community Platform", 0, "Existing"], ["Recruitment Community Platform", 0, "Existing"]],
+  "assessment-bizsim": [["Simulation Based Assessment", 20, "Existing"], ["Competency Assessment Platform", 0, "Existing"], ["Business Assessment Platform", 0, "Existing"], ["Business Competency Simulation Games", null, "Suggested (fill-in)"], ["Gamified Business Assessment", null, "Suggested (fill-in)"]],
+  "branding-dshackathons": [["Data Analytics Hackathon", 20, "Existing"], ["Data Science Competition Platform", 20, "Existing"], ["Machine Learning Hackathon", 20, "Existing"], ["Data Science Hackathon Platform", 0, "Existing"], ["Analytics Competition Platform", 0, "Existing"], ["ML Challenge Platform", 0, "Existing"], ["Data Science Event Platform", 0, "Existing"], ["Data Science Hackathon", 90, "New (GSC)"]],
+  "branding-brandpresence": [["Brand Awareness Platform", 10, "Existing"], ["Brand Visibility Platform", 0, "Existing"], ["Employer Brand Presence", null, "Suggested (fill-in)"], ["Employer Brand Visibility Solution", null, "Suggested (fill-in)"]],
+  "sourcing-community": [["Early Talent Platform", 0, "Existing"], ["Fresher Hiring Platform", 0, "Existing"], ["Graduate Hiring Platform", 0, "Existing"], ["Graduate Recruitment Platform", 0, "Existing"], ["Graduate Talent Community", 0, "Existing"], ["Early Talent Community Platform", 0, "Existing"]],
+  "brand-advertise": [["Recruitment Advertising Platform", 0, "Existing"], ["Employer Advertising Platform", 0, "Existing"], ["Hiring Advertising Platform", 0, "Existing"], ["Recruitment Promotion Platform", 0, "Existing"], ["Employer Brand Advertising", 0, "Existing"], ["Campus Advertising Platform", 0, "Existing"], ["Recruitment Campaign Platform", 0, "Existing"], ["Employer Promotion Platform", 0, "Existing"]],
+  "lateral-hiring": [["Lateral Hiring", 260, "New (GSC)"], ["Lateral Hiring Solutions", 0, "New (GSC)"], ["Lateral Hiring Platform", 0, "New (GSC)"], ["Experienced Hire Recruitment Platform", null, "Suggested (fill-in)"]],
+};
+
+function volStatusClass(s){
+  if(s==='Existing') return 'status-existing';
+  if(s==='New (GSC)') return 'status-new';
+  return 'status-suggested';
+}
+
+function allVolumeRows(){
+  let rows = [];
+  Object.keys(KEYWORD_VOLUMES).forEach(pid=>{
+    const p = byId(pid);
+    KEYWORD_VOLUMES[pid].forEach(r=>{
+      rows.push({pageId:pid, pageLabel:p?p.label:pid, path:p?p.path:'', keyword:r[0], volume:r[1], status:r[2]});
+    });
+  });
+  return rows;
+}
+
+function renderVolumeStats(){
+  const rows = allVolumeRows();
+  const totalVol = rows.reduce((s,r)=>s+(r.volume||0),0);
+  const pagesCovered = new Set(rows.map(r=>r.pageId)).size;
+  const newCount = rows.filter(r=>r.status==='New (GSC)').length;
+  document.getElementById('volStatsRow').innerHTML = `
+    <div class="stat"><b>${rows.length}</b><span>Keywords Tracked</span></div>
+    <div class="stat"><b>${totalVol.toLocaleString()}</b><span>Combined Monthly Volume</span></div>
+    <div class="stat"><b>${pagesCovered}</b><span>Pages With Keywords</span></div>
+    <div class="stat"><b>${newCount}</b><span>New From GSC</span></div>`;
+}
+
+let VOLUME_ROWS = [];
+function renderVolumeTable(){
+  const q = (document.getElementById('volSearch').value||'').toLowerCase();
+  const sortBy = document.getElementById('volSortBy').value;
+  VOLUME_ROWS = allVolumeRows().filter(r=> r.keyword.toLowerCase().includes(q) || r.pageLabel.toLowerCase().includes(q) || r.path.toLowerCase().includes(q));
+  VOLUME_ROWS.sort((a,b)=>{
+    if(sortBy==='volume-desc') return (b.volume||0)-(a.volume||0);
+    if(sortBy==='volume-asc') return (a.volume||0)-(b.volume||0);
+    if(sortBy==='az') return a.keyword.localeCompare(b.keyword);
+    return a.pageLabel.localeCompare(b.pageLabel) || (b.volume||0)-(a.volume||0);
+  });
+  document.getElementById('volumeBody').innerHTML = VOLUME_ROWS.map(r=>`
+    <tr>
+      <td><strong>${r.pageLabel}</strong><div class="tiny mono">${r.path}</div></td>
+      <td>${r.keyword}</td>
+      <td class="num">${r.volume!=null ? r.volume.toLocaleString() : '—'}</td>
+      <td><span class="status-pill ${volStatusClass(r.status)}">${r.status}</span></td>
+    </tr>
+  `).join('') || '<tr><td colspan="4" class="tiny">No matches.</td></tr>';
+}
+
+function downloadVolumeCSV(){
+  let rows = [['Page','URL','Keyword','Monthly Volume','Status']];
+  allVolumeRows().forEach(r=> rows.push([r.pageLabel, BASE+r.path, r.keyword, r.volume!=null?r.volume:'', r.status]));
+  const csv = rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='unstop_employer_keyword_volumes.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// --- Action Roadmap: sequenced 1->31 focus order, based only on each NEW URL's own current GSC + volume data ---
+const TIER_META = {
+  push:  {label:'Push To #1',       emoji:'🟢', desc:'Already ranking well with real clicks — small push finishes the job.'},
+  close: {label:'Close To Page 1',  emoji:'🔵', desc:'Decent position (top ~20) with real impressions — moderate on-page push gets it to page 1.'},
+  bet:   {label:'Big Bet',          emoji:'🟠', desc:'High volume/impressions but buried or invisible — needs real content investment.'},
+  later: {label:'Build Later',      emoji:'⚪', desc:'Thin or no data yet — foundational work only, revisit after the above.'},
+};
+
+// Every "why" below cites ONLY non-branded queries (nothing containing "Unstop") — branded clicks reflect
+// existing brand awareness, not real organic pull, so they're excluded from this prioritization entirely.
+const ROADMAP = [
+  {id:'branding-hackathons', tier:'push', why:'Fully non-branded queries already dominate: "hackathon platforms" position 1.37 (51 impressions), "best hackathon platform" position 1.85 (13 impressions, 1 click), and "hackathon hosting platform" position 13.3 (93 impressions, 9 clicks). None of this relies on brand search.', action:'Push "hackathon hosting platform" the last few spots to page 1 — the other two terms are already locked in at position 1–2.'},
+  {id:'campus-hiring', tier:'push', why:'"Campus hiring solutions" ranks position 3.65 (34 impressions, 4 clicks) and "campus recruitment" position 9.75 — both fully non-branded, real demand.', action:'Add campus-specific proof (client logos, placement stats) to lock in position 1–3 and defend against Superset/CampusNext.'},
+  {id:'screening', tier:'push', why:'"AI screening agent" ranks position 2.67 and "automated candidate screening" position 3.33 — both non-branded, both essentially page 1 already.', action:'Low-hanging fruit: add supporting content to grow the impression volume behind an already-excellent position.'},
+  {id:'virtual-hiring', tier:'push', why:'"Virtual recruitment platform" ranks position 5 — small volume but a clean non-branded win already.', action:'Cheap to defend — add 1–2 sections targeting "virtual hiring solutions" and "remote hiring platform" to broaden the footprint.'},
+  {id:'branding-ideathons', tier:'push', why:'"Ideathon" alone pulls 501 impressions at position 1.92, and "ideathon hosting platform" sits at position 1 — both fully non-branded.', action:'Small page, big efficiency — keep it fresh and make sure the B2B hosting-platform angle, not just the definition, is the primary H1.'},
+  {id:'interview', tier:'close', why:'"AI interview agent" ranks position 8, "automated interview platform" position 12, and "virtual interview" position 8.4 (22 impressions) — all non-branded, all just outside page 1.', action:'A focused on-page + schema push on these three terms should clear page 1 within reach.'},
+  {id:'assessment', tier:'close', why:'"Best online assessment platform" ranks position 3.4 (8 impressions) and "online assessment platform for hiring" position 13.4 (5 impressions) — both non-branded.', action:'Expand the sections that already target these two phrases directly; the foundation is working.'},
+  {id:'assessment-aptitude', tier:'close', why:'The bare term "aptitude" pulls 68 impressions at position 8.8, and "aptitude testing platform" sits at position 8.1 — both non-branded.', action:'Add FAQ content and internal links from the main assessment page to consolidate these positions.'},
+  {id:'assessment-coding', tier:'close', why:'"AI-powered coding assessment platform" ranks position 6 on 11 impressions but 0 clicks — good position, pure CTR gap.', action:'Rewrite title/meta to match the exact phrase; content is already ranking, just not being clicked.'},
+  {id:'assessment-sql', tier:'close', why:'"Best SQL assessment tools for hiring" ranks position 6.85 on 39 impressions, 0 clicks — same CTR-gap pattern as coding test.', action:'Low-competition niche — should convert fast once title/meta is rewritten to match the exact phrase.'},
+  {id:'branding-quizzes', tier:'close', why:'Non-branded performance is real but modest: "online quiz platform" ranks position 5.4 on 84 impressions, 0 clicks yet.', action:'Fix title/meta to convert these impressions into clicks — the brand-driven volume elsewhere on this page shouldn\'t be mistaken for organic strength.'},
+  {id:'sourcing-jobboard', tier:'close', why:'"Post internship for free" already converts at position 1, and "free job portals for employers" ranks position 4 — both non-branded, both real B2B intent.', action:'Add more employer-side proof (posting volume, pricing clarity) to convert these good positions into more volume.'},
+  {id:'lateral-hiring', tier:'close', why:'"Lateral hiring" ranks position 8.2 on 17 impressions, but 0 clicks — a real position with a conversion gap.', action:'Add a lateral-hiring-specific hero section and CTA — the page likely doesn\'t match searcher intent well enough yet to earn the click.'},
+  {id:'sourcing', tier:'close', why:'"Talent sourcing solution" ranks position 3.67 — a genuinely strong non-branded position, but on only 3 impressions total.', action:'Funnel Stage 1 (entry point) — worth a light refresh, but the real leverage is downstream once screening/assessment/interview are stronger.'},
+  {id:'assessment-comm', tier:'close', why:'"Communication assessment test" and "online communication test" both rank position 13–14 — non-branded but on very low impression counts.', action:'Low priority for now — a good candidate for incremental content once higher-impact assessment sub-pages are solidified.'},
+  {id:'branding', tier:'bet', why:'"Employer branding solutions" (position 7.95, 320 impressions, 5 clicks) and "employer branding platform" (position 14.7, 344 impressions, 6 clicks) already work well — fully non-branded. But the real prize is untapped: "employer branding agency/company/consultant" pulls 1,000+ combined non-branded impressions sitting at position 47–86 because the page reads as a platform, not an agency-alternative.', action:'Add a dedicated "Unstop vs employer branding agencies" comparison section — this single addition could unlock the largest untapped non-branded opportunity in the whole section.'},
+  {id:'interview-ai', tier:'bet', why:'"AI interviewer" alone pulls 71 non-branded impressions but sits at position 83 — real demand, buried deep. "AI interview" and "AI interview platform" add another ~19 impressions at position 65–68.', action:'Needs a real content rebuild targeting "AI interview"/"AI interviewer" as primary terms, not secondary mentions.'},
+  {id:'hub', tier:'bet', why:'"AI based recruitment platform" pulls 307 non-branded impressions and "recruitment automation platform" pulls 103 — both sit at position 40–53, well outside page 1 despite real search volume.', action:'Build dedicated sections targeting these two phrases directly rather than relying on the hub\'s generic overview content.'},
+  {id:'branding-bizsim', tier:'bet', why:'"Business simulation" (279 impressions) and "business simulation software" (149 impressions) are both non-branded and both sit at position 52–58 — real demand, buried.', action:'Needs real content investment: a sample simulation walkthrough, use-case examples, comparison vs Mercer Mettl/Arctic Shores.'},
+  {id:'ats', tier:'bet', why:'Zero non-branded (or any) GSC visibility on the new URL across 6 months of data pulled.', action:'Check indexing status in GSC URL Inspection first — likely a crawl/index issue, not just a ranking one.'},
+  {id:'branding-dshackathons', tier:'bet', why:'Its own term "data science hackathon" ranks a weak position 28.6 (23 impressions, non-branded), while the generic "hackathon" query surfaces this cluster at position 1.8 with 1,129 impressions — a halo effect not yet converted into direct rankings.', action:'Add dedicated data-science-hackathon content (past events, judging criteria) instead of relying on the hackathons page halo.'},
+  {id:'proctoring', tier:'later', why:'"Proctoring" ranks position 8.3 but only 3 non-branded impressions — thin demand right now.', action:'Low effort to maintain; revisit once higher-impact pages are handled.'},
+  {id:'assessment-technical', tier:'later', why:'"Technical assessment services" ranks a poor position 61.7 on just 3 impressions — weakest of the assessment sub-pages.', action:'Lowest priority in the assessment cluster; rebuild after aptitude/coding/SQL are solidified.'},
+  {id:'assessment-bizsim', tier:'later', why:'No meaningful non-branded GSC data captured on the new URL yet.', action:'Needs baseline content and keyword targeting before it can be judged.'},
+  {id:'sourcing-community', tier:'later', why:'No usable non-branded query data — only irrelevant noise showed up in GSC.', action:'Low priority; revisit once the parent sourcing and jobboard pages are stronger.'},
+  {id:'hiring-talent-platform', tier:'later', why:'No non-branded GSC query data captured; overlaps heavily with the /employers hub itself.', action:'Needs clearer differentiation from the hub, or consider folding into it.'},
+  {id:'branding-talentcommunity', tier:'later', why:'"Talent community platform" ranks position 4.5 — technically strong, but on only 2 total impressions.', action:'Build baseline content connecting it to the sourcing funnel; low urgency given the tiny current volume.'},
+  {id:'brand-advertise', tier:'later', why:'No real non-branded query data captured on the new URL — every mapped keyword also shows 0 tracked monthly volume.', action:'Needs keyword research from scratch before investing in content.'},
+  {id:'branding-brandpresence', tier:'later', why:'No GSC query data captured; mapped keywords are mostly 0-volume.', action:'Low priority — consider merging into the main employer-branding hub.'},
+  {id:'calling', tier:'later', why:'No keyword or GSC data tracked yet for this page at all.', action:'Establish baseline tracking first — confirm indexing and pick 3–5 target terms before judging priority.'},
+  {id:'scheduling', tier:'later', why:'No keyword or GSC data tracked yet for this page at all.', action:'Same as AI Calling Agent — needs baseline tracking before it can be prioritized.'},
+];
+
+let roadmapFilter = 'all';
+function setTierFilter(t){
+  roadmapFilter = t;
+  document.querySelectorAll('.tier-filterbtn').forEach(b=>b.classList.toggle('active', b.dataset.tier===t));
+  renderRoadmap();
+}
+
+function renderRoadmapStats(){
+  const counts = {push:0,close:0,bet:0,later:0};
+  ROADMAP.forEach(r=>counts[r.tier]++);
+  document.getElementById('roadmapStatsRow').innerHTML = `
+    <div class="stat"><b>${counts.push}</b><span>🟢 Push To #1</span></div>
+    <div class="stat"><b>${counts.close}</b><span>🔵 Close To Page 1</span></div>
+    <div class="stat"><b>${counts.bet}</b><span>🟠 Big Bets</span></div>
+    <div class="stat"><b>${counts.later}</b><span>⚪ Build Later</span></div>`;
+}
+
+function renderRoadmap(){
+  const rows = ROADMAP.map((r,i)=>({...r, rank:i+1})).filter(r=> roadmapFilter==='all' || r.tier===roadmapFilter);
+  document.getElementById('roadmapList').innerHTML = rows.map(r=>{
+    const p = byId(r.id);
+    const tm = TIER_META[r.tier];
+    return `<div class="rstep tier-${r.tier}">
+      <div class="rnum">${r.rank}</div>
+      <div class="rcard">
+        <h4>${p.label} <span class="tier-chip ${r.tier}">${tm.emoji} ${tm.label}</span></h4>
+        <div class="rmeta mono"><a href="${BASE}${p.path}" target="_blank" rel="noopener">${BASE}${p.path}</a></div>
+        <div class="rwhy"><strong>Why:</strong> ${r.why}</div>
+        <div class="raction"><b>Do this:</b> ${r.action}</div>
+      </div>
+    </div>`;
+  }).join('') || '<p class="tiny">No pages in this tier.</p>';
+}
+
+function downloadRoadmapCSV(){
+  let rows = [['Rank','Page','URL','Tier','Why','Action']];
+  ROADMAP.forEach((r,i)=>{
+    const p = byId(r.id); const tm = TIER_META[r.tier];
+    rows.push([i+1, p.label, BASE+p.path, tm.label, r.why, r.action]);
+  });
+  const csv = rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='unstop_employer_action_roadmap.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// --- Dashboard (Executive Overview) — built entirely from real, already-collected data ---
+function renderDashboard(){
+  const kvKeys = Object.keys(KEYWORD_VOLUMES);
+  const totalKwEntries = kvKeys.reduce((s,k)=>s+KEYWORD_VOLUMES[k].length,0);
+  const totalVolume = kvKeys.reduce((s,k)=>s+KEYWORD_VOLUMES[k].reduce((s2,r)=>s2+(r[1]||0),0),0);
+  const l2 = PAGES.filter(p=>p.layer===2).length, l3 = PAGES.filter(p=>p.layer===3).length;
+
+  const gscI = DEFAULT_MIGRATIONS.reduce((s,m)=>s+(m.newI||0),0);
+  const gscC = DEFAULT_MIGRATIONS.reduce((s,m)=>s+(m.newC||0),0);
+  const gscCTR = gscI ? (gscC/gscI*100) : 0;
+
+  let compTotal=0, compFallback=0;
+  Object.values(DATA.pageCompetitors).forEach(list=>{ list.forEach(c=>{ compTotal++; if(c.deepLink===false) compFallback++; }); });
+  const compDeepPct = compTotal ? Math.round((compTotal-compFallback)/compTotal*100) : 0;
+
+  const totalLinks = MATRIX_DATA.reduce((s,r)=>s+r.links.length,0);
+  const avgLinks = MATRIX_DATA.length ? (totalLinks/MATRIX_DATA.length).toFixed(1) : '0';
+
+  const kpis = [
+    {label:'Pages Tracked', val:PAGES.length, sub:`${l2} Layer-2 · ${l3} Layer-3`},
+    {label:'Keyword Coverage', val:`${kvKeys.length}/${PAGES.length}`, sub:`${Math.round(kvKeys.length/PAGES.length*100)}% of pages have volume data`},
+    {label:'Keyword Universe', val:totalKwEntries.toLocaleString(), sub:'tracked keywords across all pages'},
+    {label:'Monthly Volume Tracked', val:totalVolume.toLocaleString(), sub:'combined SEMrush search volume'},
+    {label:'New-URL GSC Impressions', val:gscI.toLocaleString(), sub:'across the 17 pages with migration data on file'},
+    {label:'New-URL GSC Clicks', val:gscC.toLocaleString(), sub:`${gscCTR.toFixed(1)}% CTR on those impressions`},
+    {label:'Competitors Tracked', val:compTotal, sub:`${compDeepPct}% verified service-specific deep links`},
+    {label:'Internal Links Mapped', val:totalLinks, sub:`avg ${avgLinks} recommended links/page`},
+  ];
+  document.getElementById('dashKpis').innerHTML = kpis.map(k=>`
+    <div class="kpi">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-val">${k.val}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>`).join('');
+
+  const counts = {push:0,close:0,bet:0,later:0};
+  ROADMAP.forEach(r=>counts[r.tier]++);
+  const tierColors = {push:'#0d9668',close:'#1c4ed8',bet:'#a9720d',later:'#94a3b8'};
+  document.getElementById('dashTierBar').innerHTML = Object.keys(counts).map(t=>
+    `<span style="flex-grow:${Math.max(counts[t],0.0001)};background:${tierColors[t]};">${counts[t]>1?counts[t]:''}</span>`
+  ).join('');
+  document.getElementById('dashTierLegend').innerHTML = Object.keys(TIER_META).map(t=>
+    `<span><span class="dot" style="background:${tierColors[t]};"></span>${TIER_META[t].emoji} ${TIER_META[t].label} — ${counts[t]} pages</span>`
+  ).join('');
+
+  const topOpp = ROADMAP.map((r,i)=>({...r,rank:i+1})).filter(r=>r.tier==='push').slice(0,8);
+  document.getElementById('dashOppList').innerHTML = topOpp.map(r=>{
+    const p = byId(r.id);
+    return `<div class="opp-row" style="cursor:pointer;" onclick="switchTab('roadmap')"><span class="opp-rank">${r.rank}</span><span class="opp-name">${p.label}</span><span class="opp-meta mono">${p.path}</span></div>`;
+  }).join('') || '<p class="tiny">No push-tier pages.</p>';
+
+  const catVol = {};
+  PAGES.forEach(p=>{
+    const kws = KEYWORD_VOLUMES[p.id]||[];
+    const v = kws.reduce((s,r)=>s+(r[1]||0),0);
+    catVol[p.cat] = (catVol[p.cat]||0) + v;
+  });
+  const maxCat = Math.max(...Object.values(catVol), 1);
+  document.getElementById('dashCatBars').innerHTML = Object.keys(catVol).sort((a,b)=>catVol[b]-catVol[a]).map(c=>`
+    <div class="catbar-row">
+      <span class="catbar-label">${catLabel[c]||c}</span>
+      <div class="catbar-track"><div class="catbar-fill" style="width:${(catVol[c]/maxCat*100).toFixed(1)}%;"></div></div>
+      <span class="catbar-val">${catVol[c].toLocaleString()}/mo</span>
+    </div>`).join('');
+}
+
+// --- Cannibalization detector — exact-match keyword overlap across pages, from KEYWORD_VOLUMES ---
+function renderCannibalization(){
+  const map = {};
+  Object.keys(KEYWORD_VOLUMES).forEach(pid=>{
+    KEYWORD_VOLUMES[pid].forEach(row=>{
+      const norm = row[0].trim().toLowerCase();
+      if(!map[norm]) map[norm] = [];
+      map[norm].push({pageId:pid, kw:row[0], vol:row[1]});
+    });
+  });
+  const dupes = Object.entries(map).filter(([k,arr])=> new Set(arr.map(a=>a.pageId)).size > 1);
+
+  document.getElementById('cannibStatsRow').innerHTML = `
+    <div class="stat"><b>${Object.keys(map).length.toLocaleString()}</b><span>Unique Keywords Scanned</span></div>
+    <div class="stat"><b>${dupes.length}</b><span>Cannibalized Keywords Found</span></div>
+    <div class="stat"><b>${PAGES.length}</b><span>Pages Checked</span></div>
+    <div class="stat"><b>${Object.keys(KEYWORD_VOLUMES).length}</b><span>Pages With Keyword Data</span></div>`;
+
+  const list = document.getElementById('cannibList');
+  if(!dupes.length){
+    list.innerHTML = `<div class="cannib-clean"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"/></svg><div><strong>No exact-match cannibalization detected.</strong><br>Every tracked keyword currently maps to exactly one page — nothing to merge or redirect right now.</div></div>`;
+    return;
+  }
+  list.innerHTML = dupes.map(([kw,arr])=>{
+    const pages = arr.map(a=>{ const p=byId(a.pageId); return `<span class="cannib-pill">${p.label} <span class="mono" style="font-weight:600;">(${a.vol===null||a.vol===undefined?'—':a.vol}/mo)</span></span>`; }).join('');
+    return `<div class="cannib-card"><div class="cannib-kw">"${arr[0].kw}"</div><div class="cannib-pages">${pages}</div></div>`;
+  }).join('');
+}
+
+renderAll();
+renderVolumeStats();
+renderVolumeTable();
+renderRoadmapStats();
+renderRoadmap();
+renderDashboard();
+renderCannibalization();
+
+</script>
+</body>
+</html>
