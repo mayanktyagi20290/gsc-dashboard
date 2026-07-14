@@ -749,9 +749,15 @@
   </div>
 </section>
 
+<section id="dcGscInsightsSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19 L4 13 M10 19 L10 8 M16 19 L16 4 M4 19 L20 19"/></svg>GSC Insights — Top Pages &amp; Top Queries</h2>
+  <p class="section-sub">Straight from your imported GSC data — no SEMrush needed for this part. Sourced from the Pages and Queries tabs of your export, sorted by clicks.</p>
+  <div id="dcGscInsightsWrap"></div>
+</section>
+
 <section id="dcMergeSection">
   <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="7" height="7" rx="2"/><rect x="14" y="9" width="7" height="7" rx="2"/><path d="M10 12.5 L14 12.5"/></svg>Merged Dataset</h2>
-  <p class="section-sub">Unified on <strong>Landing Page + Keyword</strong>. This is the live dataset available to the rest of the toolkit via <code>DataCenter.getMergedDataset()</code>.</p>
+  <p class="section-sub">Unified on <strong>Landing Page + Keyword</strong>. This is the live dataset available to the rest of the toolkit via <code>DataCenter.getMergedDataset()</code>. Needs a SEMrush import to populate — GSC alone shows in the Insights panel above instead.</p>
   <div class="stats" id="dcMergeStats"></div>
   <div id="dcMergeTableWrap" style="margin-top:16px;overflow-x:auto;"></div>
 </section>
@@ -2463,6 +2469,29 @@ const DataCenter = (function(){
       </tr>`).join('');
   }
 
+  // Standalone insight from GSC alone — doesn't need a SEMrush import to be useful.
+  async function renderGscInsights(){
+    const wrap = document.getElementById('dcGscInsightsWrap');
+    if(!wrap) return;
+    const gsc = await StorageService.getAll('gscRecords');
+    const pages = gsc.filter(r=>r.level==='page').slice().sort((a,b)=>(b.clicks||0)-(a.clicks||0)).slice(0,15);
+    const queries = gsc.filter(r=>r.level==='query').slice().sort((a,b)=>(b.clicks||0)-(a.clicks||0)).slice(0,15);
+    if(!pages.length && !queries.length){
+      wrap.innerHTML = `<div class="dc-empty-state">Import a GSC export above to see your real top pages and top queries here.</div>`;
+      return;
+    }
+    const pagesTable = pages.length ? `<table><thead><tr><th>Page</th><th class="num">Clicks</th><th class="num">Impr.</th><th class="num">CTR</th><th class="num">Pos.</th></tr></thead>
+      <tbody>${pages.map(r=>`<tr><td class="url-cell mono">${r.path}</td><td class="num">${r.clicks}</td><td class="num">${r.impressions}</td><td class="num">${r.ctr!==null?r.ctr+'%':'—'}</td><td class="num">${r.position??'—'}</td></tr>`).join('')}</tbody></table>`
+      : `<div class="dc-empty-state">No page-level rows imported (need a "Pages" tab export).</div>`;
+    const queriesTable = queries.length ? `<table><thead><tr><th>Query</th><th class="num">Clicks</th><th class="num">Impr.</th><th class="num">CTR</th><th class="num">Pos.</th></tr></thead>
+      <tbody>${queries.map(r=>`<tr><td>${r.query}</td><td class="num">${r.clicks}</td><td class="num">${r.impressions}</td><td class="num">${r.ctr!==null?r.ctr+'%':'—'}</td><td class="num">${r.position??'—'}</td></tr>`).join('')}</tbody></table>`
+      : `<div class="dc-empty-state">No query-level rows imported (need a "Queries" tab export).</div>`;
+    wrap.innerHTML = `<div class="dc-grid">
+      <div><h4 style="font-size:12.5px;margin:0 0 8px;">Top ${pages.length} Pages by Clicks<span class="tiny" style="margin-left:6px;">(of ${gsc.filter(r=>r.level==='page').length} imported)</span></h4><div style="overflow-x:auto;">${pagesTable}</div></div>
+      <div><h4 style="font-size:12.5px;margin:0 0 8px;">Top ${queries.length} Queries by Clicks<span class="tiny" style="margin-left:6px;">(of ${gsc.filter(r=>r.level==='query').length} imported)</span></h4><div style="overflow-x:auto;">${queriesTable}</div></div>
+    </div>`;
+  }
+
   async function renderMergeStatsAndTable(){
     const rows = await MergeService.build();
     const levelCounts = await MergeService.getGscLevelCounts();
@@ -2516,6 +2545,7 @@ const DataCenter = (function(){
     const [gscLast, semLast] = await Promise.all([StorageService.getMeta('gsc_last'), StorageService.getMeta('semrush_last')]);
     sourceHasData = { gsc: !!gscLast, semrush: !!semLast };
     await renderHistory();
+    await renderGscInsights();
     await renderMergeStatsAndTable();
     renderDashboardWidget();
     const badge = document.getElementById('dcNavBadge');
