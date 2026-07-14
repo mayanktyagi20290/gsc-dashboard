@@ -368,14 +368,14 @@
 <div id="tab-pagecomp" class="tabpanel">
 <section id="pageCompSection">
   <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M3.5 9.5 L20.5 9.5 M9 3.5 L9 20.5"/></svg>Page-wise Competitors</h2>
-  <p class="section-sub">Every one of the 31 pages with its own specific competitors — not just the funnel-stage group. E.g. the Online Coding Test page competes with HackerRank/Codility specifically, not the general Assessment competitor list.</p>
+  <p class="section-sub">Every one of the 31 pages with its own specific competitors — not just the funnel-stage group. E.g. the Online Coding Test page competes with HackerRank/Codility specifically, not the general Assessment competitor list. Parent/Secondary Keyword columns pull straight from the Keyword Volume Map. Competitor links point to each rival's specific service page for this context (not their homepage), unless flagged as a fallback — hover a competitor name for the note.</p>
   <div class="matrix-toolbar">
     <input type="text" id="pageCompSearch" placeholder="Filter by page name or URL…" oninput="renderPageCompetitors()" style="min-width:280px;">
     <button onclick="downloadPageCompCSV()">⬇ Download CSV</button>
   </div>
   <div style="overflow-x:auto;">
     <table>
-      <thead><tr><th style="width:20%;">Page</th><th style="width:20%;">URL</th><th>Competitors</th></tr></thead>
+      <thead><tr><th style="width:13%;">Page</th><th style="width:13%;">URL</th><th style="width:15%;">Parent Keyword</th><th style="width:17%;">Secondary Keywords</th><th>Competitors</th></tr></thead>
       <tbody id="pageCompBody"></tbody>
     </table>
   </div>
@@ -798,38 +798,41 @@ const DEFAULT_ACTIONS = [
   {p:'low', t:'Proctoring page has almost no query volume', d:'ai-proctoring-agent gets only 7 impressions. Worth checking if it\'s properly indexed and linked from the assessment + interview pages.'},
 ];
 
+// URLs verified via live research (Jul 2026). Each points to the competitor's specific
+// product/service page matching this exact Unstop context, unless flagged deepLink:false —
+// in that case no dedicated page exists and their homepage/closest-hub page is the honest fallback.
 const DEFAULT_PAGE_COMPETITORS = {
-  'hub': [{name:'Naukri', url:'https://www.naukri.com'},{name:'LinkedIn Talent Solutions', url:'https://business.linkedin.com/talent-solutions'},{name:'HackerEarth', url:'https://www.hackerearth.com'},{name:'Mercer Mettl', url:'https://mettl.com'}],
-  'sourcing': [{name:'Internshala', url:'https://internshala.com'},{name:'Naukri', url:'https://www.naukri.com'},{name:'LinkedIn Recruiter', url:'https://business.linkedin.com/talent-solutions/recruiter'},{name:'HireEZ', url:'https://hireez.com'},{name:'Superset', url:'https://www.joinsuperset.com'}],
-  'sourcing-jobboard': [{name:'Internshala', url:'https://internshala.com'},{name:'Naukri', url:'https://www.naukri.com'},{name:'Indeed', url:'https://www.indeed.com'}],
-  'sourcing-community': [{name:'Internshala', url:'https://internshala.com'},{name:'LinkedIn', url:'https://www.linkedin.com'},{name:'Wellfound', url:'https://wellfound.com'}],
-  'screening': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'iMocha', url:'https://www.imocha.io'},{name:'HireEZ', url:'https://hireez.com'},{name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'},{name:'Turing', url:'https://www.turing.com'}],
-  'assessment': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'HackerEarth', url:'https://www.hackerearth.com'},{name:'iMocha', url:'https://www.imocha.io'},{name:'TestGorilla', url:'https://www.testgorilla.com'},{name:'Xobin', url:'https://xobin.com'},{name:'Adaface', url:'https://www.adaface.com'},{name:'HireMee', url:'https://hiremee.co.in'},{name:'PMaps', url:'https://www.pmapstest.com'},{name:'CoCubes', url:'https://www.cocubes.com'}],
-  'assessment-aptitude': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'PMaps', url:'https://www.pmapstest.com'},{name:'IBM Kenexa', url:'https://www.ibm.com'}],
-  'assessment-coding': [{name:'HackerEarth', url:'https://www.hackerearth.com'},{name:'HackerRank', url:'https://www.hackerrank.com'},{name:'Codility', url:'https://www.codility.com'},{name:'CodeSignal', url:'https://codesignal.com'}],
-  'assessment-sql': [{name:'HackerEarth', url:'https://www.hackerearth.com'},{name:'Adaface', url:'https://www.adaface.com'},{name:'iMocha', url:'https://www.imocha.io'}],
-  'assessment-technical': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'iMocha', url:'https://www.imocha.io'},{name:'HackerEarth', url:'https://www.hackerearth.com'}],
-  'assessment-bizsim': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'Arctic Shores', url:'https://www.arcticshores.com'}],
-  'assessment-comm': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'PMaps', url:'https://www.pmapstest.com'},{name:'Versant (Pearson)', url:'https://www.versanttest.com'}],
-  'interview': [{name:'HireVue', url:'https://www.hirevue.com'},{name:'Talview', url:'https://www.talview.com'},{name:'Mercer Mettl', url:'https://mettl.com'},{name:'HackerEarth OnScreen', url:'https://www.hackerearth.com'},{name:'Spark Hire', url:'https://www.sparkhire.com'},{name:'Metaview', url:'https://www.metaview.ai'},{name:'TheHireHub.AI', url:'https://www.thehirehub.ai'}],
-  'interview-ai': [{name:'HireVue', url:'https://www.hirevue.com'},{name:'Talview', url:'https://www.talview.com'},{name:'Metaview', url:'https://www.metaview.ai'}],
-  'proctoring': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'HireMee', url:'https://hiremee.co.in'},{name:'Talview', url:'https://www.talview.com'}],
-  'calling': [{name:'Talkpush', url:'https://www.talkpush.com'},{name:'Sense', url:'https://www.sensehq.com'},{name:'Paradox (Olivia)', url:'https://www.paradox.ai'}],
-  'scheduling': [{name:'GoodTime', url:'https://www.goodtime.io'},{name:'Calendly', url:'https://calendly.com'},{name:'Paradox (Olivia)', url:'https://www.paradox.ai'}],
-  'branding': [{name:'Universum', url:'https://universumglobal.com'},{name:'Symphony Talent', url:'https://www.symphonytalent.com'},{name:'PeopleScout', url:'https://www.peoplescout.com'},{name:'Blu Ivy Group', url:'https://bluivygroup.com'}],
+  'hub': [{name:'Naukri', url:'https://www.naukri.com/naukri-talent-cloud'},{name:'LinkedIn Talent Solutions', url:'https://business.linkedin.com/talent-solutions'},{name:'HackerEarth', url:'https://www.hackerearth.com/recruit/'},{name:'Mercer Mettl', url:'https://mettl.com/en/digital-hiring/'}],
+  'sourcing': [{name:'Internshala', url:'https://internshala.com/employer/'},{name:'Naukri (Resdex)', url:'https://www.naukri.com/recruit/buy-resume-database-access-packages'},{name:'LinkedIn Recruiter', url:'https://business.linkedin.com/talent-solutions/recruiter'},{name:'HireEZ', url:'https://hireez.com/ai-sourcing/'},{name:'Superset', url:'https://joinsuperset.com/employer.html'}],
+  'sourcing-jobboard': [{name:'Internshala', url:'https://internshala.com/post-job/'},{name:'Naukri', url:'https://www.naukri.com/recruit/job-posting'},{name:'Indeed', url:'https://employers.indeed.com/post-job'}],
+  'sourcing-community': [{name:'Internshala Student Partner', url:'https://isp.internshala.com/'},{name:'LinkedIn', url:'https://business.linkedin.com/talent-solutions', deepLink:false, note:'No dedicated public talent-community page — hub fallback'},{name:'Wellfound', url:'https://wellfound.com/recruit/overview'}],
+  'screening': [{name:'Mercer Mettl', url:'https://mettl.com/en-gb/online-assessment-platform/', note:'Assessment platform (screening use case)'},{name:'iMocha', url:'https://www.imocha.io/products/skills-assessment', note:'Assessment platform (screening use case)'},{name:'HireEZ', url:'https://hireez.com/ai-sourcing/', deepLink:false, note:'Sourcing product — no distinct screening page'},{name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'},{name:'Turing', url:'https://www.turing.com', deepLink:false, note:'Homepage — not independently verified'}],
+  'assessment': [{name:'Mercer Mettl', url:'https://mettl.com/en-gb/online-assessment-platform/'},{name:'HackerEarth', url:'https://www.hackerearth.com/recruit/assessments'},{name:'iMocha', url:'https://www.imocha.io/products/skills-assessment'},{name:'TestGorilla', url:'https://www.testgorilla.com/assessments/'},{name:'Xobin', url:'https://xobin.com/products/skill-assessment-software/'},{name:'Adaface', url:'https://www.adaface.com/online-assessment-platform'},{name:'HireMee', url:'https://hiremee.co.in/online-assessment-platform'},{name:'PMaps', url:'http://www.pmaps.in/solution/psychometric/'},{name:'CoCubes', url:'https://www.cocubes.com/online-examination-solution.aspx'}],
+  'assessment-aptitude': [{name:'Mercer Mettl', url:'https://mettl.com/en/aptitude-tests/'},{name:'PMaps', url:'http://www.pmaps.in/solution/cognitive-and-aptitude-products/'},{name:'IBM Kenexa', url:'https://www.ibm.com/support/pages/ibm-kenexa-assess-cloud-sample-assess-reports', deepLink:false, note:'No current standalone marketing page — closest live IBM reference'}],
+  'assessment-coding': [{name:'HackerEarth', url:'https://www.hackerearth.com/recruit/assessments'},{name:'HackerRank', url:'https://www.hackerrank.com/products/screen'},{name:'Codility', url:'https://www.codility.com/product-tour/'},{name:'CodeSignal', url:'https://codesignal.com/technical-assessments/'}],
+  'assessment-sql': [{name:'HackerEarth', url:'https://www.hackerearth.com/tests/sql-query-test'},{name:'Adaface', url:'https://www.adaface.com/assessment-test/sql-online-test'},{name:'iMocha', url:'https://www.imocha.io/pre-employment-testing/sql-ms-sql-my-sql'}],
+  'assessment-technical': [{name:'Mercer Mettl', url:'https://mettl.com/en/skills-assessment-test/'},{name:'iMocha', url:'https://www.imocha.io/pre-employment-testing/it-skill-test'},{name:'HackerEarth', url:'https://www.hackerearth.com/recruit/features/skill-based-assessments'}],
+  'assessment-bizsim': [{name:'Mercer Mettl', url:'https://mettl.com/test/case-study-analysis-and-decision-making-skills/'},{name:'Arctic Shores', url:'https://www.arcticshores.com/how-it-works'}],
+  'assessment-comm': [{name:'Mercer Mettl', url:'https://mettl.com/en/test/corporate-communications-assessment/'},{name:'PMaps', url:'https://pmaps.in/', deepLink:false, note:'No dedicated communication-assessment page found'},{name:'Versant (Pearson)', url:'https://www.pearson.com/languages/hr-professionals/versant.html'}],
+  'interview': [{name:'HireVue', url:'https://www.hirevue.com/platform/online-video-interviewing-software'},{name:'Talview', url:'https://www.talview.com/en/on-demand-video-interviewing'},{name:'Mercer Mettl', url:'https://mettl.com/en/virtual-video-interview-platform/'},{name:'HackerEarth OnScreen', url:'https://www.hackerearth.com/ai/onscreen'},{name:'Spark Hire', url:'https://www.sparkhire.com/video-interviews/software/'},{name:'Metaview', url:'https://www.metaview.ai/', deepLink:false, note:'Unified product, no separate interviewing sub-page'},{name:'TheHireHub.AI', url:'https://www.thehirehub.ai/', deepLink:false, note:'Live but general AI recruitment tool, no dedicated interview page'}],
+  'interview-ai': [{name:'HireVue', url:'https://www.hirevue.com/platform/ai-interviewer'},{name:'Talview (Ivy)', url:'https://www.talview.com/en/ivy-ai-interviewer'},{name:'Metaview', url:'https://www.metaview.ai/', deepLink:false, note:'No distinct AI-interview sub-page'}],
+  'proctoring': [{name:'Mercer Mettl', url:'https://mettl.com/en/online-remote-proctoring/'},{name:'HireMee', url:'https://hiremee.co.in/ai-proctored-assessment-platform'},{name:'Talview (Alvy)', url:'https://www.talview.com/en/alvy-ai-proctoring-agent'}],
+  'calling': [{name:'Talkpush', url:'https://www.talkpush.com/voice-ai'},{name:'Sense (SenseHQ)', url:'https://www.sensehq.com/product/automation'},{name:'Paradox (Olivia)', url:'https://www.paradox.ai/why-paradox'}],
+  'scheduling': [{name:'GoodTime', url:'https://goodtime.io/products/hire/automated-interview-scheduling/'},{name:'Calendly', url:'https://calendly.com/solutions/recruiting'},{name:'Paradox (Olivia)', url:'https://www.paradox.ai/products/conversational-scheduling'}],
+  'branding': [{name:'Universum', url:'https://universumglobal.com/solutions/'},{name:'Symphony Talent', url:'https://www.symphonytalent.com/solutions/employer-branding-creative-services/'},{name:'PeopleScout', url:'https://www.peoplescout.com/solutions/employer-branding/'},{name:'Blu Ivy Group', url:'https://bluivygroup.com/services/employer-brand-strategy-research-consulting/'}],
   'branding-quizzes': [{name:'ProProfs Quiz Maker', url:'https://www.proprofs.com/quiz-school/'}],
-  'branding-hackathons': [{name:'Devfolio', url:'https://devfolio.co'},{name:'HackerEarth', url:'https://www.hackerearth.com'},{name:'MLH', url:'https://mlh.io'}],
-  'branding-bizsim': [{name:'Mercer Mettl', url:'https://mettl.com'},{name:'Arctic Shores', url:'https://www.arcticshores.com'}],
-  'branding-talentcommunity': [{name:'Phenom People', url:'https://www.phenom.com'},{name:'Beamery', url:'https://beamery.com'}],
-  'branding-dshackathons': [{name:'Kaggle', url:'https://www.kaggle.com'},{name:'HackerEarth', url:'https://www.hackerearth.com'},{name:'Devfolio', url:'https://devfolio.co'}],
-  'branding-ideathons': [{name:'Devfolio', url:'https://devfolio.co'},{name:'HackerEarth', url:'https://www.hackerearth.com'}],
-  'branding-brandpresence': [{name:'Glassdoor', url:'https://www.glassdoor.com'},{name:'LinkedIn', url:'https://www.linkedin.com'},{name:'Universum', url:'https://universumglobal.com'}],
-  'brand-advertise': [{name:'Universum', url:'https://universumglobal.com'},{name:'LinkedIn Talent Brand', url:'https://business.linkedin.com/talent-solutions'},{name:'Glassdoor', url:'https://www.glassdoor.com'}],
-  'ats': [{name:'Darwinbox', url:'https://www.darwinbox.com'},{name:'Keka', url:'https://www.keka.com'},{name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'},{name:'Greenhouse', url:'https://www.greenhouse.io'}],
-  'virtual-hiring': [{name:'HireVue', url:'https://www.hirevue.com'},{name:'Talview', url:'https://www.talview.com'},{name:'Mercer Mettl', url:'https://mettl.com'}],
-  'campus-hiring': [{name:'Superset', url:'https://www.joinsuperset.com'},{name:'CampusNext', url:''},{name:'HackerEarth', url:'https://www.hackerearth.com'}],
-  'lateral-hiring': [{name:'Naukri', url:'https://www.naukri.com'},{name:'LinkedIn Recruiter', url:'https://business.linkedin.com/talent-solutions/recruiter'},{name:'Instahyre', url:'https://www.instahyre.com'}],
-  'hiring-talent-platform': [{name:'Darwinbox', url:'https://www.darwinbox.com'},{name:'Keka', url:'https://www.keka.com'},{name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'}],
+  'branding-hackathons': [{name:'Devfolio', url:'https://org.devfolio.co/', note:'Organizer dashboard — no separate marketing page'},{name:'HackerEarth', url:'https://www.hackerearth.com/recruit/hackathons'},{name:'MLH', url:'https://sponsor.mlh.io/'}],
+  'branding-bizsim': [{name:'Mercer Mettl', url:'https://mettl.com/en/test/case-study-analysis-and-decision-making-skills/'},{name:'Arctic Shores', url:'https://www.arcticshores.com/una', note:'Core product page ("The Product")'}],
+  'branding-talentcommunity': [{name:'Phenom People', url:'https://www.phenom.com/talent-crm'},{name:'Beamery', url:'https://beamery.com/platform/talent-acquisition/talent-crm/'}],
+  'branding-dshackathons': [{name:'Kaggle', url:'https://www.kaggle.com/competition-hosting'},{name:'HackerEarth', url:'https://www.hackerearth.com/hackathon/explore/field/data-science-and-engineering/'},{name:'Devfolio', url:'https://org.devfolio.co/'}],
+  'branding-ideathons': [{name:'Devfolio', url:'https://guide.devfolio.co/docs/guide/setting-up-a-hackathon-for-business', deepLink:false, note:'No dedicated ideathon page — closest business-hackathon guide'},{name:'HackerEarth', url:'https://www.hackerearth.com/hackathon/info/organizer/'}],
+  'branding-brandpresence': [{name:'Glassdoor', url:'https://www.glassdoor.com/employers/', deepLink:false, note:'No standalone employer-branding product URL — hub fallback'},{name:'LinkedIn (Career Pages)', url:'https://business.linkedin.com/talent-solutions/company-career-pages'},{name:'Universum', url:'https://universumglobal.com/solutions/'}],
+  'brand-advertise': [{name:'Universum', url:'https://universumglobal.com/solutions/#activation'},{name:'LinkedIn Talent Brand', url:'https://business.linkedin.com/talent-solutions/company-career-pages', note:'Career Pages is the current live product'},{name:'Glassdoor', url:'https://www.glassdoor.com/employers/solutions/employer-branding-ads/'}],
+  'ats': [{name:'Darwinbox', url:'https://darwinbox.com/products/recruitment'},{name:'Keka', url:'https://www.keka.com/applicant-tracking-system'},{name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'},{name:'Greenhouse', url:'https://www.greenhouse.com/', deepLink:false, note:'Single-product company — homepage IS the ATS page'}],
+  'virtual-hiring': [{name:'HireVue', url:'https://www.hirevue.com/virtual-hiring'},{name:'Talview', url:'https://www.talview.com/en/virtual-hiring-event-platform'},{name:'Mercer Mettl', url:'https://mettl.com/en/virtual-remote-hiring-software/'}],
+  'campus-hiring': [{name:'Superset', url:'https://joinsuperset.com/employer.html'},{name:'CampusNext (domain inactive)', url:'', deepLink:false, note:'campusnext.org/.co both unreachable — appears dead, consider dropping'},{name:'HackerEarth', url:'https://www.hackerearth.com/recruit/university-hiring'}],
+  'lateral-hiring': [{name:'Naukri', url:'https://www.naukri.com/naukri-talent-cloud', deepLink:false, note:'No distinct lateral-hiring page — hub fallback'},{name:'LinkedIn Recruiter', url:'https://business.linkedin.com/talent-solutions/recruiter'},{name:'Instahyre', url:'https://www.instahyre.com/employers/'}],
+  'hiring-talent-platform': [{name:'Darwinbox', url:'https://darwinbox.com/products/recruitment'},{name:'Keka', url:'https://www.keka.com/applicant-tracking-system'},{name:'Zoho Recruit', url:'https://www.zoho.com/recruit/'}],
 };
 
 const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -972,16 +975,26 @@ function renderAll(){
 }
 
 // --- Page-wise competitors tab ---
+function getParentSecondary(pageId){
+  const kws = (KEYWORD_VOLUMES[pageId]||[]).slice();
+  if(!kws.length) return {parent:null, secondary:[]};
+  const sorted = kws.slice().sort((a,b)=> (b[1]||0) - (a[1]||0));
+  return {parent: sorted[0], secondary: sorted.slice(1,4)};
+}
+function fmtVol(v){ return (v===null||v===undefined) ? '—' : v.toLocaleString(); }
 function renderPageCompetitors(){
   const q = (document.getElementById('pageCompSearch').value||'').toLowerCase();
   const rows = PAGES.filter(p=> p.label.toLowerCase().includes(q) || p.path.toLowerCase().includes(q));
   document.getElementById('pageCompBody').innerHTML = rows.map(p=>{
     const comps = DATA.pageCompetitors[p.id] || [];
+    const {parent, secondary} = getParentSecondary(p.id);
     return `<tr>
       <td><strong>${p.label}</strong><div class="tiny">${catLabel[p.cat]||p.cat}</div></td>
       <td class="url-cell mono"><a href="${BASE}${p.path}" target="_blank" rel="noopener">${p.path}</a></td>
+      <td>${parent ? `<strong>${parent[0]}</strong><div class="tiny">Vol: ${fmtVol(parent[1])}/mo</div>` : '<span class="tiny">No keyword data</span>'}</td>
+      <td>${secondary.length ? secondary.map(s=>`${s[0]} <span class="tiny">(${fmtVol(s[1])})</span>`).join('<br>') : '<span class="tiny">—</span>'}</td>
       <td>
-        ${comps.map((c,ci)=>`<span class="comp-pill">${c.url ? `<a href="${c.url}" target="_blank" rel="noopener" class="comp-link">${c.name}</a>` : c.name} <a href="#" class="del-link" onclick="editPageCompetitorUrl('${p.id}',${ci});return false;" title="Edit URL">✎</a><a href="#" class="del-link" onclick="deletePageCompetitor('${p.id}',${ci});return false;">✕</a></span>`).join(' ') || '<span class="tiny">No competitors yet</span>'}
+        ${comps.map((c,ci)=>`<span class="comp-pill" ${c.note?`title="${c.note.replace(/"/g,'&quot;')}"`:''}>${c.url ? `<a href="${c.url}" target="_blank" rel="noopener" class="comp-link">${c.name}</a>` : c.name}${c.deepLink===false?' <span class="tiny">(fallback)</span>':''} <a href="#" class="del-link" onclick="editPageCompetitorUrl('${p.id}',${ci});return false;" title="Edit URL">✎</a><a href="#" class="del-link" onclick="deletePageCompetitor('${p.id}',${ci});return false;">✕</a></span>`).join(' ') || '<span class="tiny">No competitors yet</span>'}
         <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;">
           <input type="text" id="pc-text-${p.id}" placeholder="competitor name" style="min-width:110px;">
           <input type="text" id="pc-url-${p.id}" placeholder="https://competitor.com" style="min-width:150px;">
@@ -1008,10 +1021,12 @@ function editPageCompetitorUrl(pageId, ci){
   renderPageCompetitors();
 }
 function downloadPageCompCSV(){
-  let rows = [['Page','URL','Category','Competitors']];
+  let rows = [['Page','URL','Category','Parent Keyword','Parent Volume','Secondary Keywords','Competitors']];
   PAGES.forEach(p=>{
     const comps = (DATA.pageCompetitors[p.id]||[]);
-    rows.push([p.label, BASE+p.path, catLabel[p.cat]||p.cat, competitorsLabel(comps)]);
+    const {parent, secondary} = getParentSecondary(p.id);
+    const secLabel = secondary.map(s=>`${s[0]} (${fmtVol(s[1])})`).join('; ');
+    rows.push([p.label, BASE+p.path, catLabel[p.cat]||p.cat, parent?parent[0]:'', parent?fmtVol(parent[1]):'', secLabel, competitorsLabel(comps)]);
   });
   const csv = rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
