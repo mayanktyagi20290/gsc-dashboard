@@ -168,6 +168,12 @@
   .del-link{color:#c0392b;text-decoration:none;margin-left:4px;font-weight:700;}
   .del-row-btn{font-size:11px;padding:4px 10px;color:#c0392b;border-color:#ffd1d1;}
 
+  .status-pill{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;}
+  .status-existing{background:#e3f6ec;color:#0d9668;}
+  .status-new{background:#fff3d6;color:#a9720d;}
+  .status-suggested{background:#eef2ff;color:#1c4ed8;}
+  select#volSortBy{min-width:220px;}
+
 </style>
 </head>
 <body>
@@ -190,6 +196,7 @@
     <button class="tabbtn active" onclick="switchTab('journey')" id="btn-tab-journey">🗺️ Journey Map</button>
     <button class="tabbtn" onclick="switchTab('keywords')" id="btn-tab-keywords">🔑 Keyword &amp; Competitor Intel</button>
     <button class="tabbtn" onclick="switchTab('pagecomp')" id="btn-tab-pagecomp">📄 Page-wise Competitors</button>
+    <button class="tabbtn" onclick="switchTab('volumes')" id="btn-tab-volumes">📊 Keyword Volumes</button>
   </div>
 </header>
 
@@ -340,6 +347,32 @@
     <table>
       <thead><tr><th style="width:20%;">Page</th><th style="width:20%;">URL</th><th>Competitors</th></tr></thead>
       <tbody id="pageCompBody"></tbody>
+    </table>
+  </div>
+</section>
+</div>
+
+<div id="tab-volumes" class="tabpanel">
+  <div class="stats" id="volStatsRow"></div>
+<section id="volumeTableSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19 L4 13 M10 19 L10 8 M16 19 L16 4 M4 19 L20 19"/></svg>Keyword Volume Map</h2>
+  <p class="section-sub">Every keyword mapped to its target employer page — Monthly Volume pulled from SEMrush, plus GSC-sourced additions and B2B fill-ins for thin pages. <strong>Existing</strong> = already had SEMrush volume, <strong>New (GSC)</strong> = added from real Search Console queries that were missing, <strong>Suggested</strong> = fill-in for a page that had too few keywords, volume not yet checked.</p>
+  <div class="matrix-toolbar">
+    <input type="text" id="volSearch" placeholder="Filter by keyword or page…" oninput="renderVolumeTable()" style="min-width:280px;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <select id="volSortBy" onchange="renderVolumeTable()">
+        <option value="page">Sort: Page (grouped)</option>
+        <option value="volume-desc">Sort: Volume high → low</option>
+        <option value="volume-asc">Sort: Volume low → high</option>
+        <option value="az">Sort: Keyword A → Z</option>
+      </select>
+      <button class="ghost" onclick="downloadVolumeCSV()">⬇ Download CSV</button>
+    </div>
+  </div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th style="width:24%;">Page</th><th>Keyword</th><th class="num" style="width:13%;">Monthly Volume</th><th style="width:14%;">Status</th></tr></thead>
+      <tbody id="volumeBody"></tbody>
     </table>
   </div>
 </section>
@@ -1053,7 +1086,102 @@ function downloadCSVKeywords(){
   URL.revokeObjectURL(url);
 }
 
+// --- Keyword Volume Map (SEMrush volume + GSC gap-fills, mapped to PAGES ids) ---
+const KEYWORD_VOLUMES = {
+  "ats": [["Applicant Tracking Software", 3600, "Existing"], ["ATS System", 2900, "Existing"], ["ATS Platform", 320, "Existing"], ["ATS Tool", 320, "Existing"], ["Recruitment ATS", 210, "Existing"], ["AI ATS", 170, "Existing"], ["ATS Solution", 110, "Existing"], ["Hiring ATS", 50, "Existing"], ["Enterprise ATS", 30, "Existing"]],
+  "hub": [["Recruitment Software", 3600, "Existing"], ["Hiring Software", 1900, "Existing"], ["Hiring Platform", 1300, "Existing"], ["AI Recruitment Software", 1000, "Existing"], ["Recruitment Platform", 880, "Existing"], ["Online Recruitment Platform", 480, "Existing"], ["Hiring Solution", 320, "Existing"], ["AI Hiring Platform", 210, "Existing"], ["Hiring System", 170, "Existing"], ["Hiring Tool", 170, "Existing"], ["Recruitment Solution", 170, "Existing"], ["AI Recruiting Platform", 140, "Existing"], ["Online Hiring Platform", 50, "Existing"], ["Digital Hiring Platform", 20, "Existing"], ["AI Based Recruitment Platform", 110, "New (GSC)"], ["Recruitment Automation Platform", 110, "New (GSC)"]],
+  "interview-ai": [["AI Interview", 2900, "Existing"], ["AI Interview Platform", 170, "Existing"], ["Interview Platform", 140, "Existing"]],
+  "interview": [["AI Voice Agent", 1600, "Existing"], ["AI Interview Assistant", 1300, "Existing"], ["Video Interview Software", 720, "Existing"], ["Interview Scheduler", 480, "Existing"], ["Interview Scheduling Software", 480, "Existing"], ["AI Interview Software", 390, "Existing"], ["Video Interview Platform", 390, "Existing"], ["AI Calling Agent", 390, "Existing"], ["AI Interview Tool", 210, "Existing"], ["Automated Calling Software", 210, "Existing"], ["AI Scheduling Software", 140, "Existing"], ["AI Interview Application", 90, "Existing"], ["AI Calling Software", 50, "Existing"], ["Interview Scheduling Platform", 50, "Existing"], ["One Way Interview Software", 50, "Existing"], ["AI Powered Interview Platform", 40, "Existing"], ["Candidate Scheduling Software", 30, "Existing"], ["Digital Interview Platform", 30, "Existing"], ["AI Interview Agent", 30, "Existing"], ["AI Interview System", 20, "Existing"], ["Interview Booking Software", 20, "Existing"], ["Voice AI for Recruitment", 20, "Existing"], ["AI Scheduling Agent", 20, "Existing"], ["AI Calling Platform", 10, "Existing"], ["AI Calling Solution", 10, "Existing"], ["AI Voice Calling Software", 10, "Existing"], ["Interview Automation Software", 10, "Existing"], ["Interview Scheduler Software", 0, "Existing"], ["Interview Scheduling Solution", 0, "Existing"], ["Recruitment Scheduling Software", 0, "Existing"], ["AI Interview Solution", 0, "Existing"], ["Recruitment Calling Software", 0, "Existing"], ["Interview Calling Software", 0, "Existing"], ["Candidate Calling Software", 0, "Existing"], ["AI Interview Technology", 0, "Existing"], ["Automated Interview Platform", 10, "New (GSC)"]],
+  "branding-bizsim": [["Business Simulation Games", 1300, "Existing"], ["Business Simulation Software", 210, "Existing"], ["Business Learning Platform", 90, "Existing"], ["Business Strategy Simulation", 50, "Existing"], ["Business Simulation Platform", 0, "Existing"], ["Business Simulation Tool", 0, "Existing"], ["Leadership Simulation Software", 0, "Existing"], ["Management Simulation Platform", 0, "Existing"], ["Hiring Simulation Platform", 0, "Existing"], ["Management Simulation Software", 0, "Existing"], ["Business Simulation Solution", 0, "Existing"], ["Business Simulation System", 0, "Existing"], ["Corporate Simulation Platform", 0, "Existing"], ["Enterprise Simulation Platform", 0, "Existing"]],
+  "sourcing-jobboard": [["Job Board Software", 880, "Existing"], ["Job Posting Software", 260, "Existing"], ["Job Board Platform", 170, "Existing"], ["Job Posting Platform", 140, "Existing"], ["Hiring Marketplace", 90, "Existing"], ["Recruitment Marketplace", 70, "Existing"], ["Employer Job Board", 20, "Existing"], ["Internship Job Board", 10, "Existing"], ["Internship Platform", 10, "Existing"], ["Recruitment Job Board", 10, "Existing"], ["Free Job Portals For Employers", 70, "New (GSC)"], ["Post Internship For Free", 0, "New (GSC)"]],
+  "hiring-talent-platform": [["Talent Acquisition Platform", 720, "Existing"], ["Talent Hiring Platform", null, "Suggested (fill-in)"], ["End To End Hiring Platform", null, "Suggested (fill-in)"], ["Unified Talent Acquisition Platform", null, "Suggested (fill-in)"]],
+  "assessment": [["Assessment Software", 720, "Existing"], ["Assessment Platform", 390, "Existing"], ["Assessment Tool", 320, "Existing"], ["Online Assessment Platform", 320, "Existing"], ["Talent Assessment Platform", 260, "Existing"], ["Pre Employment Assessment Software", 50, "Existing"], ["Assessment Solution", 40, "Existing"], ["Hiring Assessment Software", 40, "Existing"], ["Skills Assessment Platform", 20, "Existing"], ["Recruitment Assessment Platform", 0, "Existing"], ["AI Assessment Agent", 0, "Existing"]],
+  "assessment-technical": [["Technical Skills Assessment", 720, "Existing"], ["Technical Assessment Platform", 40, "Existing"], ["Technical Assessment Software", 40, "Existing"], ["Role Based Assessment", 10, "Existing"], ["Technical Hiring Assessment", 0, "Existing"], ["Engineering Assessment Platform", 0, "Existing"], ["Technical Evaluation Software", 0, "Existing"], ["Technical Recruitment Assessment", 0, "Existing"]],
+  "sourcing": [["Candidate Sourcing Software", 590, "Existing"], ["Candidate Sourcing Platform", 260, "Existing"], ["AI Sourcing Software", 210, "Existing"], ["AI Talent Sourcing", 170, "Existing"], ["Talent Sourcing Platform", 140, "Existing"], ["AI Sourcing Tool", 90, "Existing"], ["AI Sourcing Agent", 30, "Existing"], ["AI Sourcing Platform", 20, "Existing"], ["Talent Sourcing Solution", 170, "New (GSC)"]],
+  "screening": [["Candidate Screening Software", 390, "Existing"], ["AI Resume Screening", 320, "Existing"], ["Resume Screening Software", 320, "Existing"], ["AI Screening Tool", 260, "Existing"], ["AI Screening Software", 70, "Existing"], ["Recruitment Screening Software", 40, "Existing"], ["AI Screening Solution", 20, "Existing"], ["Candidate Screening Platform", 20, "Existing"], ["Technical Screening Platform", 10, "Existing"], ["AI Screening Agent", 10, "Existing"], ["AI Screening Platform", 0, "Existing"], ["Automated Candidate Screening", 260, "New (GSC)"]],
+  "branding": [["Employer Branding Services", 320, "Existing"], ["Recruitment Marketing Platform", 210, "Existing"], ["Employer Solution", 170, "Existing"], ["Employer Branding Platform", 90, "Existing"], ["Employer Branding Software", 70, "Existing"], ["Talent Marketing Platform", 70, "Existing"], ["Employer Branding Solution", 40, "Existing"], ["Employer Branding Tool", 40, "Existing"], ["Employer Software", 30, "Existing"], ["Employer Platform", 20, "Existing"], ["Employer Brand Platform", 10, "Existing"], ["Talent Branding Platform", 0, "Existing"], ["Employer Value Proposition Software", 0, "Existing"], ["Employer Engagement Platform", 0, "Existing"], ["Employer Marketing Platform", 0, "Existing"], ["Employer Brand Software", 0, "Existing"], ["Employer Brand Solution", 0, "Existing"], ["Recruitment Branding Platform", 0, "Existing"], ["Talent Brand Platform", 0, "Existing"], ["Employer Branding Agency", 880, "New (GSC)"], ["Employer Brand Agency", 210, "New (GSC)"], ["Employer Branding Company", 70, "New (GSC)"], ["Employer Branding Consultant", 140, "New (GSC)"], ["Best Employer Branding Platforms", 10, "New (GSC)"]],
+  "assessment-aptitude": [["Online Aptitude Test", 320, "Existing"], ["Pre Employment Aptitude Test", 140, "Existing"], ["Candidate Aptitude Test", 50, "Existing"], ["Aptitude Test Platform", 20, "Existing"], ["Aptitude Test Software", 20, "Existing"], ["Hiring Aptitude Test", 20, "Existing"], ["AI Aptitude Test", 10, "Existing"], ["Aptitude Assessment Software", 0, "Existing"], ["Aptitude Testing Platform", 0, "Existing"], ["Aptitude Assessment Platform", 0, "Existing"]],
+  "assessment-comm": [["Soft Skills Assessment", 320, "Existing"], ["Communication Skills Assessment", 260, "Existing"], ["English Communication Test", 30, "Existing"], ["Spoken English Assessment", 10, "Existing"], ["Communication Assessment Platform", 0, "Existing"], ["Communication Assessment Software", 0, "Existing"], ["Verbal Assessment Platform", 0, "Existing"], ["Communication Evaluation Software", 0, "Existing"], ["Hiring Communication Assessment", 0, "Existing"], ["AI Communication Assessment", 0, "Existing"], ["Communication Assessment Test", 70, "New (GSC)"], ["Online Communication Test", 20, "New (GSC)"]],
+  "proctoring": [["Online Proctoring Software", 260, "Existing"], ["Online Proctoring Platform", 140, "Existing"], ["Remote Proctoring Software", 110, "Existing"], ["AI Proctoring Software", 70, "Existing"], ["Exam Proctoring Software", 40, "Existing"], ["Remote Proctoring Platform", 30, "Existing"], ["AI Proctoring Platform", 10, "Existing"], ["AI Proctoring Solution", 0, "Existing"], ["AI Exam Monitoring", 0, "Existing"], ["Assessment Proctoring Software", 0, "Existing"], ["AI Proctoring Agent", 0, "Existing"]],
+  "branding-quizzes": [["Quiz Software", 210, "Existing"], ["Online Quiz Platform", 170, "Existing"], ["Quiz Platform", 90, "Existing"], ["Quiz Tool", 90, "Existing"], ["Interactive Quiz Platform", 20, "Existing"], ["Quiz Solution", 0, "Existing"], ["Engagement Quiz Platform", 0, "Existing"], ["Hiring Quiz Platform", 0, "Existing"], ["Recruitment Quiz Software", 0, "Existing"], ["Corporate Quiz Platform", 0, "Existing"]],
+  "assessment-coding": [["Coding Interview Platform", 140, "Existing"], ["Coding Assessment Platform", 110, "Existing"], ["Coding Test Software", 20, "Existing"], ["Developer Assessment Platform", 20, "Existing"], ["Online Coding Test Platform", 20, "Existing"], ["Coding Competition Platform", 20, "Existing"], ["AI Coding Assessment", 10, "Existing"], ["Coding Challenge Platform", 10, "Existing"], ["Technical Coding Test", 10, "Existing"], ["Coding Evaluation Software", 0, "Existing"], ["Programming Assessment Platform", 0, "Existing"]],
+  "assessment-sql": [["SQL Online Test", 140, "Existing"], ["SQL Interview Test", 30, "Existing"], ["SQL Skills Assessment", 30, "Existing"], ["SQL Test Platform", 10, "Existing"], ["SQL Assessment Platform", 0, "Existing"], ["SQL Assessment Software", 0, "Existing"], ["SQL Hiring Assessment", 0, "Existing"], ["Database Assessment Platform", 0, "Existing"], ["SQL Screening Software", 0, "Existing"], ["SQL Evaluation Platform", 0, "Existing"]],
+  "branding-ideathons": [["Innovation Platform", 140, "Existing"], ["Innovation Management Platform", 110, "Existing"], ["Innovation Challenge Platform", 50, "Existing"], ["Enterprise Innovation Platform", 20, "Existing"], ["Ideathon Platform", 0, "Existing"], ["Ideathon Software", 0, "Existing"], ["Idea Competition Platform", 0, "Existing"], ["Corporate Ideathon Platform", 0, "Existing"], ["Student Ideathon Platform", 0, "Existing"], ["Business Ideathon Platform", 0, "Existing"], ["Ideathon Hosting Platform", 0, "New (GSC)"]],
+  "branding-hackathons": [["Hackathon Platform", 110, "Existing"], ["Hackathon Software", 110, "Existing"], ["Virtual Hackathon Platform", 90, "Existing"], ["Online Hackathon Platform", 40, "Existing"], ["Hackathon Management Software", 30, "Existing"], ["AI Competition Platform", 20, "Existing"], ["Corporate Hackathon Platform", 0, "Existing"], ["Coding Hackathon Platform", 0, "Existing"], ["AI Hackathon Platform", 0, "Existing"], ["Enterprise Hackathon Platform", 0, "Existing"], ["Hackathon Hosting Platform", 20, "New (GSC)"], ["Best Hackathon Platform", 10, "New (GSC)"]],
+  "campus-hiring": [["University Hiring Platform", 50, "Existing"], ["Campus Hiring Software", 40, "Existing"], ["Campus Recruitment Platform", 40, "Existing"], ["Campus Hiring Platform", 20, "Existing"], ["Campus Hiring Solution", 10, "Existing"], ["Virtual Campus Recruitment Software", 30, "New (GSC)"]],
+  "virtual-hiring": [["Virtual Hiring Platform", 50, "Existing"], ["Virtual Recruitment Platform", 50, "Existing"], ["Virtual Hiring Software", 30, "Existing"], ["Remote Hiring Platform", 20, "Existing"], ["Virtual Hiring Solution", 10, "Existing"]],
+  "branding-talentcommunity": [["Talent Community Software", 20, "Existing"], ["Student Community Platform", 20, "Existing"], ["Talent Engagement Platform", 20, "Existing"], ["Talent Community Platform", 0, "Existing"], ["Talent Network Platform", 0, "Existing"], ["Candidate Community Platform", 0, "Existing"], ["Employer Community Platform", 0, "Existing"], ["Recruitment Community Platform", 0, "Existing"]],
+  "assessment-bizsim": [["Simulation Based Assessment", 20, "Existing"], ["Competency Assessment Platform", 0, "Existing"], ["Business Assessment Platform", 0, "Existing"], ["Business Competency Simulation Games", null, "Suggested (fill-in)"], ["Gamified Business Assessment", null, "Suggested (fill-in)"]],
+  "branding-dshackathons": [["Data Analytics Hackathon", 20, "Existing"], ["Data Science Competition Platform", 20, "Existing"], ["Machine Learning Hackathon", 20, "Existing"], ["Data Science Hackathon Platform", 0, "Existing"], ["Analytics Competition Platform", 0, "Existing"], ["ML Challenge Platform", 0, "Existing"], ["Data Science Event Platform", 0, "Existing"], ["Data Science Hackathon", 90, "New (GSC)"]],
+  "branding-brandpresence": [["Brand Awareness Platform", 10, "Existing"], ["Brand Visibility Platform", 0, "Existing"], ["Employer Brand Presence", null, "Suggested (fill-in)"], ["Employer Brand Visibility Solution", null, "Suggested (fill-in)"]],
+  "sourcing-community": [["Early Talent Platform", 0, "Existing"], ["Fresher Hiring Platform", 0, "Existing"], ["Graduate Hiring Platform", 0, "Existing"], ["Graduate Recruitment Platform", 0, "Existing"], ["Graduate Talent Community", 0, "Existing"], ["Early Talent Community Platform", 0, "Existing"]],
+  "brand-advertise": [["Recruitment Advertising Platform", 0, "Existing"], ["Employer Advertising Platform", 0, "Existing"], ["Hiring Advertising Platform", 0, "Existing"], ["Recruitment Promotion Platform", 0, "Existing"], ["Employer Brand Advertising", 0, "Existing"], ["Campus Advertising Platform", 0, "Existing"], ["Recruitment Campaign Platform", 0, "Existing"], ["Employer Promotion Platform", 0, "Existing"]],
+  "lateral-hiring": [["Lateral Hiring", 260, "New (GSC)"], ["Lateral Hiring Solutions", 0, "New (GSC)"], ["Lateral Hiring Platform", 0, "New (GSC)"], ["Experienced Hire Recruitment Platform", null, "Suggested (fill-in)"]],
+};
+
+function volStatusClass(s){
+  if(s==='Existing') return 'status-existing';
+  if(s==='New (GSC)') return 'status-new';
+  return 'status-suggested';
+}
+
+function allVolumeRows(){
+  let rows = [];
+  Object.keys(KEYWORD_VOLUMES).forEach(pid=>{
+    const p = byId(pid);
+    KEYWORD_VOLUMES[pid].forEach(r=>{
+      rows.push({pageId:pid, pageLabel:p?p.label:pid, path:p?p.path:'', keyword:r[0], volume:r[1], status:r[2]});
+    });
+  });
+  return rows;
+}
+
+function renderVolumeStats(){
+  const rows = allVolumeRows();
+  const totalVol = rows.reduce((s,r)=>s+(r.volume||0),0);
+  const pagesCovered = new Set(rows.map(r=>r.pageId)).size;
+  const newCount = rows.filter(r=>r.status==='New (GSC)').length;
+  document.getElementById('volStatsRow').innerHTML = `
+    <div class="stat"><b>${rows.length}</b><span>Keywords Tracked</span></div>
+    <div class="stat"><b>${totalVol.toLocaleString()}</b><span>Combined Monthly Volume</span></div>
+    <div class="stat"><b>${pagesCovered}</b><span>Pages With Keywords</span></div>
+    <div class="stat"><b>${newCount}</b><span>New From GSC</span></div>`;
+}
+
+let VOLUME_ROWS = [];
+function renderVolumeTable(){
+  const q = (document.getElementById('volSearch').value||'').toLowerCase();
+  const sortBy = document.getElementById('volSortBy').value;
+  VOLUME_ROWS = allVolumeRows().filter(r=> r.keyword.toLowerCase().includes(q) || r.pageLabel.toLowerCase().includes(q) || r.path.toLowerCase().includes(q));
+  VOLUME_ROWS.sort((a,b)=>{
+    if(sortBy==='volume-desc') return (b.volume||0)-(a.volume||0);
+    if(sortBy==='volume-asc') return (a.volume||0)-(b.volume||0);
+    if(sortBy==='az') return a.keyword.localeCompare(b.keyword);
+    return a.pageLabel.localeCompare(b.pageLabel) || (b.volume||0)-(a.volume||0);
+  });
+  document.getElementById('volumeBody').innerHTML = VOLUME_ROWS.map(r=>`
+    <tr>
+      <td><strong>${r.pageLabel}</strong><div class="tiny mono">${r.path}</div></td>
+      <td>${r.keyword}</td>
+      <td class="num">${r.volume!=null ? r.volume.toLocaleString() : '—'}</td>
+      <td><span class="status-pill ${volStatusClass(r.status)}">${r.status}</span></td>
+    </tr>
+  `).join('') || '<tr><td colspan="4" class="tiny">No matches.</td></tr>';
+}
+
+function downloadVolumeCSV(){
+  let rows = [['Page','URL','Keyword','Monthly Volume','Status']];
+  allVolumeRows().forEach(r=> rows.push([r.pageLabel, BASE+r.path, r.keyword, r.volume!=null?r.volume:'', r.status]));
+  const csv = rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='unstop_employer_keyword_volumes.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
 renderAll();
+renderVolumeStats();
+renderVolumeTable();
 
 </script>
 </body>
