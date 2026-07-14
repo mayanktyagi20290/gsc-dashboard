@@ -415,6 +415,7 @@
 
   <div class="navlabel">Data</div>
   <button class="tabbtn navbtn" onclick="switchTab('datacenter')" id="btn-tab-datacenter"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5 C4 5.1 7.6 4 12 4 C16.4 4 20 5.1 20 6.5 C20 7.9 16.4 9 12 9 C7.6 9 4 7.9 4 6.5 Z"/><path d="M4 6.5 L4 17.5 C4 18.9 7.6 20 12 20 C16.4 20 20 18.9 20 17.5 L20 6.5"/><path d="M4 12 C4 13.4 7.6 14.5 12 14.5 C16.4 14.5 20 13.4 20 12"/></svg><span class="navtext">Data Center</span><span class="navkbd" id="dcNavBadge" style="display:none;">●</span></button>
+  <button class="tabbtn navbtn" onclick="switchTab('discovered')" id="btn-tab-discovered"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21 L16.65 16.65"/><path d="M11 8 L11 11 L13 12.5"/></svg><span class="navtext">Discovered Pages</span><span class="navkbd" id="discNavBadge" style="display:none;">●</span></button>
 
   <div class="sb-foot">v3 · Enterprise SEO OS<br>Internal tool · not public</div>
 </nav>
@@ -666,7 +667,8 @@
   <div class="stats" id="roadmapStatsRow"></div>
 <section id="roadmapSection">
   <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21 L5 12 M5 12 L12 5 L19 12 M12 5 L12 21"/></svg>Action Roadmap — Where To Focus First</h2>
-  <p class="section-sub">All 31 pages, ranked purely on <strong>non-branded</strong> performance of each <strong>new</strong> <code>/employers/*</code> URL — queries that don't contain "Unstop" are the only ones counted here, since branded clicks reflect existing brand awareness, not real organic pull. Step 1 is the single highest-leverage move; work down the list in order rather than jumping around.</p>
+  <p class="section-sub">All 31 pages, ranked on real performance. Step 1 is the single highest-leverage move; work down the list in order rather than jumping around. The static version below is scored on <strong>non-branded</strong> queries only (no "Unstop" in the query); the live version (once you import data) is scored on <strong>whole-page GSC totals</strong> since GSC's page-level export doesn't split branded vs non-branded — see the banner below for exactly which one you're looking at.</p>
+  <div id="roadmapSourceBanner" style="margin-bottom:16px;"></div>
   <div class="tier-filterbar" id="tierFilterBar">
     <button class="tier-filterbtn active" data-tier="all" onclick="setTierFilter('all')">All 31</button>
     <button class="tier-filterbtn" data-tier="push" onclick="setTierFilter('push')">🟢 Push To #1</button>
@@ -776,6 +778,24 @@
 </section>
 </div>
 
+<div id="tab-discovered" class="tabpanel">
+<section id="discoveredSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21 L16.65 16.65"/></svg>Discovered Pages</h2>
+  <p class="section-sub">Real <code>unstop.com/employers/*</code> pages found inside your GSC/SEMrush imports that aren't part of the tracked 31-page set (e.g. programmatic "hire-a-developer" pages, case studies, testimonials). Nothing here is guessed — every row comes straight from an import. Add any of these to the main toolkit manually once you decide they're worth tracking long-term.</p>
+  <div class="stats" id="discStatsRow"></div>
+  <div class="matrix-toolbar" style="margin-top:16px;">
+    <input type="text" id="discSearch" placeholder="Filter by page…" oninput="DataCenter.renderDiscoveredPages()" style="min-width:280px;">
+    <button class="ghost" onclick="DataCenter.downloadDiscoveredCSV()">⬇ Download CSV</button>
+  </div>
+  <div style="overflow-x:auto;margin-top:12px;">
+    <table>
+      <thead><tr><th>Page</th><th>Source(s)</th><th class="num">Clicks</th><th class="num">Impr.</th><th class="num">Position</th><th class="num">Keywords</th><th>Top Keyword</th></tr></thead>
+      <tbody id="discBody"></tbody>
+    </table>
+  </div>
+</section>
+</div>
+
 <footer>
   Internal planning tool for SEO/AEO use &middot; generated for <a href="https://unstop.com/employers" target="_blank">unstop.com/employers</a> &middot; not for public deployment
 </footer>
@@ -795,6 +815,7 @@ const TAB_META = {
   cannibalization: {title:'Cannibalization Detector', sub:'Keywords mapped to more than one page — pick a single primary target'},
   roadmap: {title:'Action Roadmap', sub:'All 31 pages ranked on non-branded new-URL performance'},
   datacenter: {title:'Data Center', sub:'Import Google Search Console & SEMrush exports, merged into one live dataset'},
+  discovered: {title:'Discovered Pages', sub:'Real /employers/* pages found in your imports that aren\'t in the tracked 31 yet'},
 };
 function switchTab(name){
   document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
@@ -1722,18 +1743,73 @@ function setTierFilter(t){
   renderRoadmap();
 }
 
+// ---- Live roadmap: recomputed from real Data Center imports when available, else falls back
+// to the curated static ROADMAP below untouched. See computeLiveRoadmapEntry() for the scoring rule.
+let LIVE_ROADMAP = null;
+function activeRoadmap(){ return LIVE_ROADMAP || ROADMAP; }
+function computeLiveRoadmapEntry(p, stats){
+  if(!stats){
+    return { id:p.id, tier:'later',
+      why:'No live GSC or SEMrush data imported for this exact URL yet.',
+      action:'Import a GSC export (Pages tab) and/or a SEMrush export covering this URL in Data Center for a real recommendation here.',
+      _sort:0 };
+  }
+  const {clicks, impressions, position, topKeyword, topVolume, topKwPosition, keywordCount} = stats;
+  let tier;
+  if(position!==null && position<=15 && clicks>0) tier='push';
+  else if(position!==null && position<=30 && impressions>0) tier='close';
+  else if((impressions||0)>50 || (topVolume||0)>100) tier='bet';
+  else tier='later';
+
+  const gscBit = position!==null
+    ? `Page-level GSC (your import): ${clicks||0} clicks, ${impressions||0} impressions, avg. position ${position}.`
+    : (impressions ? `Page-level GSC: ${impressions} impressions, position not available.` : 'No GSC page-level data imported for this URL.');
+  const semBit = topKeyword
+    ? ` SEMrush: top matched keyword "${topKeyword}" — ${topVolume??'—'}/mo volume${(topKwPosition!==null&&topKwPosition!==undefined)?`, SEMrush position ${topKwPosition}`:''}${keywordCount>1?` (+${keywordCount-1} more keyword${keywordCount-1===1?'':'s'} matched to this URL)`:''}.`
+    : ' No SEMrush keyword matched to this exact URL yet.';
+
+  const actionByTier = {
+    push:'Already landing real clicks near page 1 — reinforce with fresh content and internal links to lock it in.',
+    close:'Real impressions just outside page 1 — a focused on-page + schema push should close the gap.',
+    bet:'Real demand signal (impressions or search volume) but the page isn\'t capturing it yet — needs real content investment.',
+    later:'Not enough live signal on this URL yet — confirm indexing and revisit once more data is imported.'
+  };
+  return { id:p.id, tier, why: gscBit+semBit, action: actionByTier[tier],
+    _sort: (clicks||0)*10 + (impressions||0)*0.1 + (topVolume||0)*0.01 };
+}
+async function refreshLiveRoadmap(){
+  // NOTE: DataCenter is a top-level `const`, so it never attaches to `window` — must check the
+  // lexical binding directly (typeof guard keeps this safe if this ever runs before that line executes).
+  if(typeof DataCenter==='undefined' || !DataCenter.hasAnyData()){ LIVE_ROADMAP = null; renderRoadmapStats(); renderRoadmap(); return; }
+  const stats = await DataCenter.getPageLiveStats();
+  const entries = PAGES.map(p=> computeLiveRoadmapEntry(p, stats[p.id]));
+  const tierOrder = {push:0, close:1, bet:2, later:3};
+  entries.sort((a,b)=> tierOrder[a.tier]-tierOrder[b.tier] || b._sort-a._sort);
+  LIVE_ROADMAP = entries;
+  renderRoadmapStats();
+  renderRoadmap();
+}
+
 function renderRoadmapStats(){
+  const active = activeRoadmap();
   const counts = {push:0,close:0,bet:0,later:0};
-  ROADMAP.forEach(r=>counts[r.tier]++);
+  active.forEach(r=>counts[r.tier]++);
   document.getElementById('roadmapStatsRow').innerHTML = `
     <div class="stat"><b>${counts.push}</b><span>🟢 Push To #1</span></div>
     <div class="stat"><b>${counts.close}</b><span>🔵 Close To Page 1</span></div>
     <div class="stat"><b>${counts.bet}</b><span>🟠 Big Bets</span></div>
     <div class="stat"><b>${counts.later}</b><span>⚪ Build Later</span></div>`;
+  const banner = document.getElementById('roadmapSourceBanner');
+  if(banner){
+    banner.innerHTML = LIVE_ROADMAP
+      ? `<div class="dc-alert" style="background:#e3f6ec;border:1px solid #b7e6cc;color:#0d6b45;">📡 <strong>Live roadmap</strong> — computed just now from your Data Center imports (page-level GSC totals + matched SEMrush keywords). Tiers: Push = position ≤15 with real clicks · Close = position ≤30 with real impressions · Bet = real impressions/volume but buried · Later = no live data on that exact URL yet. Note: GSC's page-level export doesn't separate branded from non-branded queries, so these totals include branded clicks — unlike the static roadmap below, which was hand-scored on non-branded queries only.</div>`
+      : `<div class="dc-alert warn">📋 <strong>Static example roadmap</strong> — no data imported in <a href="#" onclick="switchTab('datacenter');return false;">Data Center</a> yet, so this is the original curated, non-branded-only GSC pull. Upload a GSC and/or SEMrush export to switch this to a live, auto-computed roadmap.</div>`;
+  }
 }
 
 function renderRoadmap(){
-  const rows = ROADMAP.map((r,i)=>({...r, rank:i+1})).filter(r=> roadmapFilter==='all' || r.tier===roadmapFilter);
+  const active = activeRoadmap();
+  const rows = active.map((r,i)=>({...r, rank:i+1})).filter(r=> roadmapFilter==='all' || r.tier===roadmapFilter);
   document.getElementById('roadmapList').innerHTML = rows.map(r=>{
     const p = byId(r.id);
     const tm = TIER_META[r.tier];
@@ -1750,8 +1826,9 @@ function renderRoadmap(){
 }
 
 function downloadRoadmapCSV(){
+  const active = activeRoadmap();
   let rows = [['Rank','Page','URL','Tier','Why','Action']];
-  ROADMAP.forEach((r,i)=>{
+  active.forEach((r,i)=>{
     const p = byId(r.id); const tm = TIER_META[r.tier];
     rows.push([i+1, p.label, BASE+p.path, tm.label, r.why, r.action]);
   });
@@ -2524,6 +2601,73 @@ const DataCenter = (function(){
   }
 
   let sourceHasData = { gsc:false, semrush:false };
+  // ---------------- Discovered Pages (real /employers/* URLs outside the tracked 31) ----------------
+  let discoveredDatasetMemory = [];
+  async function buildDiscoveredPages(){
+    const knownPaths = new Set(PAGES.map(p=>p.path));
+    const [gsc, semrush] = await Promise.all([StorageService.getAll('gscRecords'), StorageService.getAll('semrushRecords')]);
+    const map = new Map();
+    gsc.filter(r=>r.path && !knownPaths.has(r.path)).forEach(r=>{
+      if(!map.has(r.path)) map.set(r.path, {path:r.path, sources:new Set(), clicks:0, impressions:0, positionSum:0, positionCount:0, keywords:[]});
+      const e = map.get(r.path);
+      e.sources.add('gsc'); e.clicks += r.clicks||0; e.impressions += r.impressions||0;
+      if(r.position!==null){ e.positionSum+=r.position; e.positionCount++; }
+    });
+    semrush.filter(r=>r.path && !knownPaths.has(r.path)).forEach(r=>{
+      if(!map.has(r.path)) map.set(r.path, {path:r.path, sources:new Set(), clicks:0, impressions:0, positionSum:0, positionCount:0, keywords:[]});
+      const e = map.get(r.path);
+      e.sources.add('semrush'); e.keywords.push({keyword:r.keyword, volume:r.volume, position:r.position});
+    });
+    const rows = [...map.values()].map(e=>{
+      const topKw = e.keywords.slice().sort((a,b)=>(b.volume||0)-(a.volume||0))[0];
+      return {
+        path: e.path, sources:[...e.sources],
+        clicks: e.sources.has('gsc') ? e.clicks : null,
+        impressions: e.sources.has('gsc') ? e.impressions : null,
+        position: e.positionCount ? +(e.positionSum/e.positionCount).toFixed(1) : null,
+        keywordCount: e.keywords.length,
+        topKeyword: topKw ? `${topKw.keyword} (${topKw.volume??'—'}/mo)` : null
+      };
+    });
+    rows.sort((a,b)=>(b.clicks||0)-(a.clicks||0) || (b.impressions||0)-(a.impressions||0) || (b.keywordCount||0)-(a.keywordCount||0));
+    discoveredDatasetMemory = rows;
+    return rows;
+  }
+  function renderDiscoveredPages(){
+    const searchEl = document.getElementById('discSearch');
+    const statsEl = document.getElementById('discStatsRow');
+    if(!statsEl) return;
+    const q = (searchEl && searchEl.value || '').toLowerCase();
+    const rows = discoveredDatasetMemory.filter(r=>r.path.toLowerCase().includes(q));
+    statsEl.innerHTML = `
+      <div class="stat"><b>${discoveredDatasetMemory.length}</b><span>Discovered Pages</span></div>
+      <div class="stat"><b>${discoveredDatasetMemory.filter(r=>r.sources.includes('gsc')).length}</b><span>With GSC Data</span></div>
+      <div class="stat"><b>${discoveredDatasetMemory.filter(r=>r.sources.includes('semrush')).length}</b><span>With SEMrush Keywords</span></div>
+      <div class="stat"><b>${PAGES.length}</b><span>Tracked Pages (baseline)</span></div>`;
+    const tbody = document.getElementById('discBody');
+    if(!tbody) return;
+    if(!discoveredDatasetMemory.length){
+      tbody.innerHTML = `<tr><td colspan="7"><div class="dc-empty-state">No pages found outside your tracked 31 yet — import GSC/SEMrush data in the Data Center to discover more.</div></td></tr>`;
+      return;
+    }
+    if(!rows.length){ tbody.innerHTML = `<tr><td colspan="7"><div class="dc-empty-state">No matches for that filter.</div></td></tr>`; return; }
+    tbody.innerHTML = rows.map(r=>`<tr>
+      <td class="url-cell mono">${r.path}</td>
+      <td>${r.sources.map(s=>`<span class="dc-source-chip ${s}">${s==='gsc'?'GSC':'SEMrush'}</span>`).join(' ')}</td>
+      <td class="num">${r.clicks??'—'}</td><td class="num">${r.impressions??'—'}</td><td class="num">${r.position??'—'}</td>
+      <td class="num">${r.keywordCount||'—'}</td><td>${r.topKeyword||'—'}</td>
+    </tr>`).join('');
+  }
+  function downloadDiscoveredCSV(){
+    let rows = [['Page','Sources','Clicks','Impressions','Position','Keyword Count','Top Keyword']];
+    discoveredDatasetMemory.forEach(r=> rows.push([BASE+r.path, r.sources.join('/'), r.clicks??'', r.impressions??'', r.position??'', r.keywordCount||0, r.topKeyword||'']));
+    const csv = rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='unstop_discovered_pages.csv'; a.click();
+    URL.revokeObjectURL(url);
+  }
+
   function renderDashboardWidget(){
     const el = document.getElementById('dashDCStatus');
     if(!el) return;
@@ -2547,13 +2691,18 @@ const DataCenter = (function(){
     await renderHistory();
     await renderGscInsights();
     await renderMergeStatsAndTable();
+    await buildDiscoveredPages();
+    renderDiscoveredPages();
     renderDashboardWidget();
     const badge = document.getElementById('dcNavBadge');
     if(badge) badge.style.display = (sourceHasData.gsc || sourceHasData.semrush) ? 'inline-block' : 'none';
+    const discBadge = document.getElementById('discNavBadge');
+    if(discBadge) discBadge.style.display = discoveredDatasetMemory.length ? 'inline-block' : 'none';
     // Additive, non-destructive refresh of existing modules — safe no-ops if a page hasn't defined them.
-    ['renderDashboard','renderVolumeStats','renderVolumeTable','renderCannibalization','renderRoadmapStats'].forEach(fn=>{
+    ['renderDashboard','renderVolumeStats','renderVolumeTable','renderCannibalization'].forEach(fn=>{
       try{ if(typeof window[fn]==='function') window[fn](); }catch(e){ console.warn('DataCenter refresh: '+fn+' failed', e); }
     });
+    try{ if(typeof window.refreshLiveRoadmap==='function') await window.refreshLiveRoadmap(); }catch(e){ console.warn('DataCenter refresh: refreshLiveRoadmap failed', e); }
     renderDashboardWidget(); // re-apply after renderDashboard() may have reset the tab's inner HTML region it owns (it doesn't touch dashDCStatus, but keep in sync)
   }
 
@@ -2612,6 +2761,38 @@ const DataCenter = (function(){
     await renderHistory();
   }
 
+  // Per-tracked-page live stats (keyed by PAGES id, not path) — the bridge that lets the Action
+  // Roadmap (and anything else) compute directly from real imported data instead of static numbers.
+  async function getPageLiveStats(){
+    const [gsc, semrush] = await Promise.all([StorageService.getAll('gscRecords'), StorageService.getAll('semrushRecords')]);
+    const byPath = {};
+    gsc.filter(r=>r.level==='page' && r.path).forEach(r=>{
+      if(!byPath[r.path]) byPath[r.path] = {clicks:0, impressions:0, positionSum:0, positionCount:0, keywords:[]};
+      const a = byPath[r.path];
+      a.clicks += r.clicks||0; a.impressions += r.impressions||0;
+      if(r.position!==null){ a.positionSum+=r.position; a.positionCount++; }
+    });
+    semrush.forEach(r=>{
+      if(!r.path) return;
+      if(!byPath[r.path]) byPath[r.path] = {clicks:0, impressions:0, positionSum:0, positionCount:0, keywords:[]};
+      byPath[r.path].keywords.push({keyword:r.keyword, volume:r.volume, position:r.position});
+    });
+    const result = {};
+    PAGES.forEach(p=>{
+      const agg = byPath[p.path];
+      if(!agg){ result[p.id] = null; return; }
+      const topKw = agg.keywords.slice().sort((a,b)=>(b.volume||0)-(a.volume||0))[0];
+      result[p.id] = {
+        clicks: agg.clicks, impressions: agg.impressions,
+        position: agg.positionCount ? +(agg.positionSum/agg.positionCount).toFixed(1) : null,
+        topKeyword: topKw ? topKw.keyword : null, topVolume: topKw ? (topKw.volume??null) : null,
+        topKwPosition: topKw ? topKw.position : null, keywordCount: agg.keywords.length
+      };
+    });
+    return result;
+  }
+  function hasAnyData(){ return sourceHasData.gsc || sourceHasData.semrush; }
+
   async function init(){
     wireDropzones();
     await refreshEverything();
@@ -2619,8 +2800,10 @@ const DataCenter = (function(){
 
   return {
     init, handleFileInput, refreshCard, deleteSource, reimportHistoryEntry, deleteHistoryEntry,
+    renderDiscoveredPages, downloadDiscoveredCSV,
     getMergedDataset: async ()=> await MergeService.build(),
     getMergedDatasetSync: ()=> mergedDatasetMemory,
+    getPageLiveStats, hasAnyData,
     StorageService, ValidationService, MergeService,
     _debug: { normalizeUrl, isEmployerUrl, parseCTR, parseNum }
   };
