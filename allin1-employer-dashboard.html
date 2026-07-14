@@ -7,6 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Data Center module: client-side spreadsheet parsing (no server, no build step) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
 
   :root{
@@ -304,6 +307,62 @@
   .cannib-clean{text-align:center;padding:40px 20px;color:var(--muted);}
   .cannib-clean svg{width:40px;height:40px;color:var(--teal);margin-bottom:10px;}
 
+  /* ===== Data Center ===== */
+  .dc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:900px){.dc-grid{grid-template-columns:1fr;}}
+  .dc-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px 22px;box-shadow:0 1px 3px rgba(15,23,42,.04);transition:box-shadow .2s;}
+  .dc-card:hover{box-shadow:0 8px 22px rgba(15,23,42,.07);}
+  .dc-card-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
+  .dc-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-weight:800;font-size:15px;color:#fff;}
+  .dc-icon.gsc{background:linear-gradient(135deg,#4285f4,#1a5fd6);}
+  .dc-icon.semrush{background:linear-gradient(135deg,#ff642d,#e0451a);}
+  .dc-card-title{font-size:14.5px;font-weight:800;margin:0;}
+  .dc-card-sub{font-size:11px;color:var(--muted2);margin-top:2px;}
+  .dc-status{margin-left:auto;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:4px 10px;border-radius:99px;white-space:nowrap;}
+  .dc-status.empty{background:#f1f5f9;color:var(--muted);}
+  .dc-status.ready{background:#e3f6ec;color:#0d9668;}
+  .dc-status.error{background:#ffe3e3;color:#c0392b;}
+  .dc-meta-row{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px;}
+  .dc-meta{font-size:11px;color:var(--muted);}
+  .dc-meta b{display:block;font-size:17px;color:var(--text);font-weight:800;font-family:'JetBrains Mono',monospace;}
+  .dc-dropzone{border:2px dashed var(--border);border-radius:14px;padding:22px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;background:#fafbfd;}
+  .dc-dropzone:hover, .dc-dropzone.dragover{border-color:var(--blue);background:#f2f6ff;}
+  .dc-dropzone svg{width:26px;height:26px;color:var(--muted2);margin-bottom:6px;}
+  .dc-dropzone .dc-drop-title{font-size:12.5px;font-weight:700;color:var(--text);}
+  .dc-dropzone .dc-drop-sub{font-size:10.5px;color:var(--muted2);margin-top:3px;}
+  .dc-card-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+  .dc-card-actions button{font-size:11.5px;padding:7px 13px;}
+  .dc-btn-danger{color:#c0392b !important;border-color:#ffd1d1 !important;}
+  .dc-summary{margin-top:14px;background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:11.5px;}
+  .dc-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:8px;}
+  .dc-summary-grid div{display:flex;justify-content:space-between;color:var(--muted);}
+  .dc-summary-grid div b{color:var(--text);font-family:'JetBrains Mono',monospace;}
+  .dc-alert{border-radius:12px;padding:12px 14px;font-size:11.5px;margin-top:12px;line-height:1.6;}
+  .dc-alert.err{background:#fff4f4;border:1px solid #ffd1d1;color:#a13030;}
+  .dc-alert.warn{background:#fff8e8;border:1px solid #fbe3ab;color:#8a5c0a;}
+  .dc-alert ul{margin:6px 0 0;padding-left:18px;}
+
+  .dc-progress-overlay{position:fixed;inset:0;background:rgba(10,15,25,.55);backdrop-filter:blur(3px);z-index:210;display:none;align-items:center;justify-content:center;}
+  .dc-progress-overlay.open{display:flex;}
+  .dc-progress-box{width:min(420px,90vw);background:#fff;border-radius:18px;padding:28px 26px;box-shadow:0 30px 80px rgba(0,0,0,.35);text-align:center;}
+  .dc-progress-box h4{margin:0 0 4px;font-size:15px;font-weight:800;}
+  .dc-progress-box .dc-progress-file{font-size:11px;color:var(--muted2);margin-bottom:18px;font-family:'JetBrains Mono',monospace;word-break:break-all;}
+  .dc-progress-track{height:8px;border-radius:99px;background:#eef1f6;overflow:hidden;margin-bottom:12px;}
+  .dc-progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--teal));width:0%;transition:width .35s ease;}
+  .dc-progress-step{font-size:12px;color:var(--muted);font-weight:600;}
+  .dc-progress-steplist{display:flex;flex-direction:column;gap:6px;margin-top:16px;text-align:left;}
+  .dc-progress-steplist .ps{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted2);}
+  .dc-progress-steplist .ps.done{color:#0d9668;}
+  .dc-progress-steplist .ps.active{color:var(--blue);font-weight:700;}
+  .dc-progress-steplist .ps .ps-dot{width:14px;height:14px;border-radius:50%;border:2px solid currentColor;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:8px;}
+
+  .dc-history-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;}
+  .dc-source-chip{font-size:10px;font-weight:800;text-transform:uppercase;padding:3px 8px;border-radius:6px;}
+  .dc-source-chip.gsc{background:#eaf1ff;color:#1a5fd6;}
+  .dc-source-chip.semrush{background:#fff1ea;color:#e0451a;}
+  .dc-hist-actions button{font-size:10.5px;padding:5px 10px;margin-right:4px;}
+  .dc-empty-state{text-align:center;padding:36px 20px;color:var(--muted2);font-size:12.5px;}
+
 </style>
 </head>
 <body>
@@ -315,6 +374,16 @@
       <span class="navkbd">ESC</span>
     </div>
     <div class="cmdk-results" id="cmdkResults"></div>
+  </div>
+</div>
+
+<div class="dc-progress-overlay" id="dcProgressOverlay">
+  <div class="dc-progress-box">
+    <h4 id="dcProgressTitle">Importing…</h4>
+    <div class="dc-progress-file" id="dcProgressFile"></div>
+    <div class="dc-progress-track"><div class="dc-progress-fill" id="dcProgressFill"></div></div>
+    <div class="dc-progress-step" id="dcProgressStep">Parsing…</div>
+    <div class="dc-progress-steplist" id="dcProgressSteplist"></div>
   </div>
 </div>
 
@@ -343,6 +412,9 @@
 
   <div class="navlabel">Plan</div>
   <button class="tabbtn navbtn" onclick="switchTab('roadmap')" id="btn-tab-roadmap"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21 L5 12 M5 12 L12 5 L19 12 M12 5 L12 21"/></svg><span class="navtext">Action Roadmap</span></button>
+
+  <div class="navlabel">Data</div>
+  <button class="tabbtn navbtn" onclick="switchTab('datacenter')" id="btn-tab-datacenter"><svg class="navicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5 C4 5.1 7.6 4 12 4 C16.4 4 20 5.1 20 6.5 C20 7.9 16.4 9 12 9 C7.6 9 4 7.9 4 6.5 Z"/><path d="M4 6.5 L4 17.5 C4 18.9 7.6 20 12 20 C16.4 20 20 18.9 20 17.5 L20 6.5"/><path d="M4 12 C4 13.4 7.6 14.5 12 14.5 C16.4 14.5 20 13.4 20 12"/></svg><span class="navtext">Data Center</span><span class="navkbd" id="dcNavBadge" style="display:none;">●</span></button>
 
   <div class="sb-foot">v3 · Enterprise SEO OS<br>Internal tool · not public</div>
 </nav>
@@ -402,6 +474,12 @@
     <p class="dash-sub">Sum of SEMrush monthly volume for every keyword mapped to pages in each category.</p>
     <div id="dashCatBars"></div>
     <div class="scope-note">GSC impression/click totals above are scoped to the 17 pages with an old→new URL migration pair on file (see Keyword &amp; Competitor Intel tab). The other 14 pages either never had an old URL or have no GSC data captured yet — see the Action Roadmap "Build Later" tier for exactly which ones.</div>
+  </div>
+
+  <div class="dash-section">
+    <h3>Live Data Center Status</h3>
+    <p class="dash-sub">Reflects whatever's actually imported in the Data Center tab right now — updates instantly on every upload, no page reload.</p>
+    <div id="dashDCStatus"><div class="dc-empty-state">No files imported yet — head to <a href="#" onclick="switchTab('datacenter');return false;">Data Center</a> to load a GSC or SEMrush export.</div></div>
   </div>
 </section>
 </div>
@@ -613,6 +691,85 @@
 </section>
 </div>
 
+<div id="tab-datacenter" class="tabpanel">
+<section id="dcUploadSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5 C4 5.1 7.6 4 12 4 C16.4 4 20 5.1 20 6.5 C20 7.9 16.4 9 12 9 C7.6 9 4 7.9 4 6.5 Z"/><path d="M4 6.5 L4 17.5 C4 18.9 7.6 20 12 20 C16.4 20 20 18.9 20 17.5 L20 6.5"/></svg>Data Center</h2>
+  <p class="section-sub">Import real Google Search Console and SEMrush exports (CSV or Excel). Everything is parsed and stored locally in this browser (IndexedDB) — nothing is uploaded anywhere. Once both sources have data, they're auto-merged on <strong>Landing Page + Keyword</strong> into one unified dataset that the rest of this toolkit can read from.</p>
+
+  <div class="dc-grid">
+    <div class="dc-card" id="dcCard-gsc">
+      <div class="dc-card-head">
+        <div class="dc-icon gsc">GSC</div>
+        <div>
+          <h4 class="dc-card-title">Google Search Console</h4>
+          <div class="dc-card-sub">Query, Page, Clicks, Impressions, CTR, Position</div>
+        </div>
+        <span class="dc-status empty" id="dcStatus-gsc">No Data</span>
+      </div>
+      <div class="dc-meta-row" id="dcMeta-gsc"></div>
+      <div class="dc-dropzone" id="dcDrop-gsc" onclick="document.getElementById('dcFile-gsc').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16 L12 4 M7 9 L12 4 L17 9"/><path d="M4 16 L4 18.5 C4 19.9 5.1 21 6.5 21 L17.5 21 C18.9 21 20 19.9 20 18.5 L20 16"/></svg>
+        <div class="dc-drop-title">Drag &amp; drop a GSC export, or click to browse</div>
+        <div class="dc-drop-sub">.csv or .xlsx — Performance / Queries / Pages export</div>
+      </div>
+      <input type="file" id="dcFile-gsc" accept=".csv,.xlsx,.xls" style="display:none" onchange="DataCenter.handleFileInput('gsc', event)">
+      <div class="dc-card-actions">
+        <button class="ghost" onclick="DataCenter.refreshCard('gsc')">↻ Refresh</button>
+        <button class="ghost" onclick="document.getElementById('dcFile-gsc').click()">⇄ Replace Data</button>
+        <button class="ghost dc-btn-danger" onclick="DataCenter.deleteSource('gsc')">🗑 Delete Data</button>
+      </div>
+      <div id="dcSummary-gsc"></div>
+      <div id="dcAlert-gsc"></div>
+    </div>
+
+    <div class="dc-card" id="dcCard-semrush">
+      <div class="dc-card-head">
+        <div class="dc-icon semrush">SR</div>
+        <div>
+          <h4 class="dc-card-title">SEMrush</h4>
+          <div class="dc-card-sub">Keyword, URL, Position, Volume, KD, Intent, CPC</div>
+        </div>
+        <span class="dc-status empty" id="dcStatus-semrush">No Data</span>
+      </div>
+      <div class="dc-meta-row" id="dcMeta-semrush"></div>
+      <div class="dc-dropzone" id="dcDrop-semrush" onclick="document.getElementById('dcFile-semrush').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16 L12 4 M7 9 L12 4 L17 9"/><path d="M4 16 L4 18.5 C4 19.9 5.1 21 6.5 21 L17.5 21 C18.9 21 20 19.9 20 18.5 L20 16"/></svg>
+        <div class="dc-drop-title">Drag &amp; drop a SEMrush export, or click to browse</div>
+        <div class="dc-drop-sub">.csv or .xlsx — Organic Positions export</div>
+      </div>
+      <input type="file" id="dcFile-semrush" accept=".csv,.xlsx,.xls" style="display:none" onchange="DataCenter.handleFileInput('semrush', event)">
+      <div class="dc-card-actions">
+        <button class="ghost" onclick="DataCenter.refreshCard('semrush')">↻ Refresh</button>
+        <button class="ghost" onclick="document.getElementById('dcFile-semrush').click()">⇄ Replace Data</button>
+        <button class="ghost dc-btn-danger" onclick="DataCenter.deleteSource('semrush')">🗑 Delete Data</button>
+      </div>
+      <div id="dcSummary-semrush"></div>
+      <div id="dcAlert-semrush"></div>
+    </div>
+  </div>
+</section>
+
+<section id="dcMergeSection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="7" height="7" rx="2"/><rect x="14" y="9" width="7" height="7" rx="2"/><path d="M10 12.5 L14 12.5"/></svg>Merged Dataset</h2>
+  <p class="section-sub">Unified on <strong>Landing Page + Keyword</strong>. This is the live dataset available to the rest of the toolkit via <code>DataCenter.getMergedDataset()</code>.</p>
+  <div class="stats" id="dcMergeStats"></div>
+  <div id="dcMergeTableWrap" style="margin-top:16px;overflow-x:auto;"></div>
+</section>
+
+<section id="dcHistorySection">
+  <h2 class="section-title"><svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7 L12 12 L15.5 14"/></svg>Import History</h2>
+  <div class="dc-history-toolbar">
+    <p class="section-sub" style="margin:0;">Every upload, kept locally so you can reimport or delete it later.</p>
+  </div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th>File</th><th>Source</th><th>Uploaded</th><th class="num">Records</th><th class="num">Pages</th><th class="num">Keywords</th><th class="num">Size</th><th>Status</th><th></th></tr></thead>
+      <tbody id="dcHistoryBody"></tbody>
+    </table>
+  </div>
+</section>
+</div>
+
 <footer>
   Internal planning tool for SEO/AEO use &middot; generated for <a href="https://unstop.com/employers" target="_blank">unstop.com/employers</a> &middot; not for public deployment
 </footer>
@@ -631,6 +788,7 @@ const TAB_META = {
   volumes: {title:'Keyword Volumes', sub:'Every keyword mapped to its target page with monthly search volume'},
   cannibalization: {title:'Cannibalization Detector', sub:'Keywords mapped to more than one page — pick a single primary target'},
   roadmap: {title:'Action Roadmap', sub:'All 31 pages ranked on non-branded new-URL performance'},
+  datacenter: {title:'Data Center', sub:'Import Google Search Console & SEMrush exports, merged into one live dataset'},
 };
 function switchTab(name){
   document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
@@ -1700,6 +1858,630 @@ renderRoadmapStats();
 renderRoadmap();
 renderDashboard();
 renderCannibalization();
+
+// =====================================================================================
+// DATA CENTER — real GSC / SEMrush file import, validation, local storage & merge engine.
+// Modular by design: StorageService / ValidationService / ImportService / MergeService
+// are separated so manual upload can later be swapped for live API polling (GSC API,
+// SEMrush API) without touching the UI layer or the rest of this toolkit.
+// =====================================================================================
+const DataCenter = (function(){
+  const DB_NAME = 'unstop_seo_datacenter';
+  const DB_VERSION = 1;
+  const REQUIRED_PREFIX = 'https://unstop.com/employers/';
+  let dbPromise = null;
+  let useIDB = (typeof window!=='undefined') && ('indexedDB' in window);
+  let mergedDatasetMemory = [];
+
+  // ---------------- StorageService ----------------
+  function openDB(){
+    if(dbPromise) return dbPromise;
+    if(!useIDB){ dbPromise = Promise.resolve(null); return dbPromise; }
+    dbPromise = new Promise((resolve)=>{
+      let req;
+      try{ req = indexedDB.open(DB_NAME, DB_VERSION); }
+      catch(e){ useIDB=false; resolve(null); return; }
+      req.onupgradeneeded = (e)=>{
+        const db = e.target.result;
+        ['gscRecords','semrushRecords','uploadHistory','mergedCache'].forEach(s=>{
+          if(!db.objectStoreNames.contains(s)) db.createObjectStore(s, {keyPath:'id', autoIncrement:true});
+        });
+        if(!db.objectStoreNames.contains('meta')) db.createObjectStore('meta', {keyPath:'key'});
+      };
+      req.onsuccess = (e)=>resolve(e.target.result);
+      req.onerror = ()=>{ useIDB=false; resolve(null); };
+    });
+    return dbPromise;
+  }
+  const LS_KEY = (store)=>'dc_'+store;
+  function lsGetAll(store){ try{ return JSON.parse(localStorage.getItem(LS_KEY(store))||'[]'); }catch(e){ return []; } }
+  function lsSetAll(store, arr){ try{ localStorage.setItem(LS_KEY(store), JSON.stringify(arr)); }catch(e){ console.warn('DataCenter: localStorage write failed', e); } }
+
+  const StorageService = {
+    async clearStore(store){
+      const db = await openDB();
+      if(!db){ lsSetAll(store, []); return; }
+      return new Promise((res,rej)=>{
+        const tx = db.transaction(store,'readwrite'); tx.objectStore(store).clear();
+        tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error);
+      });
+    },
+    async bulkAdd(store, records){
+      const db = await openDB();
+      if(!db){
+        const existing = lsGetAll(store);
+        let nextId = existing.length ? Math.max(...existing.map(r=>r.id||0))+1 : 1;
+        const withIds = records.map(r=>({...r, id: nextId++}));
+        lsSetAll(store, existing.concat(withIds));
+        return withIds;
+      }
+      return new Promise((res,rej)=>{
+        const tx = db.transaction(store,'readwrite'); const os = tx.objectStore(store);
+        records.forEach(r=>{ const clean = {...r}; delete clean.id; os.add(clean); });
+        tx.oncomplete=()=>res(records); tx.onerror=()=>rej(tx.error);
+      });
+    },
+    async getAll(store){
+      const db = await openDB();
+      if(!db) return lsGetAll(store);
+      return new Promise((res,rej)=>{
+        const tx = db.transaction(store,'readonly'); const req = tx.objectStore(store).getAll();
+        req.onsuccess=()=>res(req.result||[]); req.onerror=()=>rej(req.error);
+      });
+    },
+    async addHistoryEntry(entry){
+      const db = await openDB();
+      if(!db){
+        const hist = lsGetAll('uploadHistory');
+        entry.id = hist.length ? Math.max(...hist.map(h=>h.id||0))+1 : 1;
+        const clone = {...entry}; delete clone.fileBlob; // Files can't survive JSON.stringify
+        lsSetAll('uploadHistory', hist.concat(clone));
+        return entry.id;
+      }
+      return new Promise((res,rej)=>{
+        const tx = db.transaction('uploadHistory','readwrite');
+        const req = tx.objectStore('uploadHistory').add(entry);
+        req.onsuccess=()=>res(req.result); req.onerror=()=>rej(req.error);
+      });
+    },
+    async deleteHistoryEntry(id){
+      const db = await openDB();
+      if(!db){ lsSetAll('uploadHistory', lsGetAll('uploadHistory').filter(h=>h.id!==id)); return; }
+      return new Promise((res,rej)=>{
+        const tx = db.transaction('uploadHistory','readwrite'); tx.objectStore('uploadHistory').delete(id);
+        tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error);
+      });
+    },
+    async getHistoryEntry(id){ return (await this.getAll('uploadHistory')).find(h=>h.id===id); },
+    async setMeta(key, val){
+      const db = await openDB();
+      if(!db){ const m = lsGetAll('meta').filter(x=>x.key!==key); if(val!==null) m.push({key,val}); lsSetAll('meta', m); return; }
+      return new Promise((res,rej)=>{
+        const tx = db.transaction('meta','readwrite');
+        if(val===null) tx.objectStore('meta').delete(key); else tx.objectStore('meta').put({key,val});
+        tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error);
+      });
+    },
+    async getMeta(key){ const f = (await this.getAll('meta')).find(x=>x.key===key); return f ? f.val : null; }
+  };
+
+  // ---------------- ValidationService ----------------
+  const HEADER_ALIASES = {
+    gsc: {
+      query:['query','queries','search query','keyword'],
+      page:['page','pages','landing page','top pages','url'],
+      clicks:['clicks'],
+      impressions:['impressions','impr','impr.'],
+      ctr:['ctr','click through rate','clickthrough rate'],
+      position:['position','avg position','average position','avg. position'],
+      date:['date','day']
+    },
+    semrush: {
+      keyword:['keyword','keywords'],
+      url:['url','landing page','page'],
+      position:['position','pos','pos.'],
+      volume:['volume','search volume','sv'],
+      kd:['kd','keyword difficulty','difficulty','kd %','kd%'],
+      intent:['intent','keyword intents','search intent'],
+      cpc:['cpc','cpc (usd)'],
+      trafficPct:['traffic %','traffic percent','traffic'],
+      serpFeatures:['serp features','serp features by keyword']
+    }
+  };
+  const REQUIRED_FIELDS = { gsc:['query','page','clicks','impressions','position'], semrush:['keyword','url','position','volume'] };
+  function normHeader(h){ return String(h||'').trim().toLowerCase().replace(/\s+/g,' '); }
+  function detectColumns(headers, source){
+    const aliasMap = HEADER_ALIASES[source];
+    const normed = headers.map(normHeader);
+    const found = {};
+    Object.keys(aliasMap).forEach(field=>{
+      const idx = normed.findIndex(h=> aliasMap[field].includes(h));
+      found[field] = idx>=0 ? headers[idx] : null;
+    });
+    return found;
+  }
+  const ValidationService = {
+    validateHeaders(headers, source){
+      const found = detectColumns(headers, source);
+      const missing = REQUIRED_FIELDS[source].filter(f=>!found[f]);
+      return { found, missing, valid: missing.length===0 };
+    }
+  };
+
+  // ---------------- shared parsing helpers ----------------
+  function parseNum(v){
+    if(v===null||v===undefined||v==='') return null;
+    const s = String(v).trim().replace(/,/g,'').replace(/%/g,'');
+    const n = parseFloat(s);
+    return isNaN(n) ? null : n;
+  }
+  function parseCTR(v){
+    if(v===null||v===undefined||v==='') return null;
+    let s = String(v).trim();
+    const hadPct = s.includes('%');
+    s = s.replace(/%/g,'').replace(/,/g,'');
+    let n = parseFloat(s);
+    if(isNaN(n)) return null;
+    if(!hadPct && n<=1) n = n*100;
+    return n;
+  }
+  function normalizeUrl(raw){
+    if(!raw) return null;
+    let s = String(raw).trim().replace(/^["']|["']$/g,'');
+    if(!s) return null;
+    if(s.startsWith('/employers/')) s = 'https://unstop.com'+s;
+    else if(/^unstop\.com/i.test(s)) s = 'https://'+s;
+    else if(!/^https?:\/\//i.test(s)) return null;
+    try{
+      const u = new URL(s);
+      const path = u.pathname.replace(/\/+$/,'') || '/';
+      return 'https://'+u.hostname.toLowerCase()+path;
+    }catch(e){ return null; }
+  }
+  function isEmployerUrl(normUrl){ return !!normUrl && normUrl.toLowerCase().startsWith(REQUIRED_PREFIX); }
+  function pathOf(normUrl){ try{ return new URL(normUrl).pathname; }catch(e){ return normUrl; } }
+  function rowGet(row, headerName){ return headerName ? row[headerName] : undefined; }
+
+  // ---------------- ImportService: file parsing ----------------
+  function parseFile(file){
+    const name = file.name.toLowerCase();
+    return new Promise((resolve, reject)=>{
+      if(name.endsWith('.csv')){
+        if(typeof Papa==='undefined'){ reject(new Error('PARSER_UNAVAILABLE')); return; }
+        Papa.parse(file, {
+          header:true, skipEmptyLines:true,
+          complete:(res)=> resolve({headers: res.meta.fields||[], rows: res.data}),
+          error:(err)=> reject(err)
+        });
+      } else if(name.endsWith('.xlsx') || name.endsWith('.xls')){
+        if(typeof XLSX==='undefined'){ reject(new Error('PARSER_UNAVAILABLE')); return; }
+        const reader = new FileReader();
+        reader.onload = (e)=>{
+          try{
+            const wb = XLSX.read(e.target.result, {type:'array'});
+            const sheet = wb.Sheets[wb.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(sheet, {defval:''});
+            const headers = json.length ? Object.keys(json[0]) : [];
+            resolve({headers, rows: json});
+          }catch(err){ reject(err); }
+        };
+        reader.onerror = ()=>reject(reader.error||new Error('READ_FAILED'));
+        reader.readAsArrayBuffer(file);
+      } else {
+        reject(new Error('UNSUPPORTED_FORMAT'));
+      }
+    });
+  }
+  function friendlyParseError(err, file){
+    const msg = (err && err.message) || String(err);
+    if(/UNSUPPORTED_FORMAT/.test(msg)) return {title:'Unsupported file format', detail:`"${file.name}" isn't a .csv or .xlsx file. Export as CSV or Excel from Search Console / SEMrush and try again.`};
+    if(/PARSER_UNAVAILABLE/.test(msg)) return {title:'Parser library failed to load', detail:'The CSV/Excel parser couldn\'t load (likely a network/CDN block). Refresh the page and try again.'};
+    if(/zip|central directory|corrupt/i.test(msg)) return {title:'Corrupted file', detail:`"${file.name}" couldn't be read — it may be corrupted or not a real Excel file. Try re-exporting it.`};
+    return {title:'Could not read file', detail: msg};
+  }
+
+  // ---------------- progress UI ----------------
+  const PROGRESS_STEPS = ['Parsing file…','Cleaning data…','Removing duplicates…','Generating database…','Updating dashboard…','Import complete'];
+  function showProgress(fileName){
+    document.getElementById('dcProgressOverlay').classList.add('open');
+    document.getElementById('dcProgressFile').textContent = fileName;
+    document.getElementById('dcProgressSteplist').innerHTML = PROGRESS_STEPS.map((s,i)=>`<div class="ps" id="dcps-${i}"><span class="ps-dot"></span>${s}</div>`).join('');
+    setProgressStep(0);
+  }
+  function setProgressStep(i){
+    const stepEl = document.getElementById('dcProgressStep'); if(!stepEl) return;
+    stepEl.textContent = PROGRESS_STEPS[i];
+    document.getElementById('dcProgressFill').style.width = (((i+1)/PROGRESS_STEPS.length)*100)+'%';
+    PROGRESS_STEPS.forEach((s,idx)=>{
+      const el = document.getElementById('dcps-'+idx); if(!el) return;
+      el.classList.remove('done','active');
+      const dot = el.querySelector('.ps-dot');
+      if(idx<i){ el.classList.add('done'); if(dot) dot.textContent='✓'; }
+      else if(idx===i){ el.classList.add('active'); if(dot) dot.textContent=''; }
+      else if(dot) dot.textContent='';
+    });
+  }
+  function hideProgress(){ setTimeout(()=>{ const o=document.getElementById('dcProgressOverlay'); if(o) o.classList.remove('open'); }, 450); }
+  function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+  // ---------------- GSC import pipeline ----------------
+  async function importGSC(file){
+    showProgress(file.name);
+    await delay(180);
+    let parsed;
+    try{ parsed = await parseFile(file); }
+    catch(err){ hideProgress(); return { ok:false, error: friendlyParseError(err, file) }; }
+    if(!parsed.rows.length){ hideProgress(); return { ok:false, error:{title:'Empty file', detail:'This file has no data rows. Export a fresh report from Search Console and try again.'} }; }
+
+    const headerCheck = ValidationService.validateHeaders(parsed.headers, 'gsc');
+    if(!headerCheck.valid){
+      hideProgress();
+      return { ok:false, error:{title:'Missing required columns', detail:'Could not find: '+headerCheck.missing.map(f=>f.toUpperCase()).join(', ')+'. Columns detected in your file: '+(parsed.headers.join(', ')||'(none)')} };
+    }
+    setProgressStep(1); await delay(220);
+
+    const found = headerCheck.found;
+    let blank=0, missingKeyword=0, invalidUrl=0, ignoredNonEmployer=0, badPosition=0, badCtr=0;
+    const clean = [];
+    parsed.rows.forEach(row=>{
+      const query = String(rowGet(row, found.query)||'').trim();
+      const pageRaw = rowGet(row, found.page);
+      const clicks = parseNum(rowGet(row, found.clicks));
+      const impressions = parseNum(rowGet(row, found.impressions));
+      let ctr = found.ctr ? parseCTR(rowGet(row, found.ctr)) : null;
+      const position = parseNum(rowGet(row, found.position));
+      const date = found.date ? String(rowGet(row, found.date)||'').trim() : '';
+
+      if(!query && !pageRaw && clicks===null && impressions===null){ blank++; return; }
+      if(!query){ missingKeyword++; return; }
+      const normUrl = normalizeUrl(pageRaw);
+      if(!normUrl){ invalidUrl++; return; }
+      if(!isEmployerUrl(normUrl)){ ignoredNonEmployer++; return; }
+      if(position!==null && position<=0) badPosition++;
+      if(ctr===null && clicks!==null && impressions) ctr = (clicks/impressions)*100;
+      if(ctr!==null && (ctr<0 || ctr>100)){ badCtr++; ctr=null; }
+
+      clean.push({ query, page: normUrl, path: pathOf(normUrl), clicks: clicks||0, impressions: impressions||0,
+        ctr: ctr!==null ? +ctr.toFixed(2) : null, position: position!==null ? +position.toFixed(1) : null, date: date||null });
+    });
+
+    setProgressStep(2); await delay(220);
+    const seen = new Set(); const deduped = []; let dupCount=0;
+    clean.forEach(r=>{
+      const key = r.query.toLowerCase()+'||'+r.page.toLowerCase()+'||'+(r.date||'');
+      if(seen.has(key)){ dupCount++; return; }
+      seen.add(key); deduped.push(r);
+    });
+
+    setProgressStep(3); await delay(260);
+    await StorageService.clearStore('gscRecords');
+    if(deduped.length) await StorageService.bulkAdd('gscRecords', deduped);
+
+    const landingPages = new Set(deduped.map(r=>r.page)).size;
+    const queries = new Set(deduped.map(r=>r.query.toLowerCase())).size;
+    const dates = deduped.map(r=>r.date).filter(Boolean).sort();
+    const dateRange = dates.length ? `${dates[0]} → ${dates[dates.length-1]}` : 'Not present in this export';
+
+    const historyEntry = {
+      source:'gsc', fileName:file.name, fileSize:file.size, uploadDate:new Date().toISOString(),
+      recordsImported: deduped.length, landingPages, keywords: queries, duplicatesRemoved: dupCount, status:'success', fileBlob: file,
+      summary:{ rowsImported:deduped.length, landingPages, queries, dateRange, duplicatesRemoved:dupCount, blank, missingKeyword, invalidUrl, ignoredNonEmployer, badPosition, badCtr, totalRowsInFile: parsed.rows.length }
+    };
+    const histId = await StorageService.addHistoryEntry(historyEntry);
+    historyEntry.id = histId;
+    await StorageService.setMeta('gsc_last', historyEntry);
+
+    setProgressStep(4); await delay(260);
+    await refreshEverything();
+    setProgressStep(5); await delay(380);
+    hideProgress();
+    return { ok:true, summary: historyEntry.summary, entry: historyEntry };
+  }
+
+  // ---------------- SEMrush import pipeline ----------------
+  async function importSEMrush(file){
+    showProgress(file.name);
+    await delay(180);
+    let parsed;
+    try{ parsed = await parseFile(file); }
+    catch(err){ hideProgress(); return { ok:false, error: friendlyParseError(err, file) }; }
+    if(!parsed.rows.length){ hideProgress(); return { ok:false, error:{title:'Empty file', detail:'This file has no data rows.'} }; }
+
+    const headerCheck = ValidationService.validateHeaders(parsed.headers, 'semrush');
+    if(!headerCheck.valid){
+      hideProgress();
+      return { ok:false, error:{title:'Missing required columns', detail:'Could not find: '+headerCheck.missing.map(f=>f.toUpperCase()).join(', ')+'. Columns detected in your file: '+(parsed.headers.join(', ')||'(none)')} };
+    }
+    setProgressStep(1); await delay(220);
+
+    const found = headerCheck.found;
+    let blank=0, missingKeyword=0, invalidUrl=0, ignoredNonEmployer=0, badPosition=0, badVolume=0;
+    const clean = [];
+    parsed.rows.forEach(row=>{
+      const keyword = String(rowGet(row, found.keyword)||'').trim();
+      const urlRaw = rowGet(row, found.url);
+      const position = parseNum(rowGet(row, found.position));
+      const volume = parseNum(rowGet(row, found.volume));
+      const kd = found.kd ? parseNum(rowGet(row, found.kd)) : null;
+      const intent = found.intent ? String(rowGet(row, found.intent)||'').trim() : '';
+      const cpc = found.cpc ? parseNum(rowGet(row, found.cpc)) : null;
+      const trafficPct = found.trafficPct ? parseNum(rowGet(row, found.trafficPct)) : null;
+      const serpFeatures = found.serpFeatures ? String(rowGet(row, found.serpFeatures)||'').trim() : '';
+
+      if(!keyword && !urlRaw && volume===null){ blank++; return; }
+      if(!keyword){ missingKeyword++; return; }
+      const normUrl = normalizeUrl(urlRaw);
+      if(!normUrl){ invalidUrl++; return; }
+      if(!isEmployerUrl(normUrl)){ ignoredNonEmployer++; return; }
+      if(position!==null && position<=0) badPosition++;
+      if(volume!==null && volume<0) badVolume++;
+
+      clean.push({ keyword, url: normUrl, path: pathOf(normUrl),
+        position: position!==null ? +position.toFixed(1) : null,
+        volume: (volume!==null && volume>=0) ? Math.round(volume) : null,
+        kd: kd!==null ? +kd.toFixed(1) : null, intent: intent||null, cpc: cpc!==null ? +cpc.toFixed(2) : null,
+        trafficPct: trafficPct!==null ? +trafficPct.toFixed(2) : null, serpFeatures: serpFeatures||null });
+    });
+
+    setProgressStep(2); await delay(220);
+    const seen = new Set(); const deduped = []; let dupCount=0;
+    clean.forEach(r=>{
+      const key = r.keyword.toLowerCase()+'||'+r.url.toLowerCase();
+      if(seen.has(key)){ dupCount++; return; }
+      seen.add(key); deduped.push(r);
+    });
+
+    setProgressStep(3); await delay(260);
+    await StorageService.clearStore('semrushRecords');
+    if(deduped.length) await StorageService.bulkAdd('semrushRecords', deduped);
+
+    const landingPages = new Set(deduped.map(r=>r.url)).size;
+    const keywords = new Set(deduped.map(r=>r.keyword.toLowerCase())).size;
+    const volumes = deduped.map(r=>r.volume).filter(v=>v!==null);
+    const kds = deduped.map(r=>r.kd).filter(v=>v!==null);
+    const avgVolume = volumes.length ? Math.round(volumes.reduce((a,b)=>a+b,0)/volumes.length) : 0;
+    const avgKD = kds.length ? +(kds.reduce((a,b)=>a+b,0)/kds.length).toFixed(1) : null;
+
+    const historyEntry = {
+      source:'semrush', fileName:file.name, fileSize:file.size, uploadDate:new Date().toISOString(),
+      recordsImported: deduped.length, landingPages, keywords, duplicatesRemoved: dupCount, status:'success', fileBlob: file,
+      summary:{ rowsImported:deduped.length, landingPages, keywords, avgVolume, avgKD, duplicatesRemoved:dupCount, blank, missingKeyword, invalidUrl, ignoredNonEmployer, badPosition, badVolume, totalRowsInFile: parsed.rows.length }
+    };
+    const histId = await StorageService.addHistoryEntry(historyEntry);
+    historyEntry.id = histId;
+    await StorageService.setMeta('semrush_last', historyEntry);
+
+    setProgressStep(4); await delay(260);
+    await refreshEverything();
+    setProgressStep(5); await delay(380);
+    hideProgress();
+    return { ok:true, summary: historyEntry.summary, entry: historyEntry };
+  }
+
+  // ---------------- MergeService ----------------
+  function keyOf(path, keyword){ return path.toLowerCase()+'||'+String(keyword).trim().toLowerCase(); }
+  const MergeService = {
+    async build(){
+      const [gsc, semrush] = await Promise.all([StorageService.getAll('gscRecords'), StorageService.getAll('semrushRecords')]);
+      const map = new Map();
+      gsc.forEach(r=>{
+        const k = keyOf(r.path, r.query);
+        if(!map.has(k)) map.set(k, {keyword:r.query, landingPage:r.path, gsc:null, semrush:null});
+        const entry = map.get(k);
+        if(!entry.gsc) entry.gsc = {clicks:0, impressions:0, ctrSum:0, ctrCount:0, positionSum:0, positionCount:0};
+        entry.gsc.clicks += r.clicks||0;
+        entry.gsc.impressions += r.impressions||0;
+        if(r.ctr!==null){ entry.gsc.ctrSum+=r.ctr; entry.gsc.ctrCount++; }
+        if(r.position!==null){ entry.gsc.positionSum+=r.position; entry.gsc.positionCount++; }
+      });
+      semrush.forEach(r=>{
+        const k = keyOf(r.path, r.keyword);
+        if(!map.has(k)) map.set(k, {keyword:r.keyword, landingPage:r.path, gsc:null, semrush:null});
+        map.get(k).semrush = {volume:r.volume, kd:r.kd, intent:r.intent, cpc:r.cpc, trafficPct:r.trafficPct, serpFeatures:r.serpFeatures, position:r.position};
+      });
+      const rows = [...map.values()].map(e=>({
+        keyword: e.keyword, landingPage: e.landingPage,
+        clicks: e.gsc ? e.gsc.clicks : null, impressions: e.gsc ? e.gsc.impressions : null,
+        ctr: (e.gsc && e.gsc.ctrCount) ? +(e.gsc.ctrSum/e.gsc.ctrCount).toFixed(2) : null,
+        gscPosition: (e.gsc && e.gsc.positionCount) ? +(e.gsc.positionSum/e.gsc.positionCount).toFixed(1) : null,
+        volume: e.semrush ? e.semrush.volume : null, kd: e.semrush ? e.semrush.kd : null,
+        intent: e.semrush ? e.semrush.intent : null, cpc: e.semrush ? e.semrush.cpc : null,
+        trafficPct: e.semrush ? e.semrush.trafficPct : null, serpFeatures: e.semrush ? e.semrush.serpFeatures : null,
+        semrushPosition: e.semrush ? e.semrush.position : null,
+        inGSC: !!e.gsc, inSEMrush: !!e.semrush
+      }));
+      await StorageService.clearStore('mergedCache');
+      if(rows.length) await StorageService.bulkAdd('mergedCache', rows.map(r=>({...r})));
+      mergedDatasetMemory = rows;
+      return rows;
+    }
+  };
+
+  // ---------------- UI rendering ----------------
+  const SOURCE_LABEL = {gsc:'Google Search Console', semrush:'SEMrush'};
+  async function renderCard(source){
+    const last = await StorageService.getMeta(source+'_last');
+    const statusEl = document.getElementById('dcStatus-'+source);
+    const metaEl = document.getElementById('dcMeta-'+source);
+    const summaryEl = document.getElementById('dcSummary-'+source);
+    if(!statusEl) return;
+    if(!last){
+      statusEl.textContent='No Data'; statusEl.className='dc-status empty';
+      metaEl.innerHTML=''; summaryEl.innerHTML='';
+      return;
+    }
+    statusEl.textContent='Connected'; statusEl.className='dc-status ready';
+    metaEl.innerHTML = `
+      <div class="dc-meta"><b>${last.recordsImported.toLocaleString()}</b>Rows Imported</div>
+      <div class="dc-meta"><b>${last.landingPages}</b>Landing Pages</div>
+      <div class="dc-meta"><b>${last.keywords}</b>${source==='gsc'?'Queries':'Keywords'}</div>`;
+    const s = last.summary;
+    const extra = source==='gsc'
+      ? `<div>Date Range<b>${s.dateRange}</b></div>`
+      : `<div>Avg Volume<b>${s.avgVolume.toLocaleString()}</b></div><div>Avg KD<b>${s.avgKD??'—'}</b></div>`;
+    summaryEl.innerHTML = `
+      <div class="dc-summary">
+        <strong>${SOURCE_LABEL[source]} — Last Import Summary</strong>
+        <div class="dc-summary-grid">
+          <div>Rows Imported<b>${s.rowsImported.toLocaleString()}</b></div>
+          <div>Duplicate Rows Removed<b>${s.duplicatesRemoved.toLocaleString()}</b></div>
+          <div>Landing Pages<b>${last.landingPages}</b></div>
+          <div>${source==='gsc'?'Queries':'Keywords'}<b>${last.keywords}</b></div>
+          ${extra}
+        </div>
+      </div>
+      <div style="font-size:10.5px;color:var(--muted2);margin-top:8px;">Uploaded ${new Date(last.uploadDate).toLocaleString()} · ${(last.fileSize/1024).toFixed(1)} KB · ${last.fileName}</div>`;
+  }
+
+  async function renderHistory(){
+    const tbody = document.getElementById('dcHistoryBody');
+    if(!tbody) return;
+    const hist = (await StorageService.getAll('uploadHistory')).sort((a,b)=> new Date(b.uploadDate)-new Date(a.uploadDate));
+    if(!hist.length){
+      tbody.innerHTML = `<tr><td colspan="9"><div class="dc-empty-state">No imports yet. Upload a GSC or SEMrush export above to get started.</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = hist.map(h=>`
+      <tr>
+        <td class="mono" style="font-size:11px;">${h.fileName}</td>
+        <td><span class="dc-source-chip ${h.source}">${h.source==='gsc'?'GSC':'SEMrush'}</span></td>
+        <td class="tiny">${new Date(h.uploadDate).toLocaleString()}</td>
+        <td class="num">${h.recordsImported.toLocaleString()}</td>
+        <td class="num">${h.landingPages}</td>
+        <td class="num">${h.keywords}</td>
+        <td class="num">${(h.fileSize/1024).toFixed(1)} KB</td>
+        <td><span class="status-pill status-existing">${h.status}</span></td>
+        <td class="dc-hist-actions">
+          <button class="ghost" onclick="DataCenter.reimportHistoryEntry(${h.id})" ${h.fileBlob?'':'disabled title="Original file not stored (localStorage fallback mode)"'}>↻ Reimport</button>
+          <button class="ghost dc-btn-danger" onclick="DataCenter.deleteHistoryEntry(${h.id})">🗑</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  async function renderMergeStatsAndTable(){
+    const rows = await MergeService.build();
+    const statsEl = document.getElementById('dcMergeStats');
+    if(!statsEl) return;
+    const both = rows.filter(r=>r.inGSC && r.inSEMrush).length;
+    const gscOnly = rows.filter(r=>r.inGSC && !r.inSEMrush).length;
+    const semOnly = rows.filter(r=>!r.inGSC && r.inSEMrush).length;
+    statsEl.innerHTML = `
+      <div class="stat"><b>${rows.length.toLocaleString()}</b><span>Unified Rows</span></div>
+      <div class="stat"><b>${both.toLocaleString()}</b><span>Matched (GSC + SEMrush)</span></div>
+      <div class="stat"><b>${gscOnly.toLocaleString()}</b><span>GSC Only</span></div>
+      <div class="stat"><b>${semOnly.toLocaleString()}</b><span>SEMrush Only</span></div>`;
+    const wrap = document.getElementById('dcMergeTableWrap');
+    if(!rows.length){ wrap.innerHTML = `<div class="dc-empty-state">Import both a GSC and a SEMrush export to see the unified dataset here.</div>`; return; }
+    const top = rows.slice().sort((a,b)=>(b.clicks||0)-(a.clicks||0) || (b.volume||0)-(a.volume||0)).slice(0,50);
+    wrap.innerHTML = `<table><thead><tr><th>Keyword</th><th>Landing Page</th><th class="num">Clicks</th><th class="num">Impr.</th><th class="num">CTR</th><th class="num">GSC Pos.</th><th class="num">Volume</th><th class="num">KD</th><th>Intent</th></tr></thead>
+      <tbody>${top.map(r=>`<tr>
+        <td>${r.keyword}</td><td class="url-cell mono">${r.landingPage}</td>
+        <td class="num">${r.clicks??'—'}</td><td class="num">${r.impressions??'—'}</td>
+        <td class="num">${r.ctr!==null?r.ctr+'%':'—'}</td><td class="num">${r.gscPosition??'—'}</td>
+        <td class="num">${r.volume??'—'}</td><td class="num">${r.kd??'—'}</td><td>${r.intent??'—'}</td>
+      </tr>`).join('')}</tbody></table>
+      <p class="tiny" style="margin-top:8px;">Showing top 50 of ${rows.length.toLocaleString()} unified rows, sorted by clicks then volume. Full dataset available programmatically via <code>DataCenter.getMergedDataset()</code>.</p>`;
+  }
+
+  function renderDashboardWidget(){
+    const el = document.getElementById('dashDCStatus');
+    if(!el) return;
+    const gsc = mergedDatasetMemory.some(r=>r.inGSC), sem = mergedDatasetMemory.some(r=>r.inSEMrush);
+    if(!mergedDatasetMemory.length){
+      el.innerHTML = `<div class="dc-empty-state">No files imported yet — head to <a href="#" onclick="switchTab('datacenter');return false;">Data Center</a> to load a GSC or SEMrush export.</div>`;
+      return;
+    }
+    const both = mergedDatasetMemory.filter(r=>r.inGSC && r.inSEMrush).length;
+    el.innerHTML = `<div class="dash-grid" style="grid-template-columns:repeat(3,1fr);">
+      <div class="kpi"><div class="kpi-label">Unified Rows</div><div class="kpi-val">${mergedDatasetMemory.length.toLocaleString()}</div><div class="kpi-sub">${gsc?'GSC ✓':'GSC —'} · ${sem?'SEMrush ✓':'SEMrush —'}</div></div>
+      <div class="kpi"><div class="kpi-label">Matched Keyword+Page Pairs</div><div class="kpi-val">${both.toLocaleString()}</div><div class="kpi-sub">present in both sources</div></div>
+      <div class="kpi"><div class="kpi-label">Go To</div><div class="kpi-val" style="font-size:15px;"><a href="#" onclick="switchTab('datacenter');return false;">Data Center →</a></div><div class="kpi-sub">full table, history, re-import</div></div>
+    </div>`;
+  }
+
+  async function refreshEverything(){
+    await Promise.all([renderCard('gsc'), renderCard('semrush')]);
+    await renderHistory();
+    await renderMergeStatsAndTable();
+    renderDashboardWidget();
+    const badge = document.getElementById('dcNavBadge');
+    if(badge) badge.style.display = mergedDatasetMemory.length ? 'inline-block' : 'none';
+    // Additive, non-destructive refresh of existing modules — safe no-ops if a page hasn't defined them.
+    ['renderDashboard','renderVolumeStats','renderVolumeTable','renderCannibalization','renderRoadmapStats'].forEach(fn=>{
+      try{ if(typeof window[fn]==='function') window[fn](); }catch(e){ console.warn('DataCenter refresh: '+fn+' failed', e); }
+    });
+    renderDashboardWidget(); // re-apply after renderDashboard() may have reset the tab's inner HTML region it owns (it doesn't touch dashDCStatus, but keep in sync)
+  }
+
+  // ---------------- public actions ----------------
+  async function handleFile(source, file){
+    if(!file) return;
+    const result = source==='gsc' ? await importGSC(file) : await importSEMrush(file);
+    const alertEl = document.getElementById('dcAlert-'+source);
+    if(!alertEl) return;
+    if(!result.ok){
+      alertEl.innerHTML = `<div class="dc-alert err"><strong>⚠ ${result.error.title}</strong><br>${result.error.detail}</div>`;
+      return;
+    }
+    let warnBits = [];
+    const s = result.summary;
+    if(s.ignoredNonEmployer) warnBits.push(`${s.ignoredNonEmployer} rows ignored (not an unstop.com/employers/ URL)`);
+    if(s.invalidUrl) warnBits.push(`${s.invalidUrl} rows had an unparseable URL`);
+    if(s.missingKeyword) warnBits.push(`${s.missingKeyword} rows had no keyword/query`);
+    if(s.badCtr) warnBits.push(`${s.badCtr} rows had an out-of-range CTR (cleared)`);
+    if(s.badPosition) warnBits.push(`${s.badPosition} rows had a non-positive position`);
+    if(s.badVolume) warnBits.push(`${s.badVolume} rows had a negative volume`);
+    alertEl.innerHTML = `<div class="dc-alert" style="background:#e3f6ec;border:1px solid #b7e6cc;color:#0d6b45;"><strong>✓ Imported successfully</strong> — ${s.rowsImported.toLocaleString()} rows, ${result.entry.landingPages} landing pages, ${s.duplicatesRemoved} duplicates removed.</div>`
+      + (warnBits.length ? `<div class="dc-alert warn"><strong>Also skipped during validation:</strong><ul>${warnBits.map(w=>`<li>${w}</li>`).join('')}</ul></div>` : '');
+    setTimeout(()=>{ if(alertEl) alertEl.innerHTML=''; }, 12000);
+  }
+  function handleFileInput(source, evt){
+    const file = evt.target.files[0];
+    handleFile(source, file);
+    evt.target.value = '';
+  }
+  function wireDropzones(){
+    ['gsc','semrush'].forEach(source=>{
+      const dz = document.getElementById('dcDrop-'+source);
+      if(!dz) return;
+      ['dragenter','dragover'].forEach(evt=> dz.addEventListener(evt, e=>{ e.preventDefault(); e.stopPropagation(); dz.classList.add('dragover'); }));
+      ['dragleave','drop'].forEach(evt=> dz.addEventListener(evt, e=>{ e.preventDefault(); e.stopPropagation(); dz.classList.remove('dragover'); }));
+      dz.addEventListener('drop', e=>{ const file = e.dataTransfer.files[0]; handleFile(source, file); });
+    });
+  }
+  async function deleteSource(source){
+    if(!confirm(`Delete all imported ${SOURCE_LABEL[source]} data? This can't be undone.`)) return;
+    await StorageService.clearStore(source==='gsc'?'gscRecords':'semrushRecords');
+    await StorageService.setMeta(source+'_last', null);
+    const alertEl = document.getElementById('dcAlert-'+source); if(alertEl) alertEl.innerHTML='';
+    await refreshEverything();
+  }
+  async function refreshCard(source){ await renderCard(source); }
+  async function reimportHistoryEntry(id){
+    const entry = await StorageService.getHistoryEntry(id);
+    if(!entry || !entry.fileBlob){ alert('Original file not available for reimport — storage fell back to localStorage mode, which can\'t hold files. Re-upload it manually via the card above.'); return; }
+    await handleFile(entry.source, entry.fileBlob);
+  }
+  async function deleteHistoryEntry(id){
+    if(!confirm('Delete this history entry? (This only removes the log entry — use "Delete Data" on the card to clear the actual imported records.)')) return;
+    await StorageService.deleteHistoryEntry(id);
+    await renderHistory();
+  }
+
+  async function init(){
+    wireDropzones();
+    await refreshEverything();
+  }
+
+  return {
+    init, handleFileInput, refreshCard, deleteSource, reimportHistoryEntry, deleteHistoryEntry,
+    getMergedDataset: async ()=> await MergeService.build(),
+    getMergedDatasetSync: ()=> mergedDatasetMemory,
+    StorageService, ValidationService, MergeService,
+    _debug: { normalizeUrl, isEmployerUrl, parseCTR, parseNum }
+  };
+})();
+DataCenter.init();
 
 </script>
 </body>
