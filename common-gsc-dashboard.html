@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEO Insights Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#f5f6fa;color:#111827;font-size:14px;-webkit-font-smoothing:antialiased;}
+
+/* UPLOAD */
+#upload-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f5f6fa;padding:2rem;}
+.up-card{background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);padding:2.5rem;max-width:520px;width:100%;}
+.up-logo{display:flex;align-items:center;gap:10px;margin-bottom:2rem;}
+.up-logo-icon{width:38px;height:38px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;}
+.up-logo-icon svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.up-logo-text{font-size:18px;font-weight:700;color:#111827;}
+.up-logo-text span{color:#2563eb;}
+.up-h1{font-size:22px;font-weight:700;color:#111827;margin-bottom:8px;line-height:1.3;}
+.up-sub{font-size:13px;color:#6b7280;line-height:1.6;margin-bottom:1.5rem;}
+.drop-zone{border:2px dashed #d1d5db;border-radius:12px;padding:2rem;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa;position:relative;}
+.drop-zone:hover,.drop-zone.over{border-color:#2563eb;background:#eff6ff;}
+.drop-icon{width:48px;height:48px;background:#eff6ff;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
+.drop-icon svg{width:24px;height:24px;fill:none;stroke:#2563eb;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.drop-title{font-size:14px;font-weight:600;color:#111827;margin-bottom:4px;}
+.drop-sub{font-size:12px;color:#9ca3af;}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.how{margin-top:1.5rem;background:#f9fafb;border-radius:10px;padding:1rem 1.25rem;}
+.how-title{font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+.how-step{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px;font-size:12px;color:#4b5563;line-height:1.5;}
+.how-step:last-child{margin-bottom:0;}
+.how-num{width:18px;height:18px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px;}
+.err{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:12px;color:#dc2626;margin-top:12px;display:none;}
+.settings-link{display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-size:12px;color:#2563eb;cursor:pointer;font-weight:600;background:none;border:none;font-family:'Inter',sans-serif;}
+
+/* SETTINGS MODAL */
+#settingsModal{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:200;align-items:center;justify-content:center;padding:1.5rem;}
+.settings-box{background:#fff;border-radius:16px;padding:1.75rem 2rem;max-width:600px;width:100%;max-height:88vh;overflow-y:auto;}
+.settings-box h2{font-size:18px;font-weight:700;margin-bottom:4px;color:#111827;}
+.settings-box p.sub{font-size:12px;color:#6b7280;margin-bottom:1.3rem;}
+.cfg-label{font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;}
+.cfg-input{width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:14px;font-size:13px;font-family:'Inter',sans-serif;outline:none;}
+.cfg-input:focus{border-color:#2563eb;}
+.cfg-hint{font-size:11px;color:#9ca3af;margin:-10px 0 14px;}
+.cfg-actions{display:flex;gap:8px;margin-top:6px;}
+.cfg-btn-primary{flex:1;padding:11px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;}
+.cfg-btn-secondary{flex:1;padding:11px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;}
+.cfg-btn-secondary:hover{background:#e5e7eb;}
+
+/* LAYOUT */
+#dashboard{display:none;}
+.sidebar{width:224px;background:#fff;border-right:1px solid #e5e7eb;height:100vh;position:fixed;left:0;top:0;display:flex;flex-direction:column;z-index:50;overflow:hidden;}
+.sb-logo{padding:12px 16px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.sb-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.sb-logo-icon svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.sb-logo-text{font-size:15px;font-weight:700;color:#111827;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sb-logo-text span{color:#2563eb;}
+.sb-nav{padding:4px 8px;flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#e5e7eb transparent;}
+.sb-nav::-webkit-scrollbar{width:3px;}.sb-nav::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px;}
+.sb-section{font-size:9px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;margin:5px 0 2px;}
+.sb-item{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:11px;color:#4b5563;font-weight:500;transition:all .15s;margin-bottom:1px;}
+.sb-item:hover{background:#f3f4f6;color:#111827;}
+.sb-item.active{background:#eff6ff;color:#2563eb;}
+.sb-item svg{width:15px;height:15px;flex-shrink:0;}
+.sb-bottom{padding:8px;border-top:1px solid #e5e7eb;flex-shrink:0;display:flex;flex-direction:column;gap:6px;}
+.sb-new-btn{width:100%;padding:9px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;}
+.sb-new-btn:hover{opacity:.88;}
+.sb-settings-btn{width:100%;padding:9px;background:#fff;color:#374151;border:1px solid #e5e7eb;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+.sb-settings-btn:hover{background:#f9fafb;}
+
+.content{margin-left:224px;min-height:100vh;display:flex;flex-direction:column;}
+.topbar{background:#fff;border-bottom:1px solid #e5e7eb;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;flex-shrink:0;}
+.tb-left{display:flex;align-items:center;gap:10px;}
+.tb-title{font-size:16px;font-weight:700;color:#111827;}
+.tb-pill{font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid;}
+.tb-site{color:#6b7280;background:#f3f4f6;border-color:#e5e7eb;}
+.tb-date{color:#2563eb;background:#eff6ff;border-color:#bfdbfe;}
+.tb-right{display:flex;gap:8px;}
+.tb-btn{padding:6px 14px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:#4b5563;font-family:'Inter',sans-serif;transition:background .15s;}
+.tb-btn:hover{background:#f3f4f6;}
+
+.main{padding:24px;flex:1;}
+
+/* METRIC BARS */
+.metric-bars{display:grid;grid-template-columns:repeat(4,1fr);border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.1);margin-bottom:20px;}
+.mb{padding:20px 24px;position:relative;}
+.mb-blue{background:#2563eb;}
+.mb-green{background:#059669;}
+.mb-amber{background:#d97706;}
+.mb-red{background:#dc2626;}
+.mb-label{font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;}
+.mb-val{font-size:34px;font-weight:700;color:#fff;line-height:1;margin-bottom:5px;}
+.mb-sub{font-size:12px;color:rgba(255,255,255,0.6);}
+.mb-ico{position:absolute;top:16px;right:16px;width:32px;height:32px;background:rgba(255,255,255,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.mb-ico svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* SIGNALS */
+.signals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;}
+.sig{border-radius:10px;padding:14px 16px;border:1px solid;}
+.sg{background:#f0fdf4;border-color:#bbf7d0;}
+.sb2{background:#fef2f2;border-color:#fecaca;}
+.so{background:#fffbeb;border-color:#fde68a;}
+.sig-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.sg .sig-title{color:#059669;}.sb2 .sig-title{color:#dc2626;}.so .sig-title{color:#d97706;}
+.sig-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,0.05);font-size:12px;}
+.sig-item:last-child{border-bottom:none;}
+.si-l{color:#374151;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.si-v{font-weight:600;font-size:11px;white-space:nowrap;}
+.sg .si-v{color:#059669;}.sb2 .si-v{color:#dc2626;}.so .si-v{color:#d97706;}
+
+/* CARDS */
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px 20px;margin-bottom:14px;}
+.card-hdr{font-size:13px;font-weight:700;color:#111827;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;}
+.card-hdr-sub{font-size:11px;color:#9ca3af;font-weight:400;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.cw{position:relative;width:100%;height:200px;}
+.cw-lg{height:220px;}
+
+/* CLUSTER GRID */
+.clusters{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.cl{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;transition:all .2s;cursor:pointer;}
+.cl:hover{border-color:#2563eb;box-shadow:0 4px 12px rgba(37,99,235,0.08);}
+.cl-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.cl-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+.cl-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em;}
+.cl-name{font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;}
+.cl-val{font-size:22px;font-weight:700;line-height:1;margin-bottom:3px;}
+.cl-meta{font-size:10px;color:#9ca3af;}
+.cl-bar{height:3px;background:#f3f4f6;border-radius:2px;margin-top:8px;overflow:hidden;}
+.cl-bar-fill{height:100%;border-radius:2px;}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;font-size:10px;font-weight:700;color:#6b7280;padding:8px 12px;border-bottom:1px solid #e5e7eb;white-space:nowrap;background:#f9fafb;letter-spacing:.04em;text-transform:uppercase;}
+td{padding:9px 12px;border-bottom:1px solid #f3f4f6;color:#111827;font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#f9fafb;}
+.twrap{overflow-x:auto;}
+.mono{font-family:monospace;font-size:11px;color:#6b7280;}
+.rk{width:20px;height:20px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#6b7280;}
+
+/* BADGES */
+.b{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;}
+.bg{background:#d1fae5;color:#059669;}
+.bb{background:#dbeafe;color:#1d4ed8;}
+.ba{background:#fef3c7;color:#d97706;}
+.br{background:#fee2e2;color:#dc2626;}
+.by{background:#f3f4f6;color:#6b7280;}
+
+/* URL BARS */
+.url-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;}
+.url-row:last-child{border-bottom:none;}
+.url-path{font-family:monospace;font-size:11px;color:#6b7280;min-width:150px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.url-bw{flex:1;}
+.url-bar{height:5px;background:#f3f4f6;border-radius:3px;overflow:hidden;}
+.url-bf{height:100%;border-radius:3px;}
+.url-stats{display:flex;gap:14px;justify-content:flex-end;}
+.us{text-align:right;}
+.us-v{font-size:12px;font-weight:700;color:#111827;}
+.us-l{font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+
+/* ACTIONS */
+.action{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f3f4f6;}
+.action:last-child{border-bottom:none;}
+.act-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;}
+.act-title{font-size:13px;font-weight:600;color:#111827;margin-bottom:4px;}
+.act-sub{font-size:12px;color:#6b7280;line-height:1.6;}
+.act-impact{font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;margin-top:5px;display:inline-block;text-transform:uppercase;letter-spacing:.04em;}
+
+/* TAB SECTIONS */
+.tab-sec{display:none;}
+.tab-sec.active{display:block;}
+
+/* NOTICE BARS */
+.notice{border-radius:10px;padding:12px 16px;margin-bottom:12px;}
+.notice-amber{background:#fffbeb;border:1px solid #fde68a;}
+.notice-blue{background:#eff6ff;border:1px solid #bfdbfe;}
+.notice-green{background:#f0fdf4;border:1px solid #bbf7d0;}
+.notice-title{font-size:13px;font-weight:600;margin-bottom:3px;}
+.notice-amber .notice-title{color:#d97706;}
+.notice-blue .notice-title{color:#1d4ed8;}
+.notice-green .notice-title{color:#059669;}
+.notice-body{font-size:12px;}
+.notice-amber .notice-body{color:#92400e;}
+.notice-blue .notice-body{color:#1e40af;}
+.notice-green .notice-body{color:#065f46;}
+
+@media(max-width:1024px){.sidebar{display:none}.content{margin-left:0}.clusters{grid-template-columns:repeat(2,1fr)}.signals{grid-template-columns:1fr}.two{grid-template-columns:1fr}.metric-bars{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.metric-bars{grid-template-columns:1fr}.clusters{grid-template-columns:1fr}.main{padding:14px}}
+</style>
+</head>
+<body>
+
+<!-- UPLOAD SCREEN -->
+<div id="upload-screen">
+  <div class="up-card">
+    <div class="up-logo">
+      <div class="up-logo-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div class="up-logo-text">SEO<span>Dash</span></div>
+    </div>
+    <h1 class="up-h1">Upload your GSC export.<br>Get a full SEO report — for any site.</h1>
+    <p class="up-sub">Export from Google Search Console → Performance → Export Excel. Upload here for clusters, quick wins, cannibalization, URL health and a growth plan — customized to your website via Settings.</p>
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+      <div class="drop-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+      <div class="drop-title">Drop your GSC Excel file here</div>
+      <div class="drop-sub">or click to browse · .xlsx .xls .csv supported</div>
+    </div>
+    <div class="how">
+      <div class="how-title">How to export from Google Search Console</div>
+      <div class="how-step"><div class="how-num">1</div><span>Open <strong>search.google.com/search-console</strong> → select your property</span></div>
+      <div class="how-step"><div class="how-num">2</div><span>Click <strong>Search results</strong> in the left sidebar → set your date range</span></div>
+      <div class="how-step"><div class="how-num">3</div><span>Click <strong>Export</strong> (top right) → <strong>Download Excel (.xlsx)</strong></span></div>
+      <div class="how-step"><div class="how-num">4</div><span>Upload the file above → dashboard builds instantly</span></div>
+    </div>
+    <button class="settings-link" onclick="openSettings()">⚙ Customize for your website (brand terms &amp; categories)</button>
+    <div class="err" id="errMsg"></div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div id="settingsModal">
+  <div class="settings-box">
+    <h2>⚙ Dashboard Settings</h2>
+    <p class="sub">One-time setup — tell the dashboard about your website so brand filtering and content categories match your site. You can change this anytime.</p>
+
+    <label class="cfg-label">Website / brand display name</label>
+    <input id="cfgSiteName" class="cfg-input" type="text" placeholder="e.g. My Company">
+
+    <label class="cfg-label">Brand terms to exclude from "non-brand" analysis</label>
+    <input id="cfgBrandTerms" class="cfg-input" type="text" placeholder="e.g. mycompany, my-company, mycompany.com, mycomapny (common misspelling)">
+    <p class="cfg-hint">Comma-separated. Any query containing one of these is treated as "brand search" rather than organic discovery.</p>
+
+    <label class="cfg-label">Brand / account pages to exclude from page analysis</label>
+    <input id="cfgBrandPages" class="cfg-input" type="text" placeholder="e.g. /login, /signup, /account, /cart">
+    <p class="cfg-hint">Comma-separated URL fragments. These are navigational, not organic content.</p>
+
+    <label class="cfg-label">Content categories to track (one per line)</label>
+    <textarea id="cfgCategories" class="cfg-input" rows="6" style="font-family:monospace;font-size:12px;" placeholder="Blog:/blog
+Products:/products
+Pricing:/pricing
+Guides:/guides
+Case Studies:/case-studies"></textarea>
+    <p class="cfg-hint">Format: <code>Label:/url-pattern</code>. Each line becomes a cluster in the Clusters tab. Leave blank and click "Auto-detect" after uploading to have the dashboard suggest these from your data.</p>
+
+    <div class="cfg-actions">
+      <button class="cfg-btn-secondary" onclick="autoDetectCategories()">Auto-detect from data</button>
+      <button class="cfg-btn-primary" onclick="saveSettings()">Save settings</button>
+    </div>
+    <div style="text-align:center;margin-top:12px;">
+      <button onclick="closeSettings()" style="background:none;border:none;color:#9ca3af;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;">Close without saving</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div class="sb-logo-text" id="sb-brand">SEO<span>Dash</span></div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section">Dashboard</div>
+      <div class="sb-item active" data-tab="overview" onclick="showTab('overview',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Overview
+      </div>
+      <div class="sb-item" data-tab="queries" onclick="showTab('queries',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Queries
+      </div>
+      <div class="sb-item" data-tab="pages" onclick="showTab('pages',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Pages
+      </div>
+      <div class="sb-item" data-tab="clusters" onclick="showTab('clusters',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>Categories
+      </div>
+
+      <div class="sb-section">Opportunities</div>
+      <div class="sb-item" data-tab="quickwins" onclick="showTab('quickwins',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Quick wins
+      </div>
+      <div class="sb-item" data-tab="potential" onclick="showTab('potential',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>High potential
+      </div>
+
+      <div class="sb-section">Analysis</div>
+      <div class="sb-item" data-tab="urlclass" onclick="showTab('urlclass',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>URL Classification
+      </div>
+      <div class="sb-item" data-tab="cannibalization" onclick="showTab('cannibalization',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Cannibalization
+      </div>
+      <div class="sb-item" data-tab="intent" onclick="showTab('intent',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Intent
+      </div>
+
+      <div class="sb-section">Report</div>
+      <div class="sb-item" data-tab="recs" onclick="showTab('recs',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Growth Plan
+      </div>
+    </div>
+    <div class="sb-bottom">
+      <button class="sb-settings-btn" onclick="openSettings()">⚙ Settings</button>
+      <button class="sb-new-btn" onclick="goBack()">↑ Upload new file</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="topbar">
+      <div class="tb-left">
+        <div class="tb-title">SEO Audit</div>
+        <div class="tb-pill tb-site" id="tb-site">site.com</div>
+        <div class="tb-pill tb-date" id="tb-date">—</div>
+      </div>
+      <div class="tb-right">
+        <button class="tb-btn" onclick="openSettings()">⚙ Settings</button>
+        <button class="tb-btn" onclick="goBack()">↑ Upload new file</button>
+      </div>
+    </div>
+    <div class="main" id="main-content"></div>
+  </div>
+</div>
+
+<script>
+let CHARTS=[],D={},NBQ=[],BQ=[],NBP=[],BP=[],_Q=[],_P=[],_C=[],_Dev=[],_App=[],_CL=[];
+let CONFIG={siteName:'',brandTerms:[],brandPages:[],categories:[]};
+
+/* ---------- CONFIG (Settings) ---------- */
+function loadConfig(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('seodash_config')||'{}');
+    CONFIG={
+      siteName:saved.siteName||'',
+      brandTerms:saved.brandTerms||[],
+      brandPages:saved.brandPages||[],
+      categories:saved.categories||[]
+    };
+  }catch(e){}
+}
+function openSettings(){
+  document.getElementById('cfgSiteName').value=CONFIG.siteName;
+  document.getElementById('cfgBrandTerms').value=CONFIG.brandTerms.join(', ');
+  document.getElementById('cfgBrandPages').value=CONFIG.brandPages.join(', ');
+  document.getElementById('cfgCategories').value=CONFIG.categories.map(c=>c.label+':'+c.k).join('\n');
+  document.getElementById('settingsModal').style.display='flex';
+}
+function closeSettings(){document.getElementById('settingsModal').style.display='none';}
+const PALETTE=['#2563eb','#059669','#d97706','#7c3aed','#dc2626','#0891b2','#f43f5e','#8b5cf6','#10b981','#f59e0b','#6366f1','#14b8a6'];
+const EMOJI=['📁','📄','🔧','📦','💡','🎯','⭐','🔷','🗂️','📊'];
+function saveSettings(){
+  CONFIG.siteName=document.getElementById('cfgSiteName').value.trim();
+  CONFIG.brandTerms=document.getElementById('cfgBrandTerms').value.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+  CONFIG.brandPages=document.getElementById('cfgBrandPages').value.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+  CONFIG.categories=document.getElementById('cfgCategories').value.split('\n').map((line,i)=>{
+    const idx=line.indexOf(':');
+    if(idx<0)return null;
+    const label=line.slice(0,idx).trim(), pattern=line.slice(idx+1).trim();
+    return label&&pattern?{label,k:pattern.toLowerCase(),col:PALETTE[i%PALETTE.length],e:EMOJI[i%EMOJI.length]}:null;
+  }).filter(Boolean);
+  try{localStorage.setItem('seodash_config',JSON.stringify(CONFIG));}catch(e){}
+  closeSettings();
+  const brandEl=document.getElementById('sb-brand');
+  if(brandEl)brandEl.innerHTML=(CONFIG.siteName||'SEO')+'<span>Dash</span>';
+  if(D.Q&&D.Q.length) build();
+}
+function autoDetectCategories(){
+  if(!_P||!_P.length){alert('Upload a GSC file first, then auto-detect will suggest categories from your real URLs.');return;}
+  const segMap={};
+  _P.forEach(p=>{
+    const seg=(p.p.replace(/https?:\/\/[^/]+/,'').split('/').filter(Boolean)[0]||'').toLowerCase();
+    if(!seg)return;
+    if(!segMap[seg])segMap[seg]=0;
+    segMap[seg]+=p.clicks;
+  });
+  const top=Object.entries(segMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  document.getElementById('cfgCategories').value=top.map(([seg])=>
+    (seg.charAt(0).toUpperCase()+seg.slice(1).replace(/-/g,' '))+':/'+seg
+  ).join('\n');
+}
+loadConfig();
+
+/* ---------- FILE HANDLING ---------- */
+const dz=document.getElementById('dropZone'),fi=document.getElementById('fileInput');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');if(e.dataTransfer.files[0])process(e.dataTransfer.files[0]);});
+fi.addEventListener('change',e=>{if(e.target.files[0])process(e.target.files[0]);});
+
+function showErr(m){const el=document.getElementById('errMsg');el.style.display='block';el.textContent='⚠ '+m;}
+function goBack(){CHARTS.forEach(c=>{try{c.destroy();}catch(e){}});CHARTS=[];document.getElementById('dashboard').style.display='none';document.getElementById('upload-screen').style.display='flex';fi.value='';}
+
+function process(file){
+  document.getElementById('errMsg').style.display='none';
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+      let Q=[],P=[],C=[],Dev=[],App=[];
+      wb.SheetNames.forEach(name=>{
+        const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:''}).filter(r=>r.some(c=>c!==''));
+        if(rows.length<2)return;
+        const n=name.toLowerCase(),data=rows.slice(1);
+        if(n.includes('quer'))data.forEach(r=>{if(r[0])Q.push({q:String(r[0]),clicks:+r[1]||0,impr:+r[2]||0,ctr:+(r[3]||0)*100,pos:+r[4]||0});});
+        else if(n.includes('page'))data.forEach(r=>{if(r[0])P.push({p:String(r[0]),clicks:+r[1]||0,impr:+r[2]||0,ctr:+(r[3]||0)*100,pos:+r[4]||0});});
+        else if(n.includes('chart')||n.includes('date')||n.includes('day'))data.forEach(r=>{if(r[0])C.push({d:String(r[0]).slice(0,10),clicks:+r[1]||0,impr:+r[2]||0});});
+        else if(n.includes('device'))data.forEach(r=>{if(r[0])Dev.push({d:String(r[0]),clicks:+r[1]||0,impr:+r[2]||0,ctr:+(r[3]||0)*100});});
+        else if(n.includes('appear')||n.includes('search type'))data.forEach(r=>{if(r[0])App.push({t:String(r[0]),clicks:+r[1]||0,impr:+r[2]||0,ctr:+(r[3]||0)*100,pos:+r[4]||0});});
+      });
+      if(!Q.length&&!P.length){showErr('Could not read data. Make sure this is a GSC Performance export (.xlsx).');return;}
+      D={Q,P,C,Dev,App,site:(file.name.match(/([a-z0-9-]+\.[a-z]+)/i)||[])[1]||(CONFIG.siteName||'your-site.com'),fn:file.name};
+      build();
+    }catch(err){showErr('Error reading file: '+err.message);}
+  };
+  reader.readAsBinaryString(file);
+}
+
+/* ---------- HELPERS ---------- */
+function fmt(n){if(!n||isNaN(n))return'—';n=+n;return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'K':Math.round(n).toLocaleString();}
+
+function isBrandQuery(q){
+  const ql=q.toLowerCase();
+  return CONFIG.brandTerms.some(t=>t&&ql.includes(t));
+}
+function isBrandPage(p){
+  const pl=p.toLowerCase();
+  return CONFIG.brandPages.some(t=>t&&pl.includes(t));
+}
+function splitBrand(queries){
+  return{brand:queries.filter(q=>isBrandQuery(q.q)),nonBrand:queries.filter(q=>!isBrandQuery(q.q))};
+}
+function splitBrandPages(pages){
+  return{brandPages:pages.filter(p=>isBrandPage(p.p)),nonBrandPages:pages.filter(p=>!isBrandPage(p.p))};
+}
+function pc(p){return p<4?'bg':p<10?'bb':p<20?'ba':'br';}
+function ctrc(c){return c>10?'bg':c>5?'bb':c>2?'ba':'br';}
+function barcol(ctr){return ctr>10?'#059669':ctr>5?'#2563eb':ctr>2?'#d97706':'#dc2626';}
+
+function matchCluster(url,def){return url.toLowerCase().includes(def.k);}
+function clusters(pages){
+  const defs=CONFIG.categories.length?CONFIG.categories:[{k:'/',l:'All pages',label:'All pages',col:'#2563eb',e:'📁'}];
+  return defs.map(def=>{
+    const label=def.label||def.l;
+    const m=pages.filter(p=>matchCluster(p.p,def));
+    if(!m.length)return null;
+    const tc=m.reduce((s,x)=>s+x.clicks,0),ti=m.reduce((s,x)=>s+x.impr,0),ap=m.reduce((s,x)=>s+x.pos,0)/m.length;
+    return{...def,l:label,clicks:tc,impr:ti,ctr:ti?tc/ti*100:0,pos:ap,pages:m.length};
+  }).filter(Boolean).sort((a,b)=>b.clicks-a.clicks);
+}
+
+function showTab(id,el){
+  document.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('active'));
+  if(el) el.classList.add('active');
+  else {var sb=document.querySelector('.sb-item[data-tab="'+id+'"]');if(sb)sb.classList.add('active');}
+  document.querySelectorAll('.tab-sec').forEach(e=>e.classList.remove('active'));
+  var tabEl=document.getElementById('t-'+id);
+  if(!tabEl)return;
+  tabEl.classList.add('active');
+  var mc=document.getElementById('main-content');if(mc)mc.scrollTop=0;window.scrollTo({top:0,behavior:'smooth'});
+  if(NBQ.length){
+    if(id==='urlclass') buildUrlClass();
+    if(id==='cannibalization') buildCannibalization();
+    if(id==='intent') buildIntent();
+  }
+}
+
+/* ---------- MAIN BUILD ---------- */
+function build(){
+  CHARTS.forEach(c=>{try{c.destroy();}catch(e){}});CHARTS=[];
+  _urlClassBuilt=false;
+  const{Q,P,C,Dev,App,site}=D;
+  _Q=Q;_P=P;_C=C;_Dev=Dev;_App=App;
+  document.getElementById('upload-screen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('tb-site').textContent=site;
+  document.getElementById('sb-brand').innerHTML=(CONFIG.siteName||'SEO')+'<span>Dash</span>';
+  if(C.length>1)document.getElementById('tb-date').textContent=C[0].d+' → '+C[C.length-1].d;
+
+  ({brand:BQ,nonBrand:NBQ}=splitBrand(Q));
+  ({brandPages:BP,nonBrandPages:NBP}=splitBrandPages(P));
+
+  const tc=NBQ.reduce((s,q)=>s+q.clicks,0);
+  const ti=NBQ.reduce((s,q)=>s+q.impr,0);
+  const ap=NBQ.length?NBQ.reduce((s,q)=>s+q.pos,0)/NBQ.length:0;
+  const ac=ti?tc/ti*100:0;
+  const btc=BQ.reduce((s,q)=>s+q.clicks,0);
+  const bti=BQ.reduce((s,q)=>s+q.impr,0);
+  const bac=bti?btc/bti*100:0;
+  _CL=clusters(NBP);
+  const CL=_CL;
+  const maxCC=CL.length?Math.max(...CL.map(c=>c.clicks)):1;
+  const qw=NBQ.filter(q=>q.pos>=5&&q.pos<=20).sort((a,b)=>b.impr-a.impr);
+  const hp=NBQ.filter(q=>q.impr>500&&q.ctr<2&&q.pos<30).sort((a,b)=>b.impr-a.impr);
+  const topP=NBP.slice(0,10);
+  const topC=CL[0];
+
+  const good=[],bad=[],opp=[];
+  if(topC)good.push({l:topC.l+' category',v:fmt(topC.clicks)+' clicks · '+topC.ctr.toFixed(1)+'% CTR'});
+  const brand=Q.filter(q=>q.ctr>50).sort((a,b)=>b.clicks-a.clicks)[0];
+  if(brand)good.push({l:'"'+brand.q.slice(0,20)+'"',v:brand.ctr.toFixed(0)+'% CTR at #'+brand.pos.toFixed(1)});
+  good.push({l:'Avg. position '+ap.toFixed(1),v:ap<5?'Excellent — top 5':ap<10?'Solid — top 10':'Needs improvement'});
+  if(P[0])good.push({l:(P[0].p.replace(/https?:\/\/[^/]+/,'').slice(0,22)||'/'),v:fmt(P[0].clicks)+' clicks'});
+  const nbHp=NBQ.filter(q=>q.impr>5000&&q.ctr<2&&q.pos<20).sort((a,b)=>b.impr-a.impr);
+  nbHp.slice(0,3).forEach(q=>bad.push({l:'"'+q.q.slice(0,20)+'"',v:fmt(q.impr)+' impr, '+q.ctr.toFixed(1)+'% CTR'}));
+  if(!bad.length) bad.push({l:'No major CTR issues detected',v:'👍'});
+  if(qw[0])opp.push({l:'"'+qw[0].q.slice(0,22)+'" pos '+qw[0].pos.toFixed(1),v:fmt(qw[0].impr)+' impr'});
+  opp.push({l:qw.length+' non-brand quick wins',v:'Pos 5-20 — push to page 1'});
+  opp.push({l:hp.length+' high potential queries',v:'Fix titles → unlock clicks'});
+
+  const html=`
+<div id="t-overview" class="tab-sec active">
+  <div class="metric-bars">
+    <div class="mb mb-blue">
+      <div class="mb-ico"><svg viewBox="0 0 24 24"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></div>
+      <div class="mb-label">Total Clicks</div><div class="mb-val">${fmt(tc)}</div><div class="mb-sub">${Q.length}+ queries tracked</div>
+    </div>
+    <div class="mb mb-green">
+      <div class="mb-ico"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+      <div class="mb-label">Total Impressions</div><div class="mb-val">${fmt(ti)}</div><div class="mb-sub">Search appearances</div>
+    </div>
+    <div class="mb mb-amber">
+      <div class="mb-ico"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div class="mb-label">Average CTR</div><div class="mb-val">${ac.toFixed(2)}%</div><div class="mb-sub">Industry avg ~3.2%</div>
+    </div>
+    <div class="mb mb-red">
+      <div class="mb-ico"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      <div class="mb-label">Average Position</div><div class="mb-val">${ap.toFixed(1)}</div><div class="mb-sub">${ap<5?'Excellent — top 5':ap<10?'Solid — top 10':'Needs improvement'}</div>
+    </div>
+  </div>
+
+  <div class="signals">
+    <div class="sig sg"><div class="sig-title">✅ What's going well</div>${good.map(s=>`<div class="sig-item"><span class="si-l">${s.l}</span><span class="si-v">${s.v}</span></div>`).join('')}</div>
+    <div class="sig sb2"><div class="sig-title">⚠️ Needs attention</div>${bad.map(s=>`<div class="sig-item"><span class="si-l">${s.l}</span><span class="si-v">${s.v}</span></div>`).join('')}</div>
+    <div class="sig so"><div class="sig-title">🚀 Opportunities</div>${opp.map(s=>`<div class="sig-item"><span class="si-l">${s.l}</span><span class="si-v">${s.v}</span></div>`).join('')}</div>
+  </div>
+
+  ${C.length>3?`<div class="card"><div class="card-hdr">Traffic trend <span class="card-hdr-sub">daily clicks & impressions</span></div><div class="cw cw-lg"><canvas id="trendChart" role="img" aria-label="Daily clicks and impressions line chart"></canvas></div></div>`:''}
+
+  <div class="two">
+    <div class="card" style="margin-bottom:0;"><div class="card-hdr">Top non-brand queries ${CONFIG.brandTerms.length?'<span class="card-hdr-sub">brand terms excluded</span>':''}</div>
+      <div class="twrap"><table><thead><tr><th>#</th><th>Query</th><th>Clicks</th><th>CTR</th><th>Position</th></tr></thead><tbody>
+        ${NBQ.slice(0,8).map((q,i)=>`<tr><td><div class="rk">${i+1}</div></td><td title="${q.q}">${q.q.slice(0,30)}</td><td style="font-weight:700;color:#2563eb;">${fmt(q.clicks)}</td><td><span class="b ${ctrc(q.ctr)}">${q.ctr.toFixed(1)}%</span></td><td><span class="b ${pc(q.pos)}">${q.pos.toFixed(1)}</span></td></tr>`).join('')}
+      </tbody></table></div>
+    </div>
+    <div class="card" style="margin-bottom:0;"><div class="card-hdr">Top non-brand pages ${CONFIG.brandPages.length?'<span class="card-hdr-sub">account pages excluded</span>':''}</div>
+      <div class="twrap"><table><thead><tr><th>#</th><th>Page</th><th>Clicks</th><th>CTR</th><th>Position</th></tr></thead><tbody>
+        ${P.slice(0,8).map((p,i)=>{const path=p.p.replace(/https?:\/\/[^/]+/,'').slice(0,28)||'/';return`<tr><td><div class="rk">${i+1}</div></td><td class="mono" title="${p.p}">${path}</td><td style="font-weight:700;color:#2563eb;">${fmt(p.clicks)}</td><td><span class="b ${ctrc(p.ctr)}">${p.ctr.toFixed(1)}%</span></td><td><span class="b ${pc(p.pos)}">${p.pos.toFixed(1)}</span></td></tr>`;}).join('')}
+      </tbody></table></div>
+    </div>
+  </div>
+
+  ${Dev.length?`<div class="two">
+    <div class="card" style="margin-bottom:0;"><div class="card-hdr">Traffic by device</div><div class="cw" style="height:180px;"><canvas id="devChart" role="img" aria-label="Donut chart device breakdown"></canvas></div></div>
+    ${App.length?`<div class="card" style="margin-bottom:0;"><div class="card-hdr">Search appearance</div>
+      <div class="twrap"><table><thead><tr><th>Type</th><th>Clicks</th><th>Impressions</th><th>CTR</th><th>Avg Pos.</th></tr></thead><tbody>
+        ${App.slice(0,6).map(a=>`<tr><td>${a.t.slice(0,28)}</td><td style="font-weight:700;color:#2563eb;">${fmt(a.clicks)}</td><td>${fmt(a.impr)}</td><td><span class="b ${ctrc(a.ctr)}">${a.ctr.toFixed(2)}%</span></td><td>${a.pos.toFixed(1)}</td></tr>`).join('')}
+      </tbody></table></div></div>`:''}
+  </div>`:''}
+</div>
+
+<div id="t-queries" class="tab-sec">
+  <div class="two" style="margin-bottom:14px;">
+    <div class="card" style="margin-bottom:0;background:#eff6ff;border-color:#bfdbfe;">
+      <div class="card-hdr" style="color:#1d4ed8;">🏷️ Brand queries <span class="card-hdr-sub">${BQ.length} queries</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div><div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Clicks</div><div style="font-size:20px;font-weight:700;color:#2563eb;">${fmt(btc)}</div></div>
+        <div><div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Impressions</div><div style="font-size:20px;font-weight:700;color:#2563eb;">${fmt(bti)}</div></div>
+        <div><div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Avg CTR</div><div style="font-size:20px;font-weight:700;color:#2563eb;">${bac.toFixed(1)}%</div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0;background:#f0fdf4;border-color:#bbf7d0;">
+      <div class="card-hdr" style="color:#059669;">🌐 Non-brand queries <span class="card-hdr-sub">${NBQ.length} queries</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div><div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Clicks</div><div style="font-size:20px;font-weight:700;color:#059669;">${fmt(tc)}</div></div>
+        <div><div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Impressions</div><div style="font-size:20px;font-weight:700;color:#059669;">${fmt(ti)}</div></div>
+        <div><div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Avg CTR</div><div style="font-size:20px;font-weight:700;color:#059669;">${ac.toFixed(1)}%</div></div>
+      </div>
+    </div>
+  </div>
+  ${!CONFIG.brandTerms.length?'<div class="notice notice-blue"><div class="notice-title">💡 Tip</div><div class="notice-body">Add your brand terms in Settings to separate branded searches from organic discovery — right now all queries are shown as "non-brand".</div></div>':''}
+  <div class="card">
+    <div class="card-hdr">🌐 Non-brand queries <span class="card-hdr-sub">${NBQ.length} total</span></div>
+    <div class="twrap"><table><thead><tr><th>#</th><th>Query</th><th>Clicks</th><th>Impressions</th><th>CTR</th><th>Position</th></tr></thead><tbody>
+      ${NBQ.slice(0,100).map((q,i)=>`<tr><td style="color:#9ca3af;font-size:10px;">${i+1}</td><td title="${q.q}">${q.q.slice(0,42)}</td><td style="font-weight:700;color:#059669;">${fmt(q.clicks)}</td><td>${fmt(q.impr)}</td><td><span class="b ${ctrc(q.ctr)}">${q.ctr.toFixed(1)}%</span></td><td><span class="b ${pc(q.pos)}">${q.pos.toFixed(1)}</span></td></tr>`).join('')}
+    </tbody></table></div>
+  </div>
+  <div class="card" style="border-color:#bfdbfe;">
+    <div class="card-hdr" style="color:#1d4ed8;">🏷️ Brand queries <span class="card-hdr-sub">${BQ.length} total</span></div>
+    <div class="twrap"><table><thead><tr><th>#</th><th>Query</th><th>Clicks</th><th>Impressions</th><th>CTR</th><th>Position</th></tr></thead><tbody>
+      ${BQ.slice(0,50).map((q,i)=>`<tr><td style="color:#9ca3af;font-size:10px;">${i+1}</td><td title="${q.q}">${q.q.slice(0,42)}</td><td style="font-weight:700;color:#2563eb;">${fmt(q.clicks)}</td><td>${fmt(q.impr)}</td><td><span class="b ${ctrc(q.ctr)}">${q.ctr.toFixed(1)}%</span></td><td><span class="b ${pc(q.pos)}">${q.pos.toFixed(1)}</span></td></tr>`).join('')}
+    </tbody></table></div>
+  </div>
+</div>
+
+<div id="t-pages" class="tab-sec">
+  <div class="card"><div class="card-hdr">URL performance <span class="card-hdr-sub">visual click bars — top pages</span></div>
+    ${topP.map(p=>{const path=p.p.replace(/https?:\/\/[^/]+/,'').slice(0,38)||'/';const maxPC=topP[0]?topP[0].clicks:1;const pct=Math.round(p.clicks/maxPC*100);const col=barcol(p.ctr);return`<div class="url-row"><div class="url-path" title="${p.p}">${path}</div><div class="url-bw"><div class="url-bar"><div class="url-bf" style="width:${pct}%;background:${col};"></div></div></div><div class="url-stats"><div class="us"><div class="us-v" style="color:${col};">${fmt(p.clicks)}</div><div class="us-l">Clicks</div></div><div class="us"><div class="us-v">${fmt(p.impr)}</div><div class="us-l">Impr.</div></div><div class="us"><div class="us-v">${p.ctr.toFixed(1)}%</div><div class="us-l">CTR</div></div><div class="us"><div class="us-v">${p.pos.toFixed(1)}</div><div class="us-l">Pos.</div></div></div></div>`;}).join('')}
+  </div>
+  <div class="card"><div class="card-hdr">All pages <span class="card-hdr-sub">${P.length} total</span></div>
+    <div class="twrap"><table><thead><tr><th>#</th><th>Page</th><th>Clicks</th><th>Impressions</th><th>CTR</th><th>Position</th></tr></thead><tbody>
+      ${P.slice(0,100).map((p,i)=>{const path=p.p.replace(/https?:\/\/[^/]+/,'').slice(0,48)||'/';return`<tr><td style="color:#9ca3af;font-size:10px;">${i+1}</td><td class="mono" title="${p.p}">${path}</td><td style="font-weight:700;color:#2563eb;">${fmt(p.clicks)}</td><td>${fmt(p.impr)}</td><td><span class="b ${ctrc(p.ctr)}">${p.ctr.toFixed(1)}%</span></td><td><span class="b ${pc(p.pos)}">${p.pos.toFixed(1)}</span></td></tr>`;}).join('')}
+    </tbody></table></div>
+  </div>
+</div>
+
+<div id="t-clusters" class="tab-sec">
+  ${!CONFIG.categories.length?'<div class="notice notice-blue"><div class="notice-title">💡 No categories configured yet</div><div class="notice-body">Open Settings and add your content categories (e.g. Blog:/blog, Products:/products) — or click "Auto-detect from data" to have the dashboard suggest them from your top URL paths.</div></div>':''}
+  <div class="clusters">
+    ${CL.map((c,ci)=>{const maxCC2=CL.length?Math.max(...CL.map(x=>x.clicks)):1;const pct=Math.round(c.clicks/maxCC2*100);const s=c.ctr>8?{l:'Top performer',bg:'#d1fae5',tc:'#059669'}:c.ctr>4?{l:'Growing',bg:'#dbeafe',tc:'#1d4ed8'}:c.ctr>2?{l:'Fix CTR',bg:'#fef3c7',tc:'#d97706'}:{l:'Needs work',bg:'#fee2e2',tc:'#dc2626'};return`<div class="cl" onclick="drillCluster(${ci})" title="Click to view all URLs in ${c.l}"><div class="cl-top"><div class="cl-icon" style="background:${c.col}18;">${c.e}</div><span class="cl-badge" style="background:${s.bg};color:${s.tc};">${s.l}</span></div><div class="cl-name">${c.l}</div><div class="cl-val" style="color:${c.col};">${fmt(c.clicks)}</div><div class="cl-meta">CTR ${c.ctr.toFixed(1)}% · pos ${c.pos.toFixed(1)} · ${c.pages} pages</div><div class="cl-bar"><div class="cl-bar-fill" style="width:${pct}%;background:${c.col};"></div></div><div style="font-size:9px;color:#9ca3af;margin-top:6px;text-align:right;">Click to view URLs →</div></div>`;}).join('')}
+  </div>
+  <div class="two">
+    <div class="card" style="margin-bottom:0;"><div class="card-hdr">Category comparison <span class="card-hdr-sub">clicks</span></div>
+      <div class="cw cw-lg"><canvas id="clusterChart" role="img" aria-label="Bar chart category clicks comparison"></canvas></div>
+    </div>
+    <div class="card" style="margin-bottom:0;"><div class="card-hdr">Category details</div>
+      <div class="twrap"><table><thead><tr><th>Category</th><th>Clicks</th><th>Impr.</th><th>CTR</th><th>Pos.</th><th>Pages</th></tr></thead><tbody>
+        ${CL.map((c,ci)=>`<tr style="cursor:pointer;" onclick="drillCluster(${ci})" title="View URLs in ${c.l}"><td><span style="margin-right:5px;">${c.e}</span><strong>${c.l}</strong></td><td style="font-weight:700;color:#2563eb;">${fmt(c.clicks)}</td><td>${fmt(c.impr)}</td><td><span class="b ${ctrc(c.ctr)}">${c.ctr.toFixed(1)}%</span></td><td><span class="b ${pc(c.pos)}">${c.pos.toFixed(1)}</span></td><td><span style="color:#2563eb;font-weight:600;">${c.pages} →</span></td></tr>`).join('')}
+      </tbody></table></div>
+    </div>
+  </div>
+  <div id="t-clusterdrilldown" style="display:none;"></div>
+</div>
+
+<div id="t-quickwins" class="tab-sec">
+  <div class="notice notice-amber">
+    <div class="notice-title">⚡ ${qw.length} quick win opportunities found</div>
+    <div class="notice-body">These queries already rank on page 1-2. Small optimisations to title tags and internal links can push them to top 3. Total estimated gain: +${fmt(qw.reduce((s,q)=>s+Math.max(0,Math.round(q.impr*0.08-q.impr*q.ctr/100)),0))} clicks.</div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span>Quick wins — positions 5 to 20 <span class="card-hdr-sub">all ${qw.length} queries · sorted by impressions</span></span>
+      <button onclick="exportTableCSV('qw-table','quick_wins.csv')" style="padding:5px 12px;background:#059669;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;">⬇ Export CSV</button>
+    </div>
+    <div class="twrap"><table id="qw-table"><thead><tr><th>#</th><th>Query</th><th>Position</th><th>Impressions</th><th>CTR</th><th>Est. extra clicks</th><th>Action</th></tr></thead><tbody>
+      ${qw.map((q,i)=>{const g=Math.max(0,Math.round(q.impr*0.08-q.impr*q.ctr/100));return`<tr><td style="color:#9ca3af;font-size:10px;">${i+1}</td><td style="font-weight:500;max-width:200px;" title="${q.q}">${q.q}</td><td><span class="b ba">${q.pos.toFixed(1)}</span></td><td>${fmt(q.impr)}</td><td>${q.ctr.toFixed(1)}%</td><td style="font-weight:700;color:#059669;">+${fmt(g)}</td><td style="font-size:11px;color:#2563eb;">${q.pos<=10?'Optimise title + FAQ schema':'Refresh + internal links'}</td></tr>`;}).join('')}
+    </tbody></table></div>
+  </div>
+</div>
+
+<div id="t-potential" class="tab-sec">
+  <div class="notice notice-blue">
+    <div class="notice-title">📈 ${hp.length} high potential queries found</div>
+    <div class="notice-body">These queries rank well and get huge impressions but CTR is very low. Fix: rewrite title tags. Total estimated gain: +${fmt(hp.reduce((s,q)=>s+Math.max(0,Math.round(q.impr*0.05-q.impr*q.ctr/100)),0))} clicks.</div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><span>High potential — high impressions, low CTR <span class="card-hdr-sub">all ${hp.length} queries</span></span>
+      <button onclick="exportTableCSV('hp-table','high_potential.csv')" style="padding:5px 12px;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;">⬇ Export CSV</button>
+    </div>
+    <div class="twrap"><table id="hp-table"><thead><tr><th>#</th><th>Query</th><th>Impressions</th><th>Current CTR</th><th>Position</th><th>Extra clicks at 5% CTR</th><th>Priority</th></tr></thead><tbody>
+      ${hp.map((q,i)=>{const g=Math.max(0,Math.round(q.impr*0.05-q.impr*q.ctr/100));const priority=g>5000?'🔴 Critical':g>1000?'🟡 High':'🟢 Medium';return`<tr><td style="color:#9ca3af;font-size:10px;">${i+1}</td><td style="font-weight:500;max-width:200px;" title="${q.q}">${q.q}</td><td>${fmt(q.impr)}</td><td><span class="b br">${q.ctr.toFixed(2)}%</span></td><td><span class="b ${pc(q.pos)}">${q.pos.toFixed(1)}</span></td><td style="font-weight:700;color:#059669;">+${fmt(g)}</td><td style="font-size:12px;">${priority}</td></tr>`;}).join('')}
+    </tbody></table></div>
+  </div>
+</div>
+
+<div id="t-urlclass" class="tab-sec"><div id="urlclass-content"></div></div>
+<div id="t-cannibalization" class="tab-sec"><div id="cannibalization-content"></div></div>
+<div id="t-intent" class="tab-sec"><div id="intent-content"></div></div>
+
+<div id="t-recs" class="tab-sec">
+  <div style="background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#4c1d95 100%);border-radius:16px;padding:28px 32px;margin-bottom:18px;position:relative;overflow:hidden;">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,0.45);margin-bottom:8px;">📈 Your personalised SEO growth plan</div>
+    <div style="font-size:26px;font-weight:800;color:#fff;margin-bottom:8px;line-height:1.2;">Growth Plan — <span style="color:#818cf8;">built from your real data</span></div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.65);line-height:1.8;max-width:680px;margin-bottom:20px;">Every step below is calculated from your actual clicks, impressions and positions.</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:12px 18px;min-width:130px;"><div style="font-size:24px;font-weight:800;color:#fff;">${fmt(tc)}</div><div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">Current clicks</div></div>
+      <div style="background:rgba(99,102,241,0.25);border:1px solid rgba(99,102,241,0.4);border-radius:10px;padding:12px 18px;min-width:130px;"><div style="font-size:24px;font-weight:800;color:#a5b4fc;">+${fmt(hp.slice(0,20).reduce((s,q)=>s+Math.max(0,Math.round(q.impr*0.05-q.impr*q.ctr/100)),0)+qw.slice(0,20).reduce((s,q)=>s+Math.max(0,Math.round(q.impr*0.08-q.impr*q.ctr/100)),0))}</div><div style="font-size:10px;color:rgba(165,180,252,0.7);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">Recoverable clicks</div></div>
+      <div style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:12px 18px;min-width:130px;"><div style="font-size:24px;font-weight:800;color:#6ee7b7;">${qw.length}</div><div style="font-size:10px;color:rgba(110,231,183,0.7);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">Quick wins</div></div>
+      <div style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:12px 18px;min-width:130px;"><div style="font-size:24px;font-weight:800;color:#fcd34d;">${hp.length}</div><div style="font-size:10px;color:rgba(252,211,77,0.7);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">High potential</div></div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-hdr">🔥 Step 1 — Fix high-impression, low-CTR titles</div>
+    <div class="act-sub">You have <strong>${hp.length} pages</strong> getting thousands of impressions but almost nobody clicks. Rewrite each title tag: include a specific number, the year, a clear benefit, and a power word. Also rewrite meta descriptions. Start with your High Potential tab, sorted by impressions.</div>
+  </div>
+  <div class="card"><div class="card-hdr">⚡ Step 2 — Push position 5–20 pages to page 1</div>
+    <div class="act-sub">${qw.length} queries already rank on page 1-2. Add 3-5 internal links from your highest-traffic pages, add FAQ schema, and if the page is under 800 words add an FAQ section. Start with your Quick Wins tab.</div>
+  </div>
+  <div class="card"><div class="card-hdr">⚔️ Step 3 — Fix keyword cannibalization</div>
+    <div class="act-sub">Check the Cannibalization tab for keyword groups where multiple pages compete for the same query. Pick a winner page, canonicalise or redirect the loser, and consolidate content.</div>
+  </div>
+  <div class="card"><div class="card-hdr">🏆 Step 4 — Double down on your strongest category</div>
+    <div class="act-sub">${topC?`${topC.l} drives ${fmt(topC.clicks)} clicks at ${topC.ctr.toFixed(1)}% CTR — your strongest category. Produce more comprehensive pages here; this compounds authority.`:'Configure categories in Settings to see your strongest content area.'}</div>
+  </div>
+  <div class="card"><div class="card-hdr">🏷️ Step 5 — Audit URL health</div>
+    <div class="act-sub">Open the URL Classification tab. Start with 💡 Opportunity URLs (high impressions, low CTR), then 📈 Rising URLs (positions 5-20 with momentum). Leave your top-performing URLs alone — they're already working.</div>
+  </div>
+
+  <div style="background:#0f172a;border-radius:16px;padding:22px 26px;margin-bottom:16px;">
+    <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px;">📊 Track your progress — re-upload GSC every 4 weeks</div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:16px;">Export from Google Search Console → re-upload here → watch these numbers improve month on month</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+      ${[
+        {label:'Non-brand clicks',val:fmt(tc),target:'Your baseline today',col:'#34d399',bg:'rgba(52,211,153,0.1)',border:'rgba(52,211,153,0.2)'},
+        {label:'Avg. CTR',val:ac.toFixed(2)+'%',target:'Target: above 4%',col:'#60a5fa',bg:'rgba(96,165,250,0.1)',border:'rgba(96,165,250,0.2)'},
+        {label:'Avg. position',val:ap.toFixed(1),target:'Target: under 8',col:'#fb923c',bg:'rgba(251,146,60,0.1)',border:'rgba(251,146,60,0.2)'},
+        {label:'Quick wins left',val:String(qw.length),target:'Target: under 20',col:'#f472b6',bg:'rgba(244,114,182,0.1)',border:'rgba(244,114,182,0.2)'},
+      ].map(m=>`<div style="background:${m.bg};border:1px solid ${m.border};border-radius:10px;padding:14px 16px;"><div style="font-size:22px;font-weight:800;color:${m.col};margin-bottom:3px;">${m.val}</div><div style="font-size:11px;font-weight:600;color:#e2e8f0;">${m.label}</div><div style="font-size:10px;color:#64748b;margin-top:2px;">${m.target}</div></div>`).join('')}
+    </div>
+  </div>
+  <div style="text-align:center;padding:16px;font-size:11px;color:#9ca3af;">SEODash Growth Plan · Built from <strong style="color:#6b7280;">${D.fn}</strong> · Re-upload any time to refresh</div>
+</div>`;
+
+  document.getElementById('main-content').innerHTML=html;
+  document.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.sb-item')[0].classList.add('active');
+  document.querySelectorAll('.tab-sec').forEach(e=>e.classList.remove('active'));
+  document.getElementById('t-overview').classList.add('active');
+
+  requestAnimationFrame(()=>{
+    if(_C.length>3){
+      const ctx=document.getElementById('trendChart');
+      if(ctx){const ch=new Chart(ctx,{type:'line',data:{labels:_C.map(r=>r.d.slice(5)),datasets:[{label:'Clicks',data:_C.map(r=>r.clicks),borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.06)',borderWidth:2,pointRadius:0,tension:0.4,fill:true,yAxisID:'y'},{label:'Impr÷50',data:_C.map(r=>Math.round(r.impr/50)),borderColor:'#059669',borderWidth:1.5,pointRadius:0,tension:0.4,fill:false,yAxisID:'y',borderDash:[4,2]}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#6b7280',font:{size:11,family:'Inter'},boxWidth:10,padding:12}}},scales:{x:{ticks:{color:'#9ca3af',font:{size:10},maxTicksLimit:12,maxRotation:0},grid:{color:'#f3f4f6'}},y:{ticks:{color:'#9ca3af',font:{size:10},callback:v=>fmt(v)},grid:{color:'#f3f4f6'}}}}});CHARTS.push(ch);}
+    }
+    if(_Dev.length){
+      const ctx=document.getElementById('devChart');
+      if(ctx){const ch=new Chart(ctx,{type:'doughnut',data:{labels:_Dev.map(d=>d.d),datasets:[{data:_Dev.map(d=>d.clicks),backgroundColor:['#2563eb','#059669','#d97706','#dc2626'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#6b7280',font:{size:11,family:'Inter'},padding:10,boxWidth:10}}}}});CHARTS.push(ch);}
+    }
+    if(_CL.length){
+      const ctx=document.getElementById('clusterChart');
+      if(ctx){const ch=new Chart(ctx,{type:'bar',data:{labels:_CL.map(c=>c.l),datasets:[{label:'Clicks',data:_CL.map(c=>c.clicks),backgroundColor:_CL.map(c=>c.col+'cc'),borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#9ca3af',font:{size:11,family:'Inter'},maxRotation:30}},y:{ticks:{color:'#9ca3af',font:{size:10},callback:v=>fmt(v)},grid:{color:'#f3f4f6'}}}}});CHARTS.push(ch);}
+    }
+  });
+}
+
+/* ---------- CSV EXPORT ---------- */
+function csvEsc(s){return '"'+String(s).replace(/"/g,'""').trim()+'"';}
+function exportTableCSV(tableId,filename){
+  var rows=document.querySelectorAll('#'+tableId+' tr');
+  var csv=[];
+  rows.forEach(function(r){
+    var cells=r.querySelectorAll('th,td');
+    var row=[];
+    cells.forEach(function(c){row.push(csvEsc(c.textContent));});
+    csv.push(row.join(','));
+  });
+  var blob=new Blob([csv.join('\n')],{type:'text/csv'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  a.click();
+}
+
+/* ---------- CLUSTER DRILL-DOWN ---------- */
+function drillCluster(ci){
+  const c=_CL[ci];
+  if(!c)return;
+  const pages=NBP.filter(p=>matchCluster(p.p,c)).sort((a,b)=>b.clicks-a.clicks);
+  const maxC=pages.length?pages[0].clicks:1;
+  const dd=document.getElementById('t-clusterdrilldown');
+  dd.style.display='block';
+  dd.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <button onclick="document.getElementById('t-clusterdrilldown').style.display='none'" style="padding:6px 14px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:#4b5563;font-family:'Inter',sans-serif;">← Close</button>
+      <div style="font-size:18px;font-weight:700;color:#111827;">${c.e} ${c.l}</div>
+      <span class="b bb">${pages.length} URLs</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.1);margin-bottom:16px;">
+      <div style="background:${c.col};padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;">Total Clicks</div><div style="font-size:28px;font-weight:700;color:#fff;line-height:1;">${fmt(c.clicks)}</div></div>
+      <div style="background:${c.col}dd;padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;">Impressions</div><div style="font-size:28px;font-weight:700;color:#fff;line-height:1;">${fmt(c.impr)}</div></div>
+      <div style="background:${c.col}bb;padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;">Avg. CTR</div><div style="font-size:28px;font-weight:700;color:#fff;line-height:1;">${c.ctr.toFixed(1)}%</div></div>
+      <div style="background:${c.col}99;padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;">Avg. Position</div><div style="font-size:28px;font-weight:700;color:#fff;line-height:1;">${c.pos.toFixed(1)}</div></div>
+    </div>
+    <div class="card"><div class="card-hdr">All URLs in category <span class="card-hdr-sub">${pages.length} pages</span></div>
+      <div class="twrap"><table><thead><tr><th>#</th><th>URL</th><th>Clicks</th><th>Impressions</th><th>CTR</th><th>Position</th></tr></thead><tbody>
+        ${pages.map((p,i)=>{const path=p.p.replace(/https?:\/\/[^/]+/,'').slice(0,55)||'/';return`<tr><td style="color:#9ca3af;font-size:10px;">${i+1}</td><td class="mono" title="${p.p}"><a href="${p.p}" target="_blank" style="color:#2563eb;text-decoration:none;">${path}</a></td><td style="font-weight:700;color:#2563eb;">${fmt(p.clicks)}</td><td>${fmt(p.impr)}</td><td><span class="b ${ctrc(p.ctr)}">${p.ctr.toFixed(1)}%</span></td><td><span class="b ${pc(p.pos)}">${p.pos.toFixed(1)}</span></td></tr>`;}).join('')}
+      </tbody></table></div>
+    </div>`;
+  dd.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ---------- URL CLASSIFICATION ---------- */
+var _urlClassBuilt=false;
+function buildUrlClass(){
+  if(_urlClassBuilt&&document.getElementById('urlclass-perf'))return;
+  _urlClassBuilt=true;
+  const pages=NBP;
+  const perf=pages.filter(p=>p.clicks>=Math.max(50,pages.length?Math.max(...pages.map(x=>x.clicks))*0.3:50));
+  const good=pages.filter(p=>p.clicks>=10&&p.clicks<perf.length&&p.clicks<(perf[perf.length-1]?perf[perf.length-1].clicks:1e9));
+  const opp=pages.filter(p=>p.impr>=1000&&p.ctr<1);
+  const rising=pages.filter(p=>p.impr>=200&&p.pos>=5&&p.pos<=20&&p.ctr<3);
+  const lowVis=pages.filter(p=>p.impr<100);
+  const classes=[
+    {key:'perf',label:'Performance URLs',icon:'🚀',color:'#059669',bg:'#f0fdf4',border:'#bbf7d0',desc:'Top 30% by clicks',count:perf.length,urls:perf,note:'Your top traffic drivers — protect rankings and expand these topics.'},
+    {key:'opp',label:'Opportunity URLs',icon:'💡',color:'#0891b2',bg:'#ecfeff',border:'#a5f3fc',desc:'1000+ impressions & CTR < 1%',count:opp.length,urls:opp,note:'High-impression pages with very low CTR — rewrite titles for instant click gains.'},
+    {key:'rising',label:'Rising URLs',icon:'📈',color:'#f43f5e',bg:'#fff1f2',border:'#fecdd3',desc:'200+ impr · pos 5–20 · CTR < 3%',count:rising.length,urls:rising,note:'Gaining momentum. Push with internal links + schema for fast gains.'},
+    {key:'lowvis',label:'Low Visibility URLs',icon:'👻',color:'#6b7280',bg:'#f9fafb',border:'#e5e7eb',desc:'<100 impressions',count:lowVis.length,urls:lowVis,note:'Barely visible in search. Needs content depth, backlinks, or may be thin/irrelevant.'},
+  ];
+  let html='<div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:3px;">🏷️ URL Classification</div>';
+  html+='<div style="font-size:12px;color:#6b7280;margin-bottom:16px;">Click any category to expand and explore its URLs.</div>';
+  html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;">';
+  classes.forEach(function(c){
+    html+='<div onclick="toggleUrlClass(\''+c.key+'\')" style="background:'+c.bg+';border:1.5px solid '+c.border+';border-radius:10px;padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;min-width:170px;flex:1;">'
+      +'<div style="font-size:24px;">'+c.icon+'</div>'
+      +'<div><div style="font-size:22px;font-weight:700;color:'+c.color+';line-height:1;">'+c.count+'</div>'
+      +'<div style="font-size:11px;font-weight:700;color:#111827;">'+c.label+'</div>'
+      +'<div style="font-size:10px;color:#6b7280;">'+c.desc+'</div></div>'
+      +'<div style="margin-left:auto;font-size:18px;color:'+c.color+';font-weight:700;" id="uca-'+c.key+'">▼</div></div>';
+  });
+  html+='</div>';
+  classes.forEach(function(c){
+    const rows=c.urls.slice(0,150).map(function(p,i){
+      const path=p.p.replace(/https?:\/\/[^/]+/,'').slice(0,60)||'/';
+      return '<tr><td style="color:#9ca3af;font-size:10px;">'+(i+1)+'</td>'
+        +'<td class="mono"><a href="'+p.p+'" target="_blank" style="color:#2563eb;text-decoration:none;">'+path+'</a></td>'
+        +'<td style="font-weight:700;color:'+c.color+';">'+fmt(p.clicks)+'</td>'
+        +'<td>'+fmt(p.impr)+'</td>'
+        +'<td><span class="b '+ctrc(p.ctr)+'">'+p.ctr.toFixed(1)+'%</span></td>'
+        +'<td><span class="b '+pc(p.pos)+'">'+p.pos.toFixed(1)+'</span></td></tr>';
+    }).join('');
+    html+='<div id="urlclass-'+c.key+'" style="display:none;margin-bottom:14px;"><div class="card" style="border-color:'+c.border+';border-width:1.5px;">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
+      +'<div style="font-size:13px;font-weight:700;color:'+c.color+';">'+c.icon+' '+c.label+' <span style="font-size:11px;color:#9ca3af;font-weight:400;">'+c.count+' URLs · '+c.desc+'</span></div>'
+      +'<button onclick="toggleUrlClass(\''+c.key+'\')" style="padding:4px 12px;border:1px solid '+c.border+';border-radius:6px;background:#fff;font-size:11px;cursor:pointer;color:#6b7280;">▲ Collapse</button></div>'
+      +'<div style="font-size:12px;color:#6b7280;margin-bottom:12px;padding:8px 12px;background:'+c.bg+';border-radius:7px;">'+c.note+'</div>'
+      +(c.urls.length===0?'<div style="text-align:center;padding:2rem;color:#9ca3af;font-size:13px;">No URLs fall into this category.</div>'
+        :'<div class="twrap"><table><thead><tr><th>#</th><th>URL</th><th>Clicks</th><th>Impressions</th><th>CTR</th><th>Position</th></tr></thead><tbody>'+rows+'</tbody></table></div>')
+      +'</div></div>';
+  });
+  document.getElementById('urlclass-content').innerHTML=html;
+}
+function toggleUrlClass(key){
+  var panel=document.getElementById('urlclass-'+key);
+  if(!panel)return;
+  var arrow=document.getElementById('uca-'+key);
+  var isOpen=panel.style.display==='block';
+  panel.style.display=isOpen?'none':'block';
+  if(arrow)arrow.textContent=isOpen?'▼':'▲';
+  if(!isOpen)setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),30);
+}
+
+/* ---------- CANNIBALIZATION ---------- */
+function buildCannibalization(){
+  const queries=_Q;
+  function normalize(q){
+    return q.toLowerCase().replace(/[^a-z0-9\s]/g,'').split(/\s+/)
+      .filter(w=>!['for','and','to','in','of','the','a','an','with','how','best','top','is','are','on','at','by','from'].includes(w))
+      .slice(0,3).join(' ');
+  }
+  const roots={};
+  queries.forEach(q=>{const r=normalize(q.q);if(!r||r.length<5)return;if(!roots[r])roots[r]=[];roots[r].push(q);});
+  const canniGroups=Object.entries(roots).filter(([r,qs])=>qs.length>=2).map(([r,qs])=>{
+    const totalImpr=qs.reduce((s,q)=>s+q.impr,0),totalClicks=qs.reduce((s,q)=>s+q.clicks,0);
+    const avgPos=qs.reduce((s,q)=>s+q.pos,0)/qs.length;
+    const posSpread=Math.max(...qs.map(q=>q.pos))-Math.min(...qs.map(q=>q.pos));
+    const totalCtr=totalImpr?totalClicks/totalImpr*100:0;
+    const severity=posSpread>10&&qs.length>=3?'high':posSpread>5&&qs.length>=2?'medium':'low';
+    return{root:r,queries:qs,totalImpr,totalClicks,avgPos,posSpread,totalCtr,severity,clickLoss:Math.round(totalImpr*0.08-totalClicks)};
+  }).filter(g=>g.totalImpr>200).sort((a,b)=>{const sv={high:3,medium:2,low:1};return sv[b.severity]-sv[a.severity]||b.totalImpr-a.totalImpr;});
+  const high=canniGroups.filter(g=>g.severity==='high');
+  function sevBadge(s){return s==='high'?'<span class="b br">🔴 High</span>':s==='medium'?'<span class="b ba">🟡 Medium</span>':'<span class="b bg">🟢 Low</span>';}
+  const groupRows=canniGroups.slice(0,60).map(g=>`
+    <tr><td style="max-width:160px;font-weight:600;color:#111827;">${g.root}</td><td style="text-align:center;">${g.queries.length}</td><td>${fmt(g.totalImpr)}</td><td style="font-weight:700;color:#2563eb;">${fmt(g.totalClicks)}</td><td><span class="b ${ctrc(g.totalCtr)}">${g.totalCtr.toFixed(1)}%</span></td><td>${g.avgPos.toFixed(1)}</td><td>${g.posSpread.toFixed(1)}</td><td>${sevBadge(g.severity)}</td><td style="font-weight:600;color:#dc2626;">${g.clickLoss>0?'-'+fmt(g.clickLoss):'—'}</td></tr>
+    <tr style="background:#fafafa;"><td colspan="9" style="padding:6px 12px 10px;font-size:11px;color:#6b7280;">${g.queries.map(q=>`<span style="display:inline-block;margin:2px 4px 2px 0;padding:2px 8px;background:#f3f4f6;border-radius:999px;color:#374151;">"${q.q.slice(0,40)}" — pos ${q.pos.toFixed(1)}, ${fmt(q.impr)} impr</span>`).join('')}</td></tr>`).join('');
+  document.getElementById('cannibalization-content').innerHTML=`
+    <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:3px;">⚠️ Cannibalization Detection</div>
+    <div style="font-size:12px;color:#6b7280;margin-bottom:16px;">Multiple queries competing for the same intent — splitting CTR and suppressing rankings</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.1);margin-bottom:16px;">
+      <div style="background:#dc2626;padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:5px;">Cannibal groups</div><div style="font-size:28px;font-weight:700;color:#fff;">${canniGroups.length}</div><div style="font-size:11px;color:rgba(255,255,255,0.6);">${high.length} high severity</div></div>
+      <div style="background:#b91c1c;padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:5px;">Competing queries</div><div style="font-size:28px;font-weight:700;color:#fff;">${canniGroups.reduce((s,g)=>s+g.queries.length,0)}</div></div>
+      <div style="background:#991b1b;padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:5px;">Est. click loss</div><div style="font-size:28px;font-weight:700;color:#fff;">${fmt(canniGroups.reduce((s,g)=>s+Math.max(0,g.clickLoss),0))}</div></div>
+      <div style="background:#7f1d1d;padding:16px 20px;"><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:5px;">High severity</div><div style="font-size:28px;font-weight:700;color:#fff;">${high.length}</div></div>
+    </div>
+    ${high.length?`<div class="notice notice-amber"><div class="notice-title">🔴 ${high.length} high-severity cannibalisation groups detected</div><div class="notice-body">Fix: consolidate content or add canonical tags pointing to your preferred URL, then 301-redirect duplicates.</div></div>`:''}
+    <div class="card"><div class="card-hdr">All cannibalisation groups <span class="card-hdr-sub">${canniGroups.length} groups</span></div>
+      <div class="twrap"><table><thead><tr><th>Keyword root</th><th>Queries</th><th>Total Impr.</th><th>Total Clicks</th><th>Combined CTR</th><th>Avg Pos.</th><th>Pos. Spread</th><th>Severity</th><th>Est. loss</th></tr></thead><tbody>${groupRows}</tbody></table></div>
+    </div>
+    <div class="card" style="background:#fffbeb;border-color:#fde68a;"><div class="card-hdr" style="color:#d97706;">💡 How to fix cannibalization</div>
+      <div class="action"><div class="act-num" style="background:#fef3c7;color:#d97706;">1</div><div><div class="act-title">Consolidate duplicate content</div><div class="act-sub">Merge pages that cover the same intent into one comprehensive page. 301-redirect the weaker one.</div></div></div>
+      <div class="action"><div class="act-num" style="background:#fef3c7;color:#d97706;">2</div><div><div class="act-title">Differentiate intent clearly</div><div class="act-sub">If both pages should exist, make their intent distinct — different titles, different angles.</div></div></div>
+      <div class="action" style="border-bottom:none;"><div class="act-num" style="background:#fef3c7;color:#d97706;">3</div><div><div class="act-title">Use internal linking to signal preference</div><div class="act-sub">Link strongly to your preferred URL for each keyword group.</div></div></div>
+    </div>`;
+}
+
+/* ---------- INTENT SEGMENTATION ---------- */
+function buildIntent(){
+  var Q=_Q||[];
+  var el=document.getElementById('intent-content');
+  if(!el)return;
+  var infoRx=/^(what|how|why|when|where|who|which|define|explain|list|examples|difference|guide|tips|steps|is|are|does)/i;
+  var transRx=/(apply|register|join|sign up|enroll|download|get|hire|post|submit|login|signup|buy|order)/i;
+  var commRx=/(best|top|vs|compare|review|alternative|cheapest|free|premium|price|worth it)/i;
+  var naviRx=CONFIG.brandTerms.length?new RegExp('('+CONFIG.brandTerms.map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')','i'):/(login|dashboard|my account)/i;
+  var info=Q.filter(q=>infoRx.test(q.q)&&!naviRx.test(q.q)).sort((a,b)=>b.impr-a.impr);
+  var trans=Q.filter(q=>transRx.test(q.q)&&!naviRx.test(q.q)).sort((a,b)=>b.impr-a.impr);
+  var comm=Q.filter(q=>commRx.test(q.q)&&!naviRx.test(q.q)).sort((a,b)=>b.impr-a.impr);
+  var navi=Q.filter(q=>naviRx.test(q.q)).sort((a,b)=>b.impr-a.impr);
+  function seg(label,color,bg,border,list,desc){
+    const tc=list.reduce((s,q)=>s+q.clicks,0),ti=list.reduce((s,q)=>s+q.impr,0);
+    const rows=list.slice(0,25).map((q,i)=>`<tr><td style="color:#9ca3af;font-size:10px;">${i+1}</td><td title="${q.q}">${q.q.slice(0,42)}</td><td style="font-weight:700;color:${color};">${fmt(q.clicks)}</td><td>${fmt(q.impr)}</td><td><span class="b ${ctrc(q.ctr)}">${q.ctr.toFixed(1)}%</span></td><td><span class="b ${pc(q.pos)}">${q.pos.toFixed(1)}</span></td></tr>`).join('');
+    return `<div style="background:#fff;border:1.5px solid ${border};border-radius:12px;margin-bottom:12px;overflow:hidden;">
+      <div style="padding:12px 18px;background:${bg};border-bottom:1px solid ${border};display:flex;align-items:center;gap:10px;">
+        <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:${color};">${label} — ${list.length} queries</div><div style="font-size:10px;color:#6b7280;margin-top:1px;">${desc}</div></div>
+        <div style="text-align:right;"><div style="font-size:16px;font-weight:700;color:${color};">${fmt(tc)} clicks</div><div style="font-size:10px;color:#9ca3af;">${fmt(ti)} impr.</div></div></div>
+      ${list.length?`<div class="twrap"><table><thead><tr><th>#</th><th>Query</th><th>Clicks</th><th>Impr.</th><th>CTR</th><th>Pos.</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<div style="padding:2rem;text-align:center;font-size:12px;color:#9ca3af;">No queries matched</div>'}
+    </div>`;
+  }
+  el.innerHTML='<div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:3px;">🎯 Intent Segmentation</div>'
+    +'<div style="font-size:12px;color:#6b7280;margin-bottom:16px;">Queries classified by search intent — map content to the right stage of the user journey</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">'
+      +`<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px 14px;"><div style="font-size:22px;margin-bottom:4px;">📚</div><div style="font-size:22px;font-weight:700;color:#2563eb;">${info.length}</div><div style="font-size:11px;font-weight:600;color:#111827;">Informational</div></div>`
+      +`<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 14px;"><div style="font-size:22px;margin-bottom:4px;">🛒</div><div style="font-size:22px;font-weight:700;color:#059669;">${trans.length}</div><div style="font-size:11px;font-weight:600;color:#111827;">Transactional</div></div>`
+      +`<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px 14px;"><div style="font-size:22px;margin-bottom:4px;">🔍</div><div style="font-size:22px;font-weight:700;color:#d97706;">${comm.length}</div><div style="font-size:11px;font-weight:600;color:#111827;">Commercial</div></div>`
+      +`<div style="background:#fdf4ff;border:1px solid #e9d5ff;border-radius:10px;padding:12px 14px;"><div style="font-size:22px;margin-bottom:4px;">🧭</div><div style="font-size:22px;font-weight:700;color:#7c3aed;">${navi.length}</div><div style="font-size:11px;font-weight:600;color:#111827;">Navigational</div></div>`
+    +'</div>'
+    +seg('📚 Informational','#2563eb','#eff6ff','#bfdbfe',info,'Target with blog posts, guides, FAQs')
+    +seg('🛒 Transactional','#059669','#f0fdf4','#bbf7d0',trans,'Optimise landing pages and CTAs')
+    +seg('🔍 Commercial','#d97706','#fffbeb','#fde68a',comm,'Target with comparison pages and reviews')
+    +seg('🧭 Navigational','#7c3aed','#fdf4ff','#e9d5ff',navi,'Protect with strong homepage/brand pages');
+}
+</script>
+</body>
+</html>
